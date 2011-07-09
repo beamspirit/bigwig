@@ -74,10 +74,10 @@ node(Node) ->
   gen_server:call(?SERVER, {node, Node}).
 
 init(Opts) ->
-  Config1 = handle_args(Opts, #opts{}),
+  State1 = handle_args(Opts, #opts{}),
   AccumTab = ets:new(?ACCUM_TAB, [set,public,{keypos,#etop_proc_info.pid}]),
-  Config2 = Config1#opts{accum_tab=AccumTab},
-  Res = connect(Config2),
+  State2 = State1#opts{accum_tab=AccumTab},
+  Res = connect(State2),
   Res.
 
 handle_cast(_Msg, State) ->
@@ -186,45 +186,45 @@ get_tag(msg_q) -> #etop_proc_info.mq.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Configuration Management
 
-putopt(Key, Value, #opts{} = Config) ->
-  handle_args([{Key, Value}], Config).
+putopt(Key, Value, #opts{} = State) ->
+  handle_args([{Key, Value}], State).
 
-handle_args([{node, [NodeString]}| R], Config) when is_list(NodeString) ->
+handle_args([{node, [NodeString]}| R], State) when is_list(NodeString) ->
   Node = list_to_atom(NodeString),
-  NewC = Config#opts{node = Node},
+  NewC = State#opts{node = Node},
   handle_args(R, NewC);
-handle_args([{node, Node} |R], Config) when is_atom(Node) ->
-  NewC = Config#opts{node = Node},
+handle_args([{node, Node} |R], State) when is_atom(Node) ->
+  NewC = State#opts{node = Node},
   handle_args(R, NewC);
-handle_args([{port, Port}| R], Config) when is_integer(Port) ->
-  NewC = Config#opts{port=Port},
+handle_args([{port, Port}| R], State) when is_integer(Port) ->
+  NewC = State#opts{port=Port},
   handle_args(R, NewC);
-handle_args([{port, [Port]}| R], Config) when is_list(Port) ->
-  NewC = Config#opts{port= list_to_integer(Port)},
+handle_args([{port, [Port]}| R], State) when is_list(Port) ->
+  NewC = State#opts{port= list_to_integer(Port)},
   handle_args(R, NewC);
-handle_args([{lines, Lines}| R], Config) when is_integer(Lines) ->
-  NewC = Config#opts{lines=Lines},
+handle_args([{lines, Lines}| R], State) when is_integer(Lines) ->
+  NewC = State#opts{lines=Lines},
   handle_args(R, NewC);
-handle_args([{lines, [Lines]}| R], Config) when is_list(Lines) ->
-  NewC = Config#opts{lines= list_to_integer(Lines)},
+handle_args([{lines, [Lines]}| R], State) when is_list(Lines) ->
+  NewC = State#opts{lines= list_to_integer(Lines)},
   handle_args(R, NewC);
-handle_args([{accumulate, Bool}| R], Config) when is_atom(Bool) ->
-  NewC = Config#opts{accum=Bool},
+handle_args([{accumulate, Bool}| R], State) when is_atom(Bool) ->
+  NewC = State#opts{accum=Bool},
   handle_args(R, NewC);
-handle_args([{accumulate, [Bool]}| R], Config) when is_list(Bool) ->
-  NewC = Config#opts{accum= list_to_atom(Bool)},
+handle_args([{accumulate, [Bool]}| R], State) when is_list(Bool) ->
+  NewC = State#opts{accum= list_to_atom(Bool)},
   handle_args(R, NewC);
-handle_args([{sort, Sort}| R], Config) when is_atom(Sort) ->
-  NewC = Config#opts{sort=Sort},
+handle_args([{sort, Sort}| R], State) when is_atom(Sort) ->
+  NewC = State#opts{sort=Sort},
   handle_args(R, NewC);
-handle_args([{sort, [Sort]}| R], Config) when is_list(Sort) ->
-  NewC = Config#opts{sort= list_to_atom(Sort)},
+handle_args([{sort, [Sort]}| R], State) when is_list(Sort) ->
+  NewC = State#opts{sort= list_to_atom(Sort)},
   handle_args(R, NewC);
-handle_args([{tracing, OnOff}| R], Config) when is_atom(OnOff) ->
-  NewC = Config#opts{tracing=OnOff},
+handle_args([{tracing, OnOff}| R], State) when is_atom(OnOff) ->
+  NewC = State#opts{tracing=OnOff},
   handle_args(R, NewC);
-handle_args([{tracing, [OnOff]}| R], Config) when is_list(OnOff) ->
-  NewC = Config#opts{tracing=list_to_atom(OnOff)},
+handle_args([{tracing, [OnOff]}| R], State) when is_list(OnOff) ->
+  NewC = State#opts{tracing=list_to_atom(OnOff)},
   handle_args(R, NewC);
 
 handle_args([_| R], C) ->
@@ -318,16 +318,16 @@ connect(State=#opts{node=Node}) ->
   end.
 
 -spec setup_tracing(#opts{}) -> #opts{}.
-setup_tracing(Config=#opts{tracing=T, sort=S, node=N}) ->
+setup_tracing(State=#opts{tracing=T, sort=S, node=N}) ->
   if T =:= on, N /= node() ->
       %% Cannot trace on current node since the tracer will
       %% trace itself
-      etop_tr:setup_tracer(Config);
+      etop_tr:setup_tracer(State);
      true ->
       if S =:= runtime ->
-          Config#opts{sort=reductions, tracing=off};
+          State#opts{sort=reductions, tracing=off};
          true ->
-          Config#opts{tracing=off}
+          State#opts{tracing=off}
       end
   end.
 
