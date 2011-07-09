@@ -21,9 +21,12 @@ start_link() ->
 
 init([]) ->
 
+    %% {Host, list({Path, Handler, Opts})}
     Dispatch = [
-        %% {Host, list({Path, Handler, Opts})}
-        {'_', [{'_', bigwig_http_vm, []}]}
+            {'_', [{[<<"">>],               bigwig_http_index, []}]}
+
+        ,   {'_', [{[<<"vm">>],             bigwig_http_vm, []}]}
+        ,   {'_', [{[<<"rb">>, '...'],      bigwig_http_rb, []}]}
     ],
 
     Port = 8080,
