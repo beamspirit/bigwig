@@ -8,7 +8,7 @@
 -behaviour(gen_server).
 
 -export([start_link/1, start/0, start/1, stop/0, rescan/0, rescan/1]).
--export([load_number/1, load_list/0, load_list/1, make_filter/1]).
+-export([load_number/1, load_list/0, load_list/1, make_filter/1, fmt_report/1]).
 
 %% gen_server callbacks
 -export([init/1, terminate/2, handle_call/3,
@@ -380,7 +380,7 @@ get_short_descr({{Date, Time}, {error_report, Pid, {_, crash_report, Rep}}}) ->
 	    _ -> Pid
 	end,
     NameStr = lists:flatten(io_lib:format("~w", [Name])),
-    {NameStr, date_str(Date, Time)};
+    {NameStr, bigwig_util:date_str(Date, Time)};
 get_short_descr({{Date, Time}, {error_report, Pid, {_, supervisor_report,Rep}}}) ->
     Name =
 	case lists:keysearch(supervisor, 1, Rep) of
@@ -388,37 +388,13 @@ get_short_descr({{Date, Time}, {error_report, Pid, {_, supervisor_report,Rep}}})
 	    _ -> Pid
 	end,
     NameStr = lists:flatten(io_lib:format("~w", [Name])),
-    {NameStr, date_str(Date,Time)};
+    {NameStr, bigwig_util:date_str(Date,Time)};
 get_short_descr({{Date, Time}, {_Type, Pid, _}}) ->
     NameStr = lists:flatten(io_lib:format("~w", [Pid])),
-    {NameStr, date_str(Date,Time)};
+    {NameStr, bigwig_util:date_str(Date,Time)};
 get_short_descr(_) ->
     {"???", "???"}.
     
-date_str({Y,Mo,D}=Date,{H,Mi,S}=Time) ->
-    case application:get_env(sasl,utc_log) of 
-	{ok,true} ->
-	    {{YY,MoMo,DD},{HH,MiMi,SS}} = 
-		local_time_to_universal_time({Date,Time}),
-	    lists:flatten(io_lib:format("~w-~2.2.0w-~2.2.0w ~2.2.0w:"
-					"~2.2.0w:~2.2.0w UTC", 
-					[YY,MoMo,DD,HH,MiMi,SS]));
-	_ ->
-	    lists:flatten(io_lib:format("~w-~2.2.0w-~2.2.0w ~2.2.0w:"
-					"~2.2.0w:~2.2.0w", 
-					[Y,Mo,D,H,Mi,S]))
-    end.
-
-local_time_to_universal_time({Date,Time}) ->
-    case calendar:local_time_to_universal_time_dst({Date,Time}) of
-	[UCT] ->
-	    UCT;
-	[UCT1,_UCT2] ->
-	    UCT1;
-	[] -> % should not happen
-	    {Date,Time}
-    end.
-
 
 load_report_by_num(Dir, Data, Number, Device, Abort, Log) ->
     case find_report(Data, Number) of

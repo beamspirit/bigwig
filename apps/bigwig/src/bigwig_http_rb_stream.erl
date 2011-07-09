@@ -19,7 +19,6 @@ handle(Req, State) ->
 terminate(_Req, _State) ->
   ok.
 
-
 websocket_init(_TransportName, Req, _Opts) ->
   rb2:start(), %% will only be started once anyway, registered name
   rb2:rescan(), %% ouch
@@ -32,7 +31,7 @@ websocket_handle(Bin, Req, State) when is_binary(Bin) ->
   {reply, Bin, Req, State};
 
 websocket_handle({bigwig_error_handler, Report}, Req, State) ->
-  {reply, report(Report), Req, State};
+  {reply, report(rb2:fmt_report({erlang:localtime(), Report})), Req, State};
 
 websocket_handle({websocket, Msg}, Req, State) ->
   {reply, << "You said: ", Msg/binary >>, Req, State};
@@ -56,25 +55,10 @@ number(To, {_Level, {ok, _Date0, Report, _ReportStr}}) ->
 number(_, _) -> ok.
 
 report(To, Report) ->
-  To ! report({
-      proplists:get_value(report_level, Report), 
-      proplists:get_value(group_leader, Report),
-      {proplists:get_value(pid, Report),
-       proplists:get_value(report_type, Report),
-       proplists:get_value(data, Report)
-      }
-    }).
+  To ! report(Report).
 
-report({Level, Leader, {Pid, Type, _Data}}) ->
+report(Report) ->
   %io:format("Date0 ~p~n", [Date0]),
   %io:format("Report ~p~n", [Report]),
   %io:format("ReportStr ~p~n", [ReportStr]),
-  jsx:term_to_json([{report, [
-          [
-            {level,Level},
-            {group_leader,Leader},
-            {pid, Pid},
-            {type, Type}%,
-            %{data, Data}
-          ]
-        ]}]).
+  jsx:term_to_json([{report, [Report]}]).
