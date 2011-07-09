@@ -1,5 +1,15 @@
-bigwig is a web interface to a running erlang system.
+A suite of web-based tools for the Erlang VM.
 
-you get stats on the state of the VM, releases, apps etc
 
-Also, a web-based report-browser, etop, appmon etc etc
+Tools that we aim to offer sexy, web-based versions of include:
+
+* "etop"
+* "rb"
+* "appmon"
+
+Also included is a VM dashboard with release_handler details, loaded 
+applications, and VM settings.
+
+
+Conceived for Spawnfest 2011, SMELLS LIKE BEAM SPIRIT.
+
