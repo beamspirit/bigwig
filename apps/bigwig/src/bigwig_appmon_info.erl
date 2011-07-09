@@ -11,7 +11,8 @@
 
 -record(state, {
           client :: pid(),
-          tref :: reference()
+          stref :: reference(),
+          atref :: reference()
          }).
 
 -record(db, {q, p, links, links2}).
@@ -29,7 +30,7 @@ stop(Name) ->
     gen_server:cast(Name, stop).
 
 init([Client]) ->
-    {ok, statistics_timer(#state{client = Client})}.
+    {ok, timers(#state{client = Client})}.
 
 handle_cast(stop, State) ->
     {stop, normal, State};
@@ -39,8 +40,13 @@ handle_cast(_Msg, State) ->
 handle_call(_Msg, _From, State) ->
     {reply, badarg, State}.
 
+handle_info({timeout, Ref, apps},
+            #state{client = Pid, atref = Ref} = State) ->
+    {ok, L} = node_apps(),
+    Pid ! {node_apps, L},
+    {noreply, apps_timer(State)};
 handle_info({timeout, Ref, statistics},
-            #state{client = Pid, tref = Ref} = State) ->
+            #state{client = Pid, stref = Ref} = State) ->
     L = [{context_switches, statistics(context_switches)},
          {garbage_collection, statistics(garbage_collection)},
          {io, statistics(io)},
@@ -59,12 +65,24 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-statistics_timer(#state{tref = Ref} = S) ->
+-define(TIMERS, [fun statistics_timer/1, fun apps_timer/1]).
+
+timers(State) ->
+    lists:foldl(fun(F, S) -> F(S) end, State, ?TIMERS).
+
+statistics_timer(#state{stref = Ref} = S) ->
     case Ref of
         undefined -> ok;
         _ -> erlang:cancel_timer(Ref)
     end,
-    S#state{tref = erlang:start_timer(1000, self(), statistics)}.
+    S#state{stref = erlang:start_timer(1000, self(), statistics)}.
+
+apps_timer(#state{atref = Ref} = S) ->
+    case Ref of
+        undefined -> ok;
+        _ -> erlang:cancel_timer(Ref)
+    end,
+    S#state{atref = erlang:start_timer(1000, self(), apps)}.
 
 node_apps() ->
     {ok, lists:zf(
