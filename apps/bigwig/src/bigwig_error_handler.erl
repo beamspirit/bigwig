@@ -27,8 +27,9 @@ register_client(Pid) ->
 init([]) -> {ok, #state{}}.
 
 handle_event(Event, State) ->
-    io:format("EVENT(to ~p) ~p\n", [length(State#state.listeners), Event]),
-    lists:foreach(fun(Pid) -> Pid ! Event end, State#state.listeners),
+    %%io:format("EVENT(to ~p) ~p\n", [length(State#state.listeners), Event]),
+    Msg = {?MODULE, Event},
+    lists:foreach(fun(Pid) -> Pid ! Msg end, State#state.listeners),
     {ok, State}.
 
 handle_call({register_client, Pid}, State) ->
