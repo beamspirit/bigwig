@@ -1,4 +1,4 @@
-.*
-*~
-*.beam
-*.dump
+apps/*/ebin/*.beam
+apps/*/ebin/*.app
+deps/
+*.swp

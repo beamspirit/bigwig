@@ -25,6 +25,8 @@ dispatch_rules() ->
         
             {[<<"">>],                  bigwig_http_index, []}
 
+        ,   {[<<"static">>, '...'],     bigwig_http_static, []}
+        ,   {[<<"wh">>, '...'],         bigwig_http_wh, []}
         ,   {[<<"vm">>],                bigwig_http_vm, []}
         ,   {[<<"rb">>, '...'],         bigwig_http_rb, []}
 
