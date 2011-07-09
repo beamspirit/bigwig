@@ -40,7 +40,7 @@ handle_call({register_client, Pid}, State) ->
 handle_call(_Msg, State)   -> {ok, not_implemented, State}.
 
 handle_info({'DOWN', _MonitorRef, process, Pid, _Reason}, State) ->
-    NewListeners = lists:remove(Pid, State#state.listeners),
+    NewListeners = lists:delete(Pid, State#state.listeners),
     {ok, ok, State#state{ listeners=NewListeners }};
 
 handle_info(_Info, State)  -> {ok, State}.
