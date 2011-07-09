@@ -351,5 +351,10 @@ pid_info({P}) ->
                 end;
             _ -> []
         end,
-    {true, {list_to_binary(pid_to_list(P)), L ++ L1 ++ L2}};
+    L3 =
+        case process_info(P, message_queue_len) of
+            {message_queue_len, QLen} -> [{q, QLen}];
+            _ -> []
+        end,
+    {true, {list_to_binary(pid_to_list(P)), L ++ L1 ++ L2 ++ L3}};
 pid_info(_) -> false.
