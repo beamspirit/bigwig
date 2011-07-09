@@ -19,23 +19,26 @@ start_link() ->
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
 
-init([]) ->
-
+dispatch_rules() ->
     %% {Host, list({Path, Handler, Opts})}
-    Dispatch = [
-            {'_', [{[<<"">>],               bigwig_http_index, []}]}
+    [{'_', [
+        
+            {[<<"">>],                  bigwig_http_index, []}
 
-        ,   {'_', [{[<<"vm">>],             bigwig_http_vm, []}]}
-        ,   {'_', [{[<<"rb">>, '...'],      bigwig_http_rb, []}]}
-    ],
+        ,   {[<<"vm">>],                bigwig_http_vm, []}
+        ,   {[<<"rb">>, '...'],         bigwig_http_rb, []}
 
+        ,   {'_',                       bigwig_http_catchall, []}
+    ]}].
+
+init([]) ->
     Port = 8080,
     error_logger:info_msg("Starting http server on port ~p", [Port]),
-
+    %%
     %% Name, NbAcceptors, Transport, TransOpts, Protocol, ProtoOpts
     cowboy:start_listener(http, 100,
         cowboy_tcp_transport, [{port, Port}],
-        cowboy_http_protocol, [{dispatch, Dispatch}]
+        cowboy_http_protocol, [{dispatch, dispatch_rules()}]
     ),
 
     {ok, #state{}}.
