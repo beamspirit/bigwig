@@ -16,6 +16,9 @@
 
 -record(db, {q, p, links, links2}).
 
+-define(IGNORE_APPS, [application_controller, init, error_logger, gs,
+                      node_serv, appmon, appmon_a, appmon_info]).
+
 start_link(Node, Client) ->
     rpc:call(Node, ?MODULE, start_link_1, [Client]).
 
@@ -96,7 +99,7 @@ calc_app_tree(Name, Mode) ->
             ets:delete(DB#db.links2),
             R;
         _ ->
-            {ok, {[], [], [], []}}
+            {ok, [{}]}
     end.
 
 pn(Pid) when is_pid(Pid) -> list_to_binary(pid_to_list(Pid));
@@ -328,8 +331,7 @@ find_avoid() ->
                                [P|Accu];
                            _ -> Accu end end,
                 [undefined],
-                [application_controller, init, error_logger, gs,
-                 node_serv, appmon, appmon_a, appmon_info]).
+                ?IGNORE_APPS).
 
 pid_info({P}) ->
     L =
