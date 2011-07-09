@@ -31,6 +31,9 @@ websocket_init(_TransportName, Req, _Opts) ->
   %erlang:start_timer(1000, self(), B),
   {ok, Req, undefined_state}.
 
+websocket_handle(Bin, Req, State) when is_binary(Bin) ->
+  {reply, Bin, Req, State};
+
 websocket_handle({timeout, _Ref, Msg}, Req, State) ->
   {reply, Msg, Req, State};
 
@@ -48,7 +51,7 @@ send(T) when not is_binary(T) ->
   send(jsx:term_to_json(T));
 
 send(Bin) ->
-  erlang:start_timer(0, self(), Bin).
+  self() ! Bin.
 
 apps() ->
   {app, [
