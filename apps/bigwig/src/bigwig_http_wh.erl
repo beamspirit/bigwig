@@ -28,8 +28,11 @@ websocket_init(_TransportName, Req, _Opts) ->
 websocket_handle({timeout, _Ref, Msg}, Req, State) ->
   {reply, Msg, Req, State};
 
-websocket_handle({websocket, Msg}, Req, State) ->
-  Term = jsx:json_to_term(Msg),
+websocket_handle({websocket, _Msg}, Req, State) ->
+  %Term = jsx:json_to_term(Msg),
+  Term = [{bigwig, [
+      {more, <<"WOOP">>}
+    ]}],
   {reply, jsx:term_to_json(Term), Req, State}.
 
 websocket_terminate(_Reason, _Req, _State) ->
@@ -46,8 +49,8 @@ apps() ->
       [
         {id, App},
         {name, App},
-        {description, list_to_binary(Desc)},
-        {version, list_to_binary(Vsn)}
+        {description, Desc},
+        {version, Vsn}
       ]
       || {App, Desc, Vsn} <- application:which_applications()
     ]}.

@@ -1,6 +1,6 @@
 
 
-tpl = (function() {
+TPL = (function() {
   var title = function(title) {
     $('#title').text(title);  
   }
@@ -20,6 +20,15 @@ tpl = (function() {
       return false;
     }
   }
+  var updateChildren = function(el, data) {
+    for(var k in data) {
+      el.data(k, data[k]);
+      var child = $("."+k, el);
+      if(child) {
+        $("."+k, el).text(data[k]);
+      }
+    }
+  }
   var li = function(type, p, data) {
     var id = data.id;
     var li = $('li[data-id='+id+']', p);
@@ -28,6 +37,8 @@ tpl = (function() {
       li.attr('data-id', id);
       li.removeClass('_tpl');
       p.append(li);
+    } else {
+      li = li.first();
     }
     var permalink = $('.permalink', li);
     if(permalink) {
@@ -36,29 +47,29 @@ tpl = (function() {
       permalink.attr('href', href);
       permalink.bind('click', href_click(uniq));
     }
-    for(var k in data) {
-      li.data(k, data[k]);
-      var child = $("."+k, li);
-      if(child) {
-        $("."+k, li).text(data[k]);
-      }
-    }
+    updateChildren(li, data);
   } 
   var update = function(k, data) {
     var el = $('#'+k);
+    if(el.length==0) {
+      el = $('*[data-id='+k+']').first();
+    }
     var jt = typeof data;
     if(jt == "string") {
       el.text(data);
     } else if(jt == "object") {
-      for(var i=0; i<data.length; i++) {
-        li(k, el, data[i]);
+      if(data[0]) {
+        for(var i=0; i<data.length; i++) {
+          li(k, el, data[i]);
+        }
+      } else {
+        updateChildren(el, data);
       }
     }
   }
   sock.onmessage = function(msg) {
     var json = $.parseJSON(msg.data);
     console.log(json);
-    title(json.title);
     for(var k in json) {
       update(k, json[k]);
     }
