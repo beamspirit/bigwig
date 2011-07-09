@@ -16,8 +16,8 @@ tpl = (function() {
     }
     li.text(id);
   } 
-
-  var sock = new WebSocket("ws://10.100.1.188:8080/wh");
+  var host = document.location.host;
+  var sock = new WebSocket("ws://"+host+"/wh/ws");
   sock.onopen = function() {
 
   }
