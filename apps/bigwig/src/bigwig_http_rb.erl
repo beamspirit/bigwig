@@ -15,11 +15,32 @@ handle(Req, State) ->
     handle_path(Path, Req2, State).
 
 %% /rb/reports
-handle_path([<<"rb">>, <<"reports">>], Req, State) ->
-    Body = jsx:term_to_json(list_reports()),
+handle_path([<<"rb">>, <<"reports">>], Req0, State) ->
+    %% A version of qs_val that url-decodes values (ie no %20 etc)
+    Qsval = fun(K,R) -> case cowboy_http_req:qs_val(K, R) of
+                            {undefined, R2} -> {undefined, R2};
+                            {ValEnc, R2}    -> {list_to_binary(bigwig_util:url_decode(ValEnc)), R2}
+                        end
+            end,
+    %% Create a rb filter based on query params
+    {Opts1,Req1} = case Qsval(<<"type">>, Req0) of
+                    {undefined, R1} -> {[], R1};
+                    {TypeBin, R1}   -> {[{type, list_to_atom(binary_to_list(TypeBin))}], R1}
+                   end,
+    {Opts2,Req2} = case Qsval(<<"startdate">>, Req1) of
+                    {undefined, R2} -> {Opts1, R2};
+                    {SD, R2}        -> {[{startdate, binary_to_list(SD)}|Opts1], R2}
+                   end,
+    {Opts3,Req3} = case Qsval(<<"enddate">>, Req2) of
+                    {undefined, R3} -> {Opts2, R3};
+                    {ED, R3}        -> {[{enddate, binary_to_list(ED)}|Opts2], R3}
+                   end,
+    ReportFilter = rb2:make_filter(Opts3),
+    
+    Body = jsx:term_to_json(list_reports(ReportFilter)),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
-    {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
-    {ok, Req2, State};
+    {ok, Req4} = cowboy_http_req:reply(200, Headers, Body, Req3),
+    {ok, Req4, State};
 
 %% /rb/reports/123
 handle_path([<<"rb">>, <<"reports">>, IdBin], Req, State) ->
@@ -43,7 +64,11 @@ report_to_json({_, {ok, Date0, Report, ReportStr}}) ->
     jsx:term_to_json([{date, Date}, {report, Report}, {report_str, ReportStr}]).
 
 
-list_reports() ->
+list_reports(Filter)  -> 
+    Reports = rb2:load_list(Filter),
+    format_reports(Reports).
+
+format_reports(Reports) ->
     lists:map( fun({Id,Type,Pid,Date}) ->
                 {list_to_binary(integer_to_list(Id)),
                  [ {uri,  list_to_binary(io_lib:format("/rb/reports/~B", [Id]))},
@@ -51,5 +76,6 @@ list_reports() ->
                    {pid,  list_to_binary(Pid)},
                    {date, list_to_binary(Date)} ]}
                end, 
-               rb2:load_list()
-              ).
+               Reports).
+
+
