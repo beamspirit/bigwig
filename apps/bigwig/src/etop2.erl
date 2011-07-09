@@ -292,7 +292,7 @@ update_json(Info, #opts{node=Node}) ->
          {<<"ets">>, Ets}]
     end,
   Ps = [etop_proc_info_to_json(P) || P <- Info#etop_info.procinfo],
-  [Header, Ps].
+  {[{<<"header">>, Header}, {<<"procs">>, Ps}]}.
 
 name(Name) when is_atom(Name) -> Name;
 name({M,F,A}) -> [M, F, A].
