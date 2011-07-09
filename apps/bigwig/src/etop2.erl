@@ -60,7 +60,7 @@
 %%                          same as the cookie for the measured node.
 %%                          This is not an etop parameter
 
-terminate(_Reason, State#opts{tracing=on}) ->
+terminate(_Reason, State=#opts{tracing=on}) ->
   etop_tr:stop_tracer(State);
 terminate(_Reason, _) ->
   ok.
@@ -188,9 +188,8 @@ get_tag(msg_q) -> #etop_proc_info.mq.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Configuration Management
 
-putopt(Key, Value, Config) when is_record(Config, opts) ->
-  Config1 = handle_args([{Key,Value}],Config),
-  Config1.
+putopt(Key, Value, #opts{} = Config) ->
+  handle_args([{Key, Value}], Config).
 
 handle_args([{node, [NodeString]}| R], Config) when is_list(NodeString) ->
   Node = list_to_atom(NodeString),
