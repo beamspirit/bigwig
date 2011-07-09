@@ -9,12 +9,20 @@
 
 -compile(export_all).
 
-init({tcp, http}, Req, _Opts) ->
-  {ok, Req, undefined_state}.
+init({tcp, http}, Req, []) ->
+  {ok, Req, undefined_state};
+init({tcp, http}, Req, OnlyFile) ->
+  {ok, Req, OnlyFile}.
 
-handle(Req, State) ->
-  Headers = [{<<"Content-Type">>, <<"text/html">>}],
+handle(Req, undefined_state = State) ->
   {[_|Path], _} = cowboy_http_req:path(Req), % strip <<"static">>
+  send(Req, Path, State);
+
+handle(Req, OnlyFile = State) ->
+  send(Req, OnlyFile, State).
+
+send(Req, Path, State) ->
+  Headers = [{<<"Content-Type">>, <<"text/html">>}],
   {ok, Body} = file(filename:join(Path)),
   {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
   {ok, Req2, State}.

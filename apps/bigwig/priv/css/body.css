@@ -1,0 +1,15 @@
+body {
+  font-family: Consolas, "Droid Sans Mono", Monaco, Courier, monospace;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+._tpl {
+  display: none;
+  visibility: none;
+}
+
+#apps .name {
+}
+#apps .description {
+  color: #888;
+}
