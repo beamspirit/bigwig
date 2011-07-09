@@ -8,13 +8,18 @@
 -behaviour(gen_server).
 
 -export([start_link/1, start/0, start/1, stop/0, rescan/0, rescan/1]).
--export([load_number/1, load_list/0, load_list/1]).
+-export([load_number/1, load_list/0, load_list/1, make_filter/1]).
 
 %% gen_server callbacks
 -export([init/1, terminate/2, handle_call/3,
 	 handle_cast/2, handle_info/2, code_change/3]).
 
--record(state, {dir, data, device, max, type, abort, log}).
+-record(state,  {dir, data, device, max, type, abort, log}).
+
+-record(filter, {type=all, 
+                 startdate="",
+                 enddate="9999-99-99 99:99:99"
+             }).
 
 %%-----------------------------------------------------------------
 start() -> start([]).
@@ -34,18 +39,31 @@ rescan(Options) ->
     call({rescan, Options}).
 
 
-load_list() -> load_list(all).
+load_list() -> load_list(#filter{}).
 
-load_list(Type) -> call({load_list, Type}).
+load_list(F = #filter{}) -> call({load_list, F}).
 
 %% Load a report by its number
 load_number(Number) when is_integer(Number) -> 
     call({load_number, Number}).
 
+make_filter(Props) ->
+    build_filter(#filter{}, Props).
+
 %%-----------------------------------------------------------------
 
 call(Req) ->
     gen_server:call(rb2_server, Req, infinity).
+
+build_filter(F, []) -> F;
+build_filter(F, [{type, T}|Rest]) when is_atom(T) ->
+    build_filter(F#filter{type=T}, Rest);
+build_filter(F, [{startdate, D}|Rest]) when is_list(D) ->
+    build_filter(F#filter{startdate=D}, Rest);
+build_filter(F, [{enddate, D}|Rest]) when is_list(D) ->
+    build_filter(F#filter{enddate=D}, Rest);
+build_filter(_F, [Err]) ->
+    throw({invalid_rb2_filter_param, Err}).
 
 %%-----------------------------------------------------------------
 
@@ -82,11 +100,16 @@ handle_call({rescan, Options}, _From, State) ->
 handle_call(_, _From, #state{data = undefined}) ->
     {reply, {error, no_data}, #state{}};
 
-handle_call({load_list, WantedType}, _From, State) ->
+handle_call({load_list, #filter{type=FType, 
+                                startdate=FStartDate, 
+                                enddate=FEndDate}}, _From, State) ->
     Reports = [ {No, RealType, ShortDesc, Date} 
                 || {No, RealType, ShortDesc, Date, _Fname, _FilePos} 
                 <- State#state.data, 
-                   WantedType == all orelse RealType == WantedType ],
+                   (FType == all orelse RealType == FType) andalso
+                   Date >= FStartDate andalso
+                   Date =< FEndDate 
+               ],
     {reply, Reports, State};
 
 handle_call({load_number, Number}, _From, State) ->
