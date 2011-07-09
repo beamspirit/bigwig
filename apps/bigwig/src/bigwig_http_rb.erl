@@ -24,7 +24,7 @@ handle_path([<<"rb">>, <<"reports">>], Req, State) ->
 %% /rb/reports/123
 handle_path([<<"rb">>, <<"reports">>, IdBin], Req, State) ->
     Id = list_to_integer(binary_to_list(IdBin)),
-    Report = rb2:load_number(Id),
+    Rep = rb2:load_number(Id),
     %% TODO convert this to JSON:
     %%  {ok,"2011-07-09 11:42:37",
     %%      [{report_level,info_report},
@@ -40,7 +40,10 @@ handle_path([<<"rb">>, <<"reports">>, IdBin], Req, State) ->
     %%                        {shutdown,brutal_kill},
     %%                        {child_type,worker}]}]}]}
     %% 
-    Body = io_lib:format("~p",[Report]),
+    
+    %% TODO Report is the term that needs JSONifying
+    %% {ok, Date, Report, ReportStr} = Report,
+    Body = io_lib:format("~p",[Rep]),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
     {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
     {ok, Req2, State};
