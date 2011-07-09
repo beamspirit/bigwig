@@ -1,6 +1,6 @@
 {application, bigwig,
  [
-  {description, "web-based suite of tools for interrogating and erlang system"},
+  {description, "web-based suite of tools for interrogating an erlang system"},
   {vsn, "0.1"},
   {registered, []},
   {applications, [
