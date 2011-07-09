@@ -1,14 +1,15 @@
 
 
-TPL = (function() {
+var TPL = (function() {
   var title = function(title) {
     $('#title').text(title);  
   }
   title("Loading...");  
 
   var host = document.location.host;
-  var sock = new WebSocket("ws://"+host+"/wh/ws");
-  sock.onopen = function() {
+  var sock = null;
+  
+  var onopen = function() {
   }
   var visit = function(href) {
     sock.send(JSON.stringify({visit:href}));
@@ -67,17 +68,23 @@ TPL = (function() {
       }
     }
   }
-  sock.onmessage = function(msg) {
+  var onmessage = function(msg) {
     var json = $.parseJSON(msg.data);
     console.log(json);
     for(var k in json) {
       update(k, json[k]);
     }
   }
-  sock.onclose = function() {
+  var onclose = function() {
 
   }
   return {
-    visit: visit
+    visit: visit,
+    connect: function(to) {
+      sock = new WebSocket("ws://"+host+to);
+      sock.onopen = onopen
+      sock.onmessage = onmessage
+      sock.onclose = onclose
+    }
   }
 })();

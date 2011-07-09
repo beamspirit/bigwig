@@ -23,6 +23,12 @@ websocket_init(_TransportName, Req, _Opts) ->
       {title, <<"What's Happening">>},
       apps()
     ]),
+  %B = jsx:term_to_json([
+  %    {app, [
+  %        [{id, myapp},{name,"My Application"}, {description,"Description"}, {version,"Version"}]
+  %      ]}
+  %  ]),
+  %erlang:start_timer(1000, self(), B),
   {ok, Req, undefined_state}.
 
 websocket_handle({timeout, _Ref, Msg}, Req, State) ->
