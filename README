@@ -19,6 +19,7 @@ Conceived for Spawnfest 2011, SMELLS LIKE BEAM SPIRIT.
 
 /rb/reports        lists available SASL reports
 /rb/reports/1      returns SASL report id 1
+/rb/stream         websocket endpoint for streaming new SASL reports as JSON
 
 /pid/<1.2.3>       process_info (POST to send msg to pid)
 /pid/NAME          as above, but using registered process name NAME
