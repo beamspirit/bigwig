@@ -51,8 +51,9 @@ post_pid_response(Pid, Req, State) ->
             {<<"msg">>, TermStr} ->
                 case catch(bigwig_util:parse_term(TermStr)) of
                     {ok, Term} ->
-                        Pid ! Term,
-                        cowboy_http_req:reply(202, [], <<>>, Req1);
+                        Body = io_lib:format("~p", [Pid ! Term]),
+                        Headers = [{<<"Content-Type">>, <<"application/x-erlang-term">>}],
+                        cowboy_http_req:reply(202, Headers, Body, Req1);
                     _ ->
                         cowboy_http_req:reply(400, [], <<"badarg">>, Req1)
                 end;
