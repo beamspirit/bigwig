@@ -13,3 +13,13 @@ applications, and VM settings.
 
 Conceived for Spawnfest 2011, SMELLS LIKE BEAM SPIRIT.
 
+===========
+
+/vm             lists running apps, releases, process count etc
+
+/rb/reports     lists available SASL reports
+/rb/reports/1   returns SASL report id 1
+
+/pid/<1.2.3>    process_info (POST to send msg to pid)
+/module/NAME    NAME:module_info() stuff
+
