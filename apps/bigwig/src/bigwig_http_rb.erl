@@ -35,12 +35,21 @@ handle_path([<<"rb">>, <<"reports">>], Req0, State) ->
                     {undefined, R3} -> {Opts2, R3};
                     {ED, R3}        -> {[{enddate, binary_to_list(ED)}|Opts2], R3}
                    end,
-    ReportFilter = rb2:make_filter(Opts3),
+    {Opts4,Req4} = case Qsval(<<"limit">>, Req3) of
+                    {undefined, R4} -> {Opts3, R4};
+                    {IntStr, R4}    -> {[{limit, list_to_integer(binary_to_list(IntStr))}|Opts3], R4}
+                   end,
+    {Opts5,Req5} = case Qsval(<<"level">>, Req4) of
+                    {undefined, R5} -> {[], R5};
+                    {LevelBin, R5}   -> {[{level, list_to_atom(binary_to_list(LevelBin))}|Opts4], R5}
+                   end,
+
+    ReportFilter = rb2:make_filter(Opts5),
     
     Body = jsx:term_to_json(list_reports(ReportFilter)),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
-    {ok, Req4} = cowboy_http_req:reply(200, Headers, Body, Req3),
-    {ok, Req4, State};
+    {ok, Req6} = cowboy_http_req:reply(200, Headers, Body, Req5),
+    {ok, Req6, State};
 
 %% /rb/reports/123
 handle_path([<<"rb">>, <<"reports">>, IdBin], Req, State) ->
@@ -69,13 +78,13 @@ list_reports(Filter)  ->
     format_reports(Reports).
 
 format_reports(Reports) ->
-    lists:map( fun({Id,Type,Pid,Date}) ->
-                {list_to_binary(integer_to_list(Id)),
-                 [ {uri,  list_to_binary(io_lib:format("/rb/reports/~B", [Id]))},
-                   {type, list_to_binary(atom_to_list(Type))},
-                   {pid,  list_to_binary(Pid)},
-                   {date, list_to_binary(Date)} ]}
-               end, 
-               Reports).
+    [ [    {hash, list_to_binary(Hash)},
+           {type, list_to_binary(atom_to_list(Type))},
+           {pid,  list_to_binary(Pid)},
+           {date, list_to_binary(Date)},
+           {report, Rep},
+           {report_str, Str}
+        ]
+        || {Hash,Type,Pid,Date,Rep,Str} <- Reports ].
 
 
