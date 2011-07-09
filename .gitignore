@@ -3,3 +3,4 @@ apps/*/ebin/*.app
 deps/
 *.swp
 log/
+*~
