@@ -5,6 +5,13 @@
   </head>
   <body>
     <h1 id="title">Reports</h1>
+      <a class="filter current" href="/rb" data-filter="">all</a>
+       /
+      <a class="filter" href="/rb?type=error" data-filter="error,error_report">error</a>
+       /
+      <a class="filter" href="/rb?type=warning" data-filter="warning,warning_msg,warning_report">warning</a>
+       /
+      <a class="filter" href="/rb?type=info" data-filter="info,info_msg,info_report">info</a>
     <ul id="report" class="section" data-sort="desc">
       <li class="report _tpl">
         <span class="report_level"></span>
@@ -19,6 +26,18 @@
     <script type="text/javascript" src="/static/js/tpl.js"></script>
     <script type="text/javascript">
       TPL.connect("/rb/stream");
+      $('.filter').click(function() {
+        var filter = $(this).attr('data-filter');
+        var current = $('#report').attr('data-filter');
+        if(filter != current) {
+          $('.filter').removeClass('current');
+          $(this).addClass('current');
+          TPL.clear($('#report'));
+          $('#report').attr('data-filter', filter);
+          $('#report').attr('data-filter-by', 'report_level');
+        }
+        return false;
+      });
     </script>
   </body>
 </html>

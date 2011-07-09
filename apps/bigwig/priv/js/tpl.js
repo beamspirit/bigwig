@@ -87,6 +87,22 @@ var TPL = (function() {
     updateChildren(li, data);
   } 
 
+  var filterFun = function(el) {
+    var filter = el.attr('data-filter');
+    var filterBy = el.attr('data-filter-by');
+    if(filter) {
+      var filters = filter.split(',');
+      return function(data, f) {
+        for(var i in filters) {
+          if(data[filterBy] == filters[i]) {
+            f();
+          }
+        }
+      }
+    }
+    return function(data, f) { f(); };
+  }
+
   var update = function(k, data) {
     var el = $('#'+k);
     if(el.length==0) {
@@ -98,8 +114,12 @@ var TPL = (function() {
       el.text(data);
     } else if(jt == "object") {
       if(data[0]) {
+        var filter = filterFun(el);
+        console.log(filter, el);
         for(var i=0; i<data.length; i++) {
-          li(k, el, data[i]);
+          filter(data[i], function() {
+            li(k, el, data[i])
+          });
         }
       } else {
         updateChildren(el, data);
@@ -124,6 +144,14 @@ var TPL = (function() {
       sock.onopen = onopen
       sock.onmessage = onmessage
       sock.onclose = onclose
+    },
+    clear: function(el) {
+      el.children().each(function(i) {
+        var child = $(this);
+        if(!child.hasClass('_tpl')) {
+          child.remove();
+        }
+      });
     }
   }
 })();
