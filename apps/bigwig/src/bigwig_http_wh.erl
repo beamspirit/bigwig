@@ -19,29 +19,35 @@ terminate(_Req, _State) ->
   error(websockets_only).
 
 websocket_init(_TransportName, Req, _Opts) ->
-  send({struct, [
-        {title, <<"So Peter... What's Happening?">>},
-        apps()
-      ]}),
+  send([
+      {title, <<"What's Happening">>},
+      apps()
+    ]),
   {ok, Req, undefined_state}.
 
 websocket_handle({timeout, _Ref, Msg}, Req, State) ->
   {reply, Msg, Req, State};
 
 websocket_handle({websocket, Msg}, Req, State) ->
-  {reply, <<"Hello ", Msg/binary>>, Req, State}.
+  Term = jsx:json_to_term(Msg),
+  {reply, jsx:term_to_json(Term), Req, State}.
 
 websocket_terminate(_Reason, _Req, _State) ->
   ok.
 
-send(T) when is_tuple(T) ->
-  send(iolist_to_binary(mochijson2:encode(T)));
+send(T) when not is_binary(T) ->
+  send(jsx:term_to_json(T));
 
 send(Bin) ->
   erlang:start_timer(0, self(), Bin).
 
 apps() ->
-  {apps, [
-      {struct, [{id, App}]}
-      || {App, _Desc, _Vsn} <- application:which_applications()
+  {app, [
+      [
+        {id, App},
+        {name, App},
+        {description, list_to_binary(Desc)},
+        {version, list_to_binary(Vsn)}
+      ]
+      || {App, Desc, Vsn} <- application:which_applications()
     ]}.

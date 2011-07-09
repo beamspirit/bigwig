@@ -7,3 +7,9 @@ body {
   display: none;
   visibility: none;
 }
+
+#apps .name {
+}
+#apps .description {
+  color: #888;
+}
