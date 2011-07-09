@@ -22,7 +22,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0, start_link/1, update/0]).
+-export([start_link/0, start_link/1, update/0, node/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3, terminate/2]).
@@ -37,9 +37,10 @@
 
 -define(SERVER, etop2_server).
 
-%% Usage of the erlang top program
-%% Options are set as command line parameters as in -node a@host -..
-%% or as parameter to etop:start([{node, a@host}, {...}])
+-define(ACCUM_TAB, accum_tab).
+
+%% Options are set as parameters to etop2:start_link([{node, a@host}, {...}])
+%%
 %% Options are:
 %%   node        atom       Required   The erlang node to measure
 %%   port        integer    The used port, NOTE: due to a bug this program
@@ -60,60 +61,27 @@
 %%                          same as the cookie for the measured node.
 %%                          This is not an etop parameter
 
-terminate(_Reason, State=#opts{tracing=on}) ->
-  etop_tr:stop_tracer(State);
-terminate(_Reason, _) ->
-  ok.
-
 start_link() ->
   gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 start_link(Opts) ->
   gen_server:start_link({local, ?SERVER}, ?MODULE, [Opts], []).
 
-handle_cast(_Msg, State) ->
-    {stop, unhandled_cast, State}.
-handle_info(_Info, State) ->
-    {stop, unhandled_info, State}.
-code_change(_OldVsn, State, _Extra) ->
-    {ok, State}.
-
-init(Opts) ->
-  Config1 = #opts{node=Node} = handle_args(Opts, #opts{}),
-
-  %% Connect to the node we want to look at
-  %% TODO: Move the connect elsewhere so we can switch nodes
-  case connect(Node) of
-    ok  ->
-      %% Maybe set up the tracing
-      Config2 = setup_tracing(Config1),
-
-      AccumTab = ets:new(accum_tab,
-                         [set,public,{keypos,#etop_proc_info.pid}]),
-      Config3 = Config2#opts{accum_tab=AccumTab},
-
-      {ok, Config3};
-    Err ->
-      Err
-  end.
-
-check_runtime_tools_vsn(Node) ->
-  case rpc:call(Node,observer_backend,vsn,[]) of
-    {ok, Vsn} -> check_vsn(Vsn);
-    _ -> {error, "faulty version of runtime_tools on remote node"}
-  end.
-check_vsn(_Vsn) -> ok.
-
-%% Handle the incoming data
-
 update() ->
   gen_server:call(?SERVER, update).
 
-check_runtime_config(lines,L) when is_integer(L),L>0 -> ok;
-check_runtime_config(sort,S)
-  when S=:=runtime; S=:=reductions; S=:=memory; S=:=msg_q -> ok;
-check_runtime_config(accumulate,A) when A=:=true; A=:=false -> ok;
-check_runtime_config(_Key,_Value) -> error.
+node(Node) ->
+  gen_server:call(?SERVER, {node, Node}).
+
+init(Opts) ->
+  Config1 = handle_args(Opts, #opts{}),
+  AccumTab = ets:new(?ACCUM_TAB, [set,public,{keypos,#etop_proc_info.pid}]),
+  Config2 = Config1#opts{accum_tab=AccumTab},
+  Res = connect(Config2),
+  Res.
+
+handle_cast(_Msg, State) ->
+  {stop, unhandled_cast, State}.
 
 handle_call(update, _From, State) ->
   Info = update(State),
@@ -126,7 +94,38 @@ handle_call({config, Key, Value}, _From, State) ->
     _ ->
       State2 = putopt(Key, Value, State),
       {reply, ok, State2}
+  end;
+handle_call({node, Node}, _From, State=#opts{node=Node}) ->
+  {reply, ok, State};
+handle_call({node, Node}, _From, State) ->
+  State2 = stop_tracing(State),
+  clear_ets(State2),
+  case connect(State2#opts{node=Node}) of
+    {ok, State3} ->
+      {reply, ok, State3};
+    {error, Error} ->
+      {stop, Error, State2}
   end.
+
+handle_info(_Info, State) ->
+  {stop, unhandled_info, State}.
+
+code_change(_OldVsn, State, _Extra) ->
+  {ok, State}.
+
+terminate(_Reason, State=#opts{tracing=on}) ->
+  etop_tr:stop_tracer(State);
+terminate(_Reason, _) ->
+  ok.
+
+%% Internal functions
+
+check_runtime_tools_vsn(Node) ->
+  case rpc:call(Node,observer_backend,vsn,[]) of
+    {ok, Vsn} -> check_vsn(Vsn);
+    _ -> {error, "faulty version of runtime_tools on remote node"}
+  end.
+check_vsn(_Vsn) -> ok.
 
 update(#opts{store=Store,node=Node,tracing=Tracing}=Opts) ->
   Pid = spawn_link(Node,observer_backend,etop_collect,[self()]),
@@ -183,7 +182,6 @@ get_tag(runtime) -> #etop_proc_info.runtime;
 get_tag(memory) -> #etop_proc_info.mem;
 get_tag(reductions) -> #etop_proc_info.reds;
 get_tag(msg_q) -> #etop_proc_info.mq.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Configuration Management
@@ -255,21 +253,22 @@ get_mem(Tag, MemI) ->
     _ -> 0
   end.
 
-update_json(Info, Config) ->
-  {Cpu,NProcs,RQ,Clock} = loadinfo(Info),
+update_json(Info, #opts{node=Node}) ->
+  {Cpu,NProcs,RQ,Clock0} = loadinfo(Info),
+  Clock = iolist_to_binary(Clock0),
   Header =
     case Info#etop_info.memi of
       undefined ->
-        [{<<"node">>, Config#opts.node},
-         {<<"clock">>, iolist_to_binary(Clock)},
+        [{<<"node">>, Node},
+         {<<"clock">>, Clock},
          {<<"cpu">>, Cpu},
          {<<"nprocs">>, NProcs},
          {<<"runqueue">>, RQ}];
       Memi ->
         [Tot,Procs,Atom,Bin,Code,Ets] =
           etop2:meminfo(Memi, [total,processes,atom,binary,code,ets]),
-        [{<<"node">>, Config#opts.node},
-         {<<"clock">>, iolist_to_binary(Clock)},
+        [{<<"node">>, Node},
+         {<<"clock">>, Clock},
          {<<"cpu">>, Cpu},
          {<<"tot">>, Tot},
          {<<"bin">>, Bin},
@@ -284,11 +283,8 @@ update_json(Info, Config) ->
   [{<<"header">>, Header},
    {<<"procs">>, Ps}].
 
-formatmfa({M, F, A}) ->
-  io_lib:format("~w:~w/~w",[M, F, A]).
-
-to_list(Name) when is_atom(Name) -> atom_to_list(Name);
-to_list({_M,_F,_A}=MFA) -> formatmfa(MFA).
+name(Name) when is_atom(Name) -> Name;
+name({M,F,A}) -> [M, F, A].
 
 etop_proc_info_to_json(
   #etop_proc_info{pid=Pid,
@@ -300,22 +296,28 @@ etop_proc_info_to_json(
                   mq=MQ}) ->
   PInfo =
     [{<<"pid">>, Pid},
-     {<<"name">>, to_list(Name)},
+     {<<"name">>, name(Name)},
      {<<"time">>, Time},
      {<<"reds">>, Reds},
      {<<"mem">>, Mem},
      {<<"mq">>, MQ},
-     {<<"mfa">>, formatmfa(MFA)}],
+     {<<"mfa">>, name(MFA)}],
   {<<"pinfo">>, PInfo}.
 
-connect(Node) ->
+%% Connect to a node and potentially set up tracing
+-spec connect(#opts{}) -> {ok, #opts{}} | {error, any()}.
+connect(State=#opts{node=Node}) ->
   case net_adm:ping(Node) of
     pang when Node /= node() ->
       {error, "node connect failed"};
     _Pong ->
-      check_runtime_tools_vsn(Node)
+      case check_runtime_tools_vsn(Node) of
+        ok             -> {ok, setup_tracing(State)};
+        {error, _} = E -> E
+      end
   end.
 
+-spec setup_tracing(#opts{}) -> #opts{}.
 setup_tracing(Config=#opts{tracing=T, sort=S, node=N}) ->
   if T =:= on, N /= node() ->
       %% Cannot trace on current node since the tracer will
@@ -328,3 +330,19 @@ setup_tracing(Config=#opts{tracing=T, sort=S, node=N}) ->
           Config#opts{tracing=off}
       end
   end.
+
+-spec stop_tracing(#opts{}) -> #opts{}.
+stop_tracing(State=#opts{tracing=on}) ->
+  etop_tr:stop_tracer(State);
+stop_tracing(State) ->
+  State.
+
+-spec clear_ets(#opts{}) -> ok | {error, any()}.
+clear_ets(#opts{accum_tab=AccumTab}) ->
+  ets:delete_all_objects(AccumTab).
+
+check_runtime_config(lines,L) when is_integer(L),L>0 -> ok;
+check_runtime_config(sort,S)
+  when S=:=runtime; S=:=reductions; S=:=memory; S=:=msg_q -> ok;
+check_runtime_config(accumulate,A) when A=:=true; A=:=false -> ok;
+check_runtime_config(_Key,_Value) -> error.
