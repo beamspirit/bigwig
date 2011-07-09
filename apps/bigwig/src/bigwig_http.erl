@@ -37,12 +37,22 @@ dispatch_rules() ->
         ,   {'_',                       bigwig_http_catchall, []}
     ]}].
 
+confval(Key, Default) ->
+    case application:get_env(Key) of
+        undefined -> Default;
+        Val       -> Val
+    end.
+
 init([]) ->
-    Port = 8080,
-    error_logger:info_msg("Starting http server on port ~p", [Port]),
+    Port            = confval(port, 8080),
+    Ip              = confval(ip, "127.0.0.1"),
+    NumAcceptors    = confval(num_acceptors, 16),
+
+    IpStr = case is_list(Ip) of true -> Ip; false -> inet_parse:ntoa(Ip) end,
+    error_logger:info_msg("Bigwig listening on http://~s:~B/~n", [IpStr,Port]),
     %%
     %% Name, NbAcceptors, Transport, TransOpts, Protocol, ProtoOpts
-    cowboy:start_listener(http, 100,
+    cowboy:start_listener(http, NumAcceptors,
         cowboy_tcp_transport, [{port, Port}],
         cowboy_http_protocol, [{dispatch, dispatch_rules()}]
     ),
