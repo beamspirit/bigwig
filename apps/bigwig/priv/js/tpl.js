@@ -53,7 +53,11 @@ var TPL = (function() {
       li = $('li._tpl',p).clone(false, false);
       li.attr('data-id', id);
       li.removeClass('_tpl');
-      p.append(li);
+      if(p.attr('data-sort')=='desc') {
+        p.prepend(li);
+      } else {
+        p.append(li);
+      }
     } else {
       li = li.first();
     }
