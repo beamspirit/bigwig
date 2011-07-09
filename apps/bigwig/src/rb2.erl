@@ -427,7 +427,13 @@ find_report([], No) ->
 
 load_rep(Fd, FilePosition, _Device, _Abort, _Log) ->
     case read_rep_msg(Fd, FilePosition) of
-	{Date, Msg} -> {ok, Date, fmt_report(Msg)};
+	{Date, Msg} -> 
+        Fn = "/tmp/rb_format.tmp", %% TODO this is horrid
+        {ok, IoDevice} = file:open(Fn, [write]),
+        rb_format_supp:print(Date, Msg, IoDevice),
+        file:close(IoDevice),
+        {ok, ReportBin} = file:read_file(Fn),
+        {ok, Date, fmt_report(Msg), ReportBin};
 	_           -> {error, "rb: Cannot read from file"}
     end.
     
