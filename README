@@ -1,0 +1,5 @@
+bigwig is a web interface to a running erlang system.
+
+you get stats on the state of the VM, releases, apps etc
+
+Also, a web-based report-browser, etop, appmon etc etc
