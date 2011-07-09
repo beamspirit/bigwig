@@ -16,7 +16,7 @@ handle(Req, State) ->
 
 %% /rb/reports
 handle_path([<<"rb">>, <<"reports">>], Req, State) ->
-    Body = mochijson2:encode(list_reports()),
+    Body = jsx:term_to_json(list_reports()),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
     {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
     {ok, Req2, State};
@@ -58,12 +58,12 @@ terminate(_Req, _State) ->
 
 
 list_reports() ->
-    {struct,
     lists:map( fun({Id,Type,Pid,Date}) ->
-                {Id, {struct, [ {uri,  list_to_binary(io_lib:format("/rb/reports/~B", [Id]))},
-                                {type, list_to_binary(atom_to_list(Type))},
-                                {pid,  list_to_binary(Pid)},
-                                {date, list_to_binary(Date)} ]}}
+                {list_to_binary(integer_to_list(Id)),
+                 [ {uri,  list_to_binary(io_lib:format("/rb/reports/~B", [Id]))},
+                   {type, list_to_binary(atom_to_list(Type))},
+                   {pid,  list_to_binary(Pid)},
+                   {date, list_to_binary(Date)} ]}
                end, 
                rb2:load_list()
-             )}.
+              ).

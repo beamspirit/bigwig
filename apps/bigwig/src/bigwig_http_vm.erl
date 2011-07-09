@@ -11,7 +11,7 @@ init({tcp, http}, Req, _Opts) ->
     {ok, Req, undefined_state}.
 
 handle(Req, State) ->
-    Body = mochijson2:encode(all()),
+    Body = jsx:term_to_json(all()),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
     {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
     {ok, Req2, State}.
@@ -21,11 +21,9 @@ terminate(_Req, _State) ->
 
 
 all() ->
-    {struct, [
-                {system_info, {struct, system_info()}},
-                {releases,    {struct, releases()}},
-                {applications,{struct, applications()}}
-             ]}.
+    [{system_info, system_info()},
+     {releases,    releases()},
+     {applications,applications()}].
 
 
 %% Funs to load data about aspects of the system, mochiJSON formatted:
@@ -36,7 +34,7 @@ system_info() ->
              (V) when is_atom(V)   -> V end,
 
     Keys = [
-            process_count, 
+            process_count,
             process_limit,
             kernel_poll,
             logical_processors,
@@ -52,12 +50,12 @@ releases() ->
     %% TODO parse out the name/version of the apps?
     FmtDeps = fun(L) -> [ list_to_binary(A) || A <- L ] end,
     [
-        {list_to_binary(Name), {struct, 
-        [
-         {version, list_to_binary(Version)},
-         {status,  list_to_binary(atom_to_list(Status))},
-         {deps,    FmtDeps(Deps)}
-        ]}}
+        {list_to_binary(Name),
+         [
+          {version, list_to_binary(Version)},
+          {status,  list_to_binary(atom_to_list(Status))},
+          {deps,    FmtDeps(Deps)}
+         ]}
         || {Name, Version, Deps, Status} <- Rels
     ].
 
@@ -71,17 +69,16 @@ applications() ->
                            end, Loaded0),
 
     Format  = fun(AppList) ->
-                {struct, 
-                 [  {Name, 
-                     {struct, [ {description, list_to_binary(Desc)},
-                                {version,     list_to_binary(Ver)} ]} }
-                    || {Name, Desc, Ver} <- AppList 
-                 ]}
+                      [  {Name,
+                          [ {description, list_to_binary(Desc)},
+                            {version,     list_to_binary(Ver)} ]} 
+                    || {Name, Desc, Ver} <- AppList
+                 ]
               end,
 
     [
         {running, Format(Which)},
-        {loaded,  Format(Loaded)} 
+        {loaded,  Format(Loaded)}
     ].
 
 
