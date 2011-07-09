@@ -1,0 +1,55 @@
+%%
+%% show details on a specific process
+%%
+-module(bigwig_http_pid).
+-behaviour(cowboy_http_handler).
+-export([init/3, handle/2, terminate/2]).
+
+init({tcp, http}, Req, _Opts) ->
+    {ok, Req, undefined_state}.
+
+handle(Req0, State) ->
+    {Path, Req} = cowboy_http_req:path(Req0),
+    {Method, Req1} = cowboy_http_req:method(Req),
+    handle_path(Method, Path, Req1, State).
+
+handle_path('GET', [<<"pid">>, <<"global">>, Name], Req, State) ->
+    handle_get_pid(fun to_global_pid/1, Name, Req, State);
+handle_path('GET', [<<"pid">>, Pid], Req, State) ->
+    handle_get_pid(fun to_pid/1, Pid, Req, State);
+handle_path(_, _, Req, State) ->
+    not_found(Req, State).
+
+not_found(Req, State) ->
+    {ok, Req2} = cowboy_http_req:reply(404, [], <<"<h1>404</h1>">>, Req),
+    {ok, Req2, State}.
+
+terminate(_Req, _State) ->
+    ok.
+
+handle_get_pid(Get, Pid0, Req, State) ->
+    case catch(Get(Pid0)) of
+        Pid when is_pid(Pid) -> pid_response(Pid, Req, State);
+        _ -> not_found(Req, State)
+    end.
+
+-spec to_pid(binary()) -> pid() | undefined.
+to_pid(Bin) when is_binary(Bin) ->
+    L = binary_to_list(Bin),
+    try list_to_pid([$<] ++ L ++ [$>])
+    catch error:badarg -> whereis(list_to_existing_atom(L))
+    end.
+
+-spec to_global_pid(binary()) -> pid() | undefined.
+to_global_pid(Name) ->
+    global:whereis_name(list_to_existing_atom(binary_to_list(Name))).
+
+pid_response(Pid, Req, State) ->
+    case erlang:process_info(Pid) of
+        undefined -> not_found(Req, State);
+        Info ->
+            Body = jsx:term_to_json(Info),
+            Headers = [{<<"Content-Type">>, <<"application/json">>}],
+            {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
+            {ok, Req2, State}
+    end.
