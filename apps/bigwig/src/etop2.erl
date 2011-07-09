@@ -27,70 +27,43 @@
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3, terminate/2]).
 
--export([config/2, help/0]).
 %% Internal
--export([update/1]).
--export([loadinfo/1, meminfo/2, getopt/2]).
+-export([loadinfo/1, meminfo/2]).
 
 -include("etop.hrl").
 -include("etop_defs.hrl").
 
--define(change_at_runtime_config,[lines,interval,sort,accumulate]).
+-define(change_at_runtime_config,[lines,sort,accumulate]).
 
 -define(SERVER, etop2_server).
 
-help() ->
-    io:format(
-      "Usage of the erlang top program~n"
-      "Options are set as command line parameters as in -node a@host -..~n"
-      "or as parameter to etop:start([{node, a@host}, {...}])~n"
-      "Options are:~n"
-      "  node        atom       Required   The erlang node to measure ~n"
-      "  port        integer    The used port, NOTE: due to a bug this program~n"
-      "                         will hang if the port is not avaiable~n"
-      "  accumulate  boolean    If true execution time is accumulated ~n"
-      "  lines       integer    Number of displayed processes~n"
-      "  interval    integer    Display update interval in secs~n"
-      "  sort        runtime | reductions | memory | msg_q~n"
-      "                         What information to sort by~n"
-      "                         Default: runtime (reductions if tracing=off)~n"
-      "  output      graphical | text~n"
-      "                         How to present results~n"
-      "                         Default: graphical~n"
-      "  tracing     on | off   etop uses the erlang trace facility, and thus~n"
-      "                         no other tracing is possible on the node while~n"
-      "                         etop is running, unless this option is set to~n"
-      "                         'off'. Also helpful if the etop tracing causes~n"
-      "                         too high load on the measured node.~n"
-      "                         With tracing off, runtime is not measured!~n"
-      "  setcookie   string     Only applicable on operating system command~n"
-      "                         line. Set cookie for the etop node, must be~n"
-      "                         same as the cookie for the measured node.~n"
-      "                         This is not an etop parameter~n"
-     ).
+%% Usage of the erlang top program
+%% Options are set as command line parameters as in -node a@host -..
+%% or as parameter to etop:start([{node, a@host}, {...}])
+%% Options are:
+%%   node        atom       Required   The erlang node to measure
+%%   port        integer    The used port, NOTE: due to a bug this program
+%%                          will hang if the port is not avaiable
+%%   accumulate  boolean    If true execution time is accumulated
+%%   lines       integer    Number of displayed processes
+%%   sort        runtime | reductions | memory | msg_q
+%%                          What information to sort by
+%%                          Default: runtime (reductions if tracing=off)
+%%   tracing     on | off   etop uses the erlang trace facility, and thus
+%%                          no other tracing is possible on the node while
+%%                          etop is running, unless this option is set to
+%%                          'off'. Also helpful if the etop tracing causes
+%%                          too high load on the measured node.
+%%                          With tracing off, runtime is not measured!
+%%   setcookie   string     Only applicable on operating system command
+%%                          line. Set cookie for the etop node, must be
+%%                          same as the cookie for the measured node.
+%%                          This is not an etop parameter
 
-terminate(_Reason, State) ->
-  %% TODO: port over tracer?
-  if State#opts.tracing == on -> etop_tr:stop_tracer(State);
-     true -> ok
-  end.
-
-config(Key,Value) ->
-    case check_runtime_config(Key,Value) of
-	ok ->
-	    ?SERVER ! {config,{Key,Value}},
-	    ok;
-	error ->
-	    {error,illegal_opt}
-    end.
-check_runtime_config(lines,L) when is_integer(L),L>0 -> ok;
-check_runtime_config(interval,I) when is_integer(I),I>0 -> ok;
-check_runtime_config(sort,S) when S=:=runtime;
-				  S=:=reductions;
-				  S=:=memory;
-				  S=:=msg_q -> ok;
-check_runtime_config(accumulate,A) when A=:=true; A=:=false -> ok;
-check_runtime_config(_Key,_Value) -> error.
+terminate(_Reason, State#opts{tracing=on}) ->
+  etop_tr:stop_tracer(State);
+terminate(_Reason, _) ->
+  ok.
 
 start_link() ->
   gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
@@ -106,43 +79,28 @@ code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
 init(Opts) ->
-  Config1 = handle_args(init:get_arguments() ++ Opts, #opts{}),
-  Config2 = Config1#opts{server=self()},
+  Config1 = #opts{node=Node} = handle_args(Opts, #opts{}),
 
   %% Connect to the node we want to look at
-  Node = getopt(node, Config2),
-  case net_adm:ping(Node) of
-    pang when Node /= node() ->
-      io:format("Error Couldn't connect to node ~p ~n~n", [Node]),
-      help(),
-      exit("connection error");
-    _pong ->
-      check_runtime_tools_vsn(Node)
-  end,
+  %% TODO: Move the connect elsewhere so we can switch nodes
+  case connect(Node) of
+    ok  ->
+      %% Maybe set up the tracing
+      Config2 = setup_tracing(Config1),
 
-  %% Maybe set up the tracing
-  Config3 =
-    if Config2#opts.tracing == on, Node /= node() ->
-        %% Cannot trace on current node since the tracer will
-        %% trace itself
-        etop_tr:setup_tracer(Config2);
-       true ->
-        if Config2#opts.sort == runtime ->
-            Config2#opts{sort=reductions,tracing=off};
-           true ->
-            Config2#opts{tracing=off}
-        end
-    end,
-  AccumTab = ets:new(accum_tab,
-                     [set,public,{keypos,#etop_proc_info.pid}]),
-  Config4 = Config3#opts{accum_tab=AccumTab},
+      AccumTab = ets:new(accum_tab,
+                         [set,public,{keypos,#etop_proc_info.pid}]),
+      Config3 = Config2#opts{accum_tab=AccumTab},
 
-  {ok, Config4}.
+      {ok, Config3};
+    Err ->
+      Err
+  end.
 
 check_runtime_tools_vsn(Node) ->
   case rpc:call(Node,observer_backend,vsn,[]) of
-    {ok,Vsn} -> check_vsn(Vsn);
-    _ -> exit("Faulty version of runtime_tools on remote node")
+    {ok, Vsn} -> check_vsn(Vsn);
+    _ -> {error, "faulty version of runtime_tools on remote node"}
   end.
 check_vsn(_Vsn) -> ok.
 
@@ -151,13 +109,24 @@ check_vsn(_Vsn) -> ok.
 update() ->
   gen_server:call(?SERVER, update).
 
+check_runtime_config(lines,L) when is_integer(L),L>0 -> ok;
+check_runtime_config(sort,S)
+  when S=:=runtime; S=:=reductions; S=:=memory; S=:=msg_q -> ok;
+check_runtime_config(accumulate,A) when A=:=true; A=:=false -> ok;
+check_runtime_config(_Key,_Value) -> error.
+
 handle_call(update, _From, State) ->
   Info = update(State),
   Json = update_json(Info, State),
   {reply, Json, State};
 handle_call({config, Key, Value}, _From, State) ->
-  State2 = putopt(Key, Value, State),
-  {reply, ok, State2}.
+  case check_runtime_config(Key, Value) of
+    error ->
+      {reply, error, State};
+    _ ->
+      State2 = putopt(Key, Value, State),
+      {reply, ok, State2}
+  end.
 
 update(#opts{store=Store,node=Node,tracing=Tracing}=Opts) ->
   Pid = spawn_link(Node,observer_backend,etop_collect,[self()]),
@@ -219,21 +188,6 @@ get_tag(msg_q) -> #etop_proc_info.mq.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Configuration Management
 
-getopt(What, Config) when is_record(Config, opts) ->
-  case What of
-    node  -> Config#opts.node;
-    port  -> Config#opts.port;
-    accum -> Config#opts.accum;
-    intv  -> Config#opts.intv;
-    lines  -> Config#opts.lines;
-    sort -> Config#opts.sort;
-    width -> Config#opts.width;
-    height-> Config#opts.height;
-
-    store -> Config#opts.store;
-    host  -> Config#opts.host
-  end.
-
 putopt(Key, Value, Config) when is_record(Config, opts) ->
   Config1 = handle_args([{Key,Value}],Config),
   Config1.
@@ -250,12 +204,6 @@ handle_args([{port, Port}| R], Config) when is_integer(Port) ->
   handle_args(R, NewC);
 handle_args([{port, [Port]}| R], Config) when is_list(Port) ->
   NewC = Config#opts{port= list_to_integer(Port)},
-  handle_args(R, NewC);
-handle_args([{interval, Time}| R], Config) when is_integer(Time)->
-  NewC = Config#opts{intv=Time*1000},
-  handle_args(R, NewC);
-handle_args([{interval, [Time]}| R], Config) when is_list(Time)->
-  NewC = Config#opts{intv=list_to_integer(Time)*1000},
   handle_args(R, NewC);
 handle_args([{lines, Lines}| R], Config) when is_integer(Lines) ->
   NewC = Config#opts{lines=Lines},
@@ -360,3 +308,24 @@ etop_proc_info_to_json(
      {<<"mq">>, MQ},
      {<<"mfa">>, formatmfa(MFA)}],
   {<<"pinfo">>, PInfo}.
+
+connect(Node) ->
+  case net_adm:ping(Node) of
+    pang when Node /= node() ->
+      {error, "node connect failed"};
+    _Pong ->
+      check_runtime_tools_vsn(Node)
+  end.
+
+setup_tracing(Config=#opts{tracing=T, sort=S, node=N}) ->
+  if T =:= on, N /= node() ->
+      %% Cannot trace on current node since the tracer will
+      %% trace itself
+      etop_tr:setup_tracer(Config);
+     true ->
+      if S =:= runtime ->
+          Config#opts{sort=reductions, tracing=off};
+         true ->
+          Config#opts{tracing=off}
+      end
+  end.
