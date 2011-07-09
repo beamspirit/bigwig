@@ -31,6 +31,7 @@ dispatch_rules() ->
         ,   {[<<"vm">>],                bigwig_http_vm, []}
         ,   {[<<"rb">>, '...'],         bigwig_http_rb, []}
         ,   {[<<"pid">>, '...'],        bigwig_http_pid, []}
+        ,   {[<<"module">>, '...'],     bigwig_http_module, []}
 
         ,   {'_',                       bigwig_http_catchall, []}
     ]}].
