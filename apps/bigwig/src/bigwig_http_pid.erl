@@ -46,19 +46,19 @@ handle_post_pid(Get, Pid0, Req, State) ->
 
 post_pid_response(Pid, Req, State) ->
     {Res, Req1} = cowboy_http_req:body_qs(Req),
+    Headers = [{<<"Content-Type">>, <<"application/x-erlang-term">>}],
     {ok, Req2} =
         case lists:keyfind(<<"msg">>, 1, Res) of
             {<<"msg">>, TermStr} ->
                 case catch(bigwig_util:parse_term(TermStr)) of
                     {ok, Term} ->
                         Body = io_lib:format("~p", [Pid ! Term]),
-                        Headers = [{<<"Content-Type">>, <<"application/x-erlang-term">>}],
                         cowboy_http_req:reply(202, Headers, Body, Req1);
                     _ ->
-                        cowboy_http_req:reply(400, [], <<"badarg">>, Req1)
+                        cowboy_http_req:reply(400, Headers, <<"{error, badarg}">>, Req1)
                 end;
             _ ->
-                cowboy_http_req:reply(400, [], <<"'msg' required">>, Req1)
+                cowboy_http_req:reply(400, Headers, <<"{error, msg_required}">>, Req1)
         end,
     {ok, Req2, State}.
 
