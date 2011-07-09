@@ -29,6 +29,7 @@ dispatch_rules() ->
         ,   {[<<"wh">>],                bigwig_http_static, ["html","index.html"]}
         ,   {[<<"wh">>, <<"ws">>],      bigwig_http_wh, []}
         ,   {[<<"vm">>],                bigwig_http_vm, []}
+        ,   {[<<"rb">>],                bigwig_http_static, ["html","rb.html"]}
         ,   {[<<"rb">>, <<"stream">>],  bigwig_http_rb_stream, []}
         ,   {[<<"rb">>, '...'],         bigwig_http_rb, []}
         ,   {[<<"pid">>, '...'],        bigwig_http_pid, []}

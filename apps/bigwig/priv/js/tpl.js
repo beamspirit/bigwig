@@ -21,14 +21,30 @@ var TPL = (function() {
       return false;
     }
   }
+  var str = function(v) {
+    if(type(v) == "pid") {
+      return v.data;
+    }
+    return v;
+  }
   var updateChildren = function(el, data) {
     for(var k in data) {
-      el.data(k, data[k]);
+      var v = str(data[k]);
+      el.data(k, v);
       var child = $("."+k, el);
       if(child) {
-        $("."+k, el).text(data[k]);
+        $("."+k, el).text(v);
       }
     }
+  }
+  var type = function(v) {
+    var t = typeof v;
+    if(t == "object") {
+      if(v['_type'] != undefined) {
+        t = v['_type'];
+      }
+    }
+    return t;
   }
   var li = function(type, p, data) {
     var id = data.id;
@@ -55,7 +71,8 @@ var TPL = (function() {
     if(el.length==0) {
       el = $('*[data-id='+k+']').first();
     }
-    var jt = typeof data;
+    var jt = type(data);
+
     if(jt == "string") {
       el.text(data);
     } else if(jt == "object") {

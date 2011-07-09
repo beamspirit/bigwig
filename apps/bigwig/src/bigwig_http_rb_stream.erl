@@ -23,7 +23,17 @@ websocket_init(_TransportName, Req, _Opts) ->
     {ok, Req, undefined_state}.
 
 websocket_handle({bigwig_error_handler, Report}, Req, State) ->
-    Msg = jsx:term_to_json([{report, Report}]),
+    io:format("Report ~p~n", [Report]),
+    {Level, Leader, {Pid, Type, _Data}} = Report,
+    Msg = jsx:term_to_json([{report, [
+            [
+              {level,Level},
+              {group_leader,Leader},
+              {pid, Pid},
+              {type, Type}%,
+              %{data, Data}
+            ]
+          ]}]),
     {reply, Msg, Req, State};
 
 websocket_handle({websocket, Msg}, Req, State) ->

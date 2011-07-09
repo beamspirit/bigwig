@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>So Peter... what's happening?</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/body.css" />
+  </head>
+  <body>
+    <h1 id="title">Reports</h1>
+    <ul id="report" class="section">
+      <li class="report _tpl">
+        <span class="level"></span>
+        <span class="group_leader"></span>
+        <span class="pid"></span>
+        <span class="type"></span>
+      </li>
+    </ul>
+    <div id="footer">brought to you by <a href="https://github.com/spawnfest/beamspirit">Smells Like BEAM Spirit</a></div>
+    <script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="/static/js/tpl.js"></script>
+    <script type="text/javascript">
+      TPL.connect("/rb/stream");
+    </script>
+  </body>
+</html>
