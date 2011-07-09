@@ -15,14 +15,15 @@ init({tcp, http}, Req, OnlyFile) ->
   {ok, Req, OnlyFile}.
 
 handle(Req, undefined_state = State) ->
-  {[_|Path], _} = cowboy_http_req:path(Req), % strip <<"static">>
-  send(Req, Path, State);
+  {[_|Path], Req2} = cowboy_http_req:path(Req), % strip <<"static">>
+  send(Req2, Path, State);
 
 handle(Req, OnlyFile = State) ->
   send(Req, OnlyFile, State).
 
-send(Req, Path, State) ->
+send(Req, PathBins, State) ->
   Headers = [{<<"Content-Type">>, <<"text/html">>}],
+  Path = [ binary_to_list(P) || P <- PathBins ],
   {ok, Body} = file(filename:join(Path)),
   {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
   {ok, Req2, State}.
@@ -42,17 +43,7 @@ type(Type, Name) ->
 
 file(Path) ->
   Priv = priv(),
-  file:read_file(check(Priv, filename:join(Priv, Path))).
+  file:read_file(filename:join(Priv, Path)).
 
 priv() ->
   code:priv_dir(bigwig).
-
-check(Priv, Path) when is_list(Priv) orelse is_list(Path) ->
-  check(iolist_to_binary(Priv), iolist_to_binary(Path));
-check(Priv, Path) ->
-  Size = byte_size(Priv),
-  <<CheckPriv:Size/binary-unit:8, _/binary>> = Path,
-  case CheckPriv of
-    Priv -> Path;
-    _ -> throw({unauthorized, Path})
-  end.
