@@ -32,11 +32,14 @@ websocket_handle(Bin, Req, State) when is_binary(Bin) ->
   {reply, Bin, Req, State};
 
 websocket_handle({bigwig_error_handler, Report}, Req, State) ->
-  io:format("Report ~p~n", [Report]),
   {reply, report(Report), Req, State};
 
 websocket_handle({websocket, Msg}, Req, State) ->
-  {reply, << "You said: ", Msg/binary >>, Req, State}.
+  {reply, << "You said: ", Msg/binary >>, Req, State};
+
+websocket_handle(Msg, Req, State) ->
+  io:format("Unknown msg to ~p ~p~n", [?MODULE, Msg]),
+  {ok, Req, State}.
 
 websocket_terminate(_Reason, _Req, _State) ->
   ok.
@@ -53,7 +56,6 @@ number(To, {_Level, {ok, _Date0, Report, _ReportStr}}) ->
 number(_, _) -> ok.
 
 report(To, Report) ->
-  io:format("Report ~p~n", [Report]),
   To ! report({
       proplists:get_value(report_level, Report), 
       proplists:get_value(group_leader, Report),
