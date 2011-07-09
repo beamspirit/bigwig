@@ -22,7 +22,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0, start_link/1, update/0, node/1]).
+-export([start_link/0, start_link/1, update/0, node/1, config/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3, terminate/2]).
@@ -38,6 +38,8 @@
 -define(SERVER, etop2_server).
 
 -define(ACCUM_TAB, accum_tab).
+
+-define(DEFAULT_LINES, 40).
 
 %% Options are set as parameters to etop2:start_link([{node, a@host}, {...}])
 %%
@@ -70,11 +72,16 @@ start_link(Opts) ->
 update() ->
   gen_server:call(?SERVER, update).
 
+-spec node(atom()) -> ok.
 node(Node) ->
   gen_server:call(?SERVER, {node, Node}).
 
+-spec config(binary(), binary()) -> ok | error.
+config(Key, Value) ->
+  gen_server:call(?SERVER, {config, Key, Value}).
+
 init(Opts) ->
-  State1 = handle_args(Opts, #opts{}),
+  State1 = handle_args(Opts, #opts{lines=?DEFAULT_LINES}),
   AccumTab = ets:new(?ACCUM_TAB, [set,public,{keypos,#etop_proc_info.pid}]),
   State2 = State1#opts{accum_tab=AccumTab},
   Res = connect(State2),
@@ -88,23 +95,28 @@ handle_call(update, _From, State) ->
   Json = update_json(Info, State),
   {reply, Json, State};
 handle_call({config, Key, Value}, _From, State) ->
-  case check_runtime_config(Key, Value) of
-    error ->
-      {reply, error, State};
+  case parse_config_value(Key, Value) of
+    {ok, K, V} ->
+      case check_runtime_config(K, V) of
+        error ->
+          {reply, error, State};
+        _ ->
+          State2 = putopt(K, V, State),
+          {reply, ok, State2}
+      end;
     _ ->
-      State2 = putopt(Key, Value, State),
-      {reply, ok, State2}
+      {reply, error, State}
   end;
 handle_call({node, Node}, _From, State=#opts{node=Node}) ->
   {reply, ok, State};
 handle_call({node, Node}, _From, State) ->
   State2 = stop_tracing(State),
-  clear_ets(State2),
   case connect(State2#opts{node=Node}) of
     {ok, State3} ->
+      clear_ets(State3),
       {reply, ok, State3};
     {error, Error} ->
-      {stop, Error, State2}
+      {reply, Error, State2}
   end.
 
 handle_info(_Info, State) ->
@@ -280,8 +292,7 @@ update_json(Info, #opts{node=Node}) ->
          {<<"ets">>, Ets}]
     end,
   Ps = [etop_proc_info_to_json(P) || P <- Info#etop_info.procinfo],
-  [{<<"header">>, Header},
-   {<<"procs">>, Ps}].
+  [Header, Ps].
 
 name(Name) when is_atom(Name) -> Name;
 name({M,F,A}) -> [M, F, A].
@@ -294,15 +305,13 @@ etop_proc_info_to_json(
                   runtime=Time,
                   cf=MFA,
                   mq=MQ}) ->
-  PInfo =
-    [{<<"pid">>, Pid},
-     {<<"name">>, name(Name)},
-     {<<"time">>, Time},
-     {<<"reds">>, Reds},
-     {<<"mem">>, Mem},
-     {<<"mq">>, MQ},
-     {<<"mfa">>, name(MFA)}],
-  {<<"pinfo">>, PInfo}.
+  [{<<"pid">>, list_to_binary(pid_to_list(Pid))},
+   {<<"name">>, name(Name)},
+   {<<"time">>, Time},
+   {<<"reds">>, Reds},
+   {<<"mem">>, Mem},
+   {<<"mq">>, MQ},
+   {<<"mfa">>, name(MFA)}].
 
 %% Connect to a node and potentially set up tracing
 -spec connect(#opts{}) -> {ok, #opts{}} | {error, any()}.
@@ -312,8 +321,10 @@ connect(State=#opts{node=Node}) ->
       {error, "node connect failed"};
     _Pong ->
       case check_runtime_tools_vsn(Node) of
-        ok             -> {ok, setup_tracing(State)};
-        {error, _} = E -> E
+        ok             ->
+          {ok, setup_tracing(State)};
+        {error, _} = E ->
+          E
       end
   end.
 
@@ -346,3 +357,36 @@ check_runtime_config(sort,S)
   when S=:=runtime; S=:=reductions; S=:=memory; S=:=msg_q -> ok;
 check_runtime_config(accumulate,A) when A=:=true; A=:=false -> ok;
 check_runtime_config(_Key,_Value) -> error.
+
+-spec parse_config_value(binary(), binary()) -> {ok, atom() | integer()} | error.
+parse_config_value(K, V) ->
+  case {config_key(K), config_value(V)} of
+    {{ok, Key}, {ok, Value}} ->
+      {ok, Key, Value};
+    _ ->
+      error
+  end.
+
+-spec config_key(binary()) -> {ok, atom()} | error.
+config_key(K) ->
+  binary_to_existing_atom(K).
+
+-spec config_value(binary()) -> {ok, atom() | integer()} | error.
+config_value(V) ->
+  case binary_to_existing_atom(V) of
+    error ->
+      try
+        {ok, list_to_integer(binary_to_list(V))}
+      catch _:_ ->
+          error
+      end;
+    Res -> Res
+  end.
+
+-spec binary_to_existing_atom(binary()) -> {ok, atom()} | error.
+binary_to_existing_atom(B) ->
+  try
+    {ok, list_to_existing_atom(binary_to_list(B))}
+  catch _:_ ->
+      error
+  end.

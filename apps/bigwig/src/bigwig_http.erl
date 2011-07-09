@@ -22,7 +22,7 @@ start_link() ->
 dispatch_rules() ->
     %% {Host, list({Path, Handler, Opts})}
     [{'_', [
-        
+
             {[<<"">>],                  bigwig_http_index, []}
 
         ,   {[<<"static">>, '...'],     bigwig_http_static, []}
@@ -34,7 +34,7 @@ dispatch_rules() ->
         ,   {[<<"rb">>, '...'],         bigwig_http_rb, []}
         ,   {[<<"pid">>, '...'],        bigwig_http_pid, []}
         ,   {[<<"module">>, '...'],     bigwig_http_module, []}
-
+        ,   {[<<"top">>, '...'],        bigwig_http_etop2, []}
         ,   {'_',                       bigwig_http_catchall, []}
     ]}].
 
@@ -78,4 +78,3 @@ code_change(_OldVsn, State, _Extra) ->
 %% ------------------------------------------------------------------
 %% Internal Function Definitions
 %% ------------------------------------------------------------------
-
