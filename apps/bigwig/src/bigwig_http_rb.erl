@@ -16,7 +16,7 @@ handle(Req, State) ->
 
 %% /rb/reports
 handle_path([<<"rb">>, <<"reports">>], Req, State) ->
-    Body = mochijson2:encode(list_reports()),
+    Body = jsx:term_to_json(list_reports()),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
     {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
     {ok, Req2, State};
@@ -25,27 +25,8 @@ handle_path([<<"rb">>, <<"reports">>], Req, State) ->
 handle_path([<<"rb">>, <<"reports">>, IdBin], Req, State) ->
     Id = list_to_integer(binary_to_list(IdBin)),
     Rep = rb2:load_number(Id),
-    %% TODO convert this to JSON:
-    %%  {ok,"2011-07-09 11:42:37",
-    %%      [{report_level,info_report},
-    %%       {group_leader,<0.36.0>},
-    %%       {date,{{2011,7,9},{11,42,37}}},
-    %%       {pid,<0.39.0>},
-    %%       {report_type,progress},
-    %%       {data,[{supervisor,{local,sasl_sup}},
-    %%              {started,[{pid,<0.170.0>},
-    %%                        {name,rb2_server},
-    %%                        {mfargs,{rb2,start_link,[[]]}},
-    %%                        {restart_type,temporary},
-    %%                        {shutdown,brutal_kill},
-    %%                        {child_type,worker}]}]}]}
-    %% 
-    
-    %% TODO Report is the term that needs JSONifying
-    %% {ok, Date, Report, ReportStr} = Report,
-    Body = io_lib:format("~p",[Rep]),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
-    {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
+    {ok, Req2} = cowboy_http_req:reply(200, Headers, report_to_json(Rep), Req),
     {ok, Req2, State};
 
 handle_path(Path, Req, State) ->
@@ -57,13 +38,18 @@ terminate(_Req, _State) ->
     ok.
 
 
+report_to_json({_, {ok, Date0, Report, ReportStr}}) ->
+    Date = list_to_binary(Date0),
+    jsx:term_to_json([{date, Date}, {report, Report}, {report_str, ReportStr}]).
+
+
 list_reports() ->
-    {struct,
     lists:map( fun({Id,Type,Pid,Date}) ->
-                {Id, {struct, [ {uri,  list_to_binary(io_lib:format("/rb/reports/~B", [Id]))},
-                                {type, list_to_binary(atom_to_list(Type))},
-                                {pid,  list_to_binary(Pid)},
-                                {date, list_to_binary(Date)} ]}}
+                {list_to_binary(integer_to_list(Id)),
+                 [ {uri,  list_to_binary(io_lib:format("/rb/reports/~B", [Id]))},
+                   {type, list_to_binary(atom_to_list(Type))},
+                   {pid,  list_to_binary(Pid)},
+                   {date, list_to_binary(Date)} ]}
                end, 
                rb2:load_list()
-             )}.
+              ).
