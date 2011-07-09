@@ -10,8 +10,16 @@ var TPL = (function() {
   
   var onopen = function() {
   }
+
   var visit = function(href) {
     sock.send(JSON.stringify({visit:href}));
+  }
+
+  var nn = function(d) {
+    if(d < 10) {
+      return "0" + d;
+    }
+    return d;
   }
 
   var href_click = function(href) {
@@ -20,12 +28,19 @@ var TPL = (function() {
       return false;
     }
   }
+
   var str = function(v) {
-    if(type(v) == "pid") {
+    var t = type(v);
+    if(t == "pid") {
       return v.data;
+    } else if(t == "date") {
+      var d = v.data;
+      return d[0] + "-" + nn(d[1]) + "-" + nn(d[2])
+     + " " + nn(d[4]) + ":" + nn(d[5]);
     }
     return v;
   }
+
   var updateChildren = function(el, data) {
     for(var k in data) {
       var v = str(data[k]);
@@ -36,6 +51,7 @@ var TPL = (function() {
       }
     }
   }
+
   var type = function(v) {
     var t = typeof v;
     if(t == "object") {
@@ -45,6 +61,7 @@ var TPL = (function() {
     }
     return t;
   }
+
   var li = function(type, p, data) {
     var id = data.id;
     var li = $('li[data-id='+id+']', p);
@@ -69,6 +86,7 @@ var TPL = (function() {
     }
     updateChildren(li, data);
   } 
+
   var update = function(k, data) {
     var el = $('#'+k);
     if(el.length==0) {
@@ -88,6 +106,7 @@ var TPL = (function() {
       }
     }
   }
+
   var onmessage = function(msg) {
     var json = $.parseJSON(msg.data);
     console.log(json);

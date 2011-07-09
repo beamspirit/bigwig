@@ -4,6 +4,7 @@
 -module(bigwig_util).
 
 -export([parse_term/1, ensure_dot/1, url_decode/1]).
+-export([date_str/1, date_str/2]).
 
 -spec parse_term(binary() | list()) -> {ok, any()} | {error, any()}.
 parse_term(Bin) when is_binary(Bin) ->
@@ -40,3 +41,29 @@ url_decode([$%, Hi, Lo | Tail]) ->
             %% deep lists
             url_decode([H|T]) when is_list(H) ->
                    [url_decode(H) | url_decode(T)].
+date_str({Date,Time}) ->
+  date_str(Date, Time).
+date_str({Y,Mo,D}=Date,{H,Mi,S}=Time) ->
+    case application:get_env(sasl,utc_log) of 
+	{ok,true} ->
+	    {{YY,MoMo,DD},{HH,MiMi,SS}} = 
+		local_time_to_universal_time({Date,Time}),
+	    lists:flatten(io_lib:format("~w-~2.2.0w-~2.2.0w ~2.2.0w:"
+					"~2.2.0w:~2.2.0w UTC", 
+					[YY,MoMo,DD,HH,MiMi,SS]));
+	_ ->
+	    lists:flatten(io_lib:format("~w-~2.2.0w-~2.2.0w ~2.2.0w:"
+					"~2.2.0w:~2.2.0w", 
+					[Y,Mo,D,H,Mi,S]))
+    end.
+
+local_time_to_universal_time({Date,Time}) ->
+    case calendar:local_time_to_universal_time_dst({Date,Time}) of
+	[UCT] ->
+	    UCT;
+	[UCT1,_UCT2] ->
+	    UCT1;
+	[] -> % should not happen
+	    {Date,Time}
+    end.
+
