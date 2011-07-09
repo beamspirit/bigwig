@@ -4,7 +4,6 @@ var TPL = (function() {
   var title = function(title) {
     $('#title').text(title);  
   }
-  title("Loading...");  
 
   var host = document.location.host;
   var sock = null;
