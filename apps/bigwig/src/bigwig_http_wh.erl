@@ -13,10 +13,10 @@ init({tcp, http}, _Req, _Opts) ->
   {upgrade, protocol, cowboy_http_websocket}.
 
 handle(_Req, _State) ->
-  error(websockets_only).
+  exit(websockets_only).
 
 terminate(_Req, _State) ->
-  error(websockets_only).
+  exit(websockets_only).
 
 websocket_init(_TransportName, Req, _Opts) ->
   send([
