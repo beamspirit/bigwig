@@ -23,9 +23,10 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    Http = ?CHILD(bigwig_http, worker),
+    Http        = ?CHILD(bigwig_http, worker),
+    ErrMon      = ?CHILD(bigwig_error_handler_mon, worker),
 
-    Specs = [ Http ],
+    Specs       = [ ErrMon, Http ],
 
     {ok, { {one_for_one, 5, 10}, Specs} }.
 
