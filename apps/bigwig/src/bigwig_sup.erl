@@ -25,8 +25,9 @@ start_link() ->
 init([]) ->
     Http        = ?CHILD(bigwig_http, worker),
     ErrMon      = ?CHILD(bigwig_error_handler_mon, worker),
+    Etop        = ?CHILD(etop2, worker),
 
-    Specs       = [ ErrMon, Http ],
+    Specs       = [ ErrMon, Http, Etop ],
 
     {ok, { {one_for_one, 5, 10}, Specs} }.
 
