@@ -28,9 +28,9 @@ RB = (function() {
         break;
       }
     }
-    el.click(function() {
-      el.toggleClass('selected');
-    });
+    //el.click(function() {
+    //  el.toggleClass('selected');
+    //});
 
     if(data && data.started) {
       el.addClass('started');

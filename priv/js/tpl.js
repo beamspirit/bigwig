@@ -17,10 +17,6 @@
  */
 
 var TPL = (function() {
-  var title = function(title) {
-    $('#title').text(title);  
-  }
-
   var host = document.location.host;
   var socks = {};
   
@@ -48,7 +44,7 @@ var TPL = (function() {
   var str = function(v) {
     var t = type(v);
     if(t == "pid") {
-      return v.data;
+      return RENDERER.json(v);
     } else if(t == "date") {
       var d = v.data;
       return d[0] + "-" + nn(d[1]) + "-" + nn(d[2])
@@ -63,7 +59,8 @@ var TPL = (function() {
       el.data(k, v);
       var child = $("."+k, el);
       if(child) {
-        $("."+k, el).text(v);
+        $("."+k, el).children().remove();
+        $("."+k, el).append(v);
       }
     }
   }
@@ -150,7 +147,8 @@ var TPL = (function() {
     var jt = type(data);
 
     if(jt == "string") {
-      el.text(data);
+      el.children().remove();
+      el.append(data);
     } else if(jt == "object") {
       if(data[0]) {
         for(var i=0; i<data.length; i++) {
