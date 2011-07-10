@@ -28,7 +28,7 @@
 }
 
 .inbox {
-    font-family: arial unicode ms;
+    font-family: arial unicode ms, sans-serif;
     font-size: 14px;
     padding-left: 2px;
 }
