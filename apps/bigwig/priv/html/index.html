@@ -9,12 +9,27 @@
       <div id="attrib">brought to you by <a title="Fork on github" href="https://github.com/spawnfest/beamspirit">Smells Like BEAM Spirit</a></div>
     </div>
     <div id="side">
-      <ul id="app" class="section">
-        <li class="app _tpl"><a href="" class="permalink">
-          <span class="name"></span>
-          <span class="version"></span> 
-          <p class="description"></p>
-        </a></li>
+      <ul id="tools">
+        <li><a class="tool" href="#">Reports</a></li>
+        <li><a class="tool" href="#">Process Load</a></li>
+        <li><a class="tool" href="#">Applications</a>
+          <div id="applications">
+            <ul id="running"> 
+              <li class="running app _tpl"><a href="">
+                <span class="name"></span>
+                <span class="version"></span> 
+                <p class="description"></p>
+              </a></li>
+            </ul>
+            <ul id="loaded"> 
+              <li class="loaded app _tpl"><a href="">
+                <span class="name"></span>
+                <span class="version"></span> 
+                <p class="description"></p>
+              </a></li>
+            </ul>
+          </div>
+        </li>
       </ul>
 
       <div id="nodestats">
@@ -51,36 +66,38 @@
 
     </div>
     <div id="main">
-      <ul class="menu">
-        <li><a class="filter current" href="/rb">all</a></li>
-        <li><a class="filter" href="/rb?level=error">error</a></li>
-        <li><a class="filter" href="/rb?level=info">info</a></li>
-      </ul>
-      <ul id="report" class="section all" data-sort="desc" data-filter="all">
-        <li class="report _tpl">
-          <span class="report_level"></span>
-          <span class="group_leader"></span>
-          <span class="pid"></span>
-          <span class="report_type"></span>
-          <span class="date"></span>
+      <div id="reports" class="tool">
+        <ul class="menu">
+          <li><a class="filter current" href="/rb">all</a></li>
+          <li><a class="filter" href="/rb?level=error">error</a></li>
+          <li><a class="filter" href="/rb?level=info">info</a></li>
+        </ul>
+        <ul id="report" class="section all" data-sort="desc" data-filter="all">
+          <li class="report _tpl">
+            <span class="report_level"></span>
+            <span class="group_leader"></span>
+            <span class="pid"></span>
+            <span class="report_type"></span>
+            <span class="date"></span>
 
-          <div class="application_start">
-            <span class="label">Application start:</span>
-            <span class="application"></span>
-            <span class="started_at"></span>
-          </div>
+            <div class="application_start">
+              <span class="label">Application start:</span>
+              <span class="application"></span>
+              <span class="started_at"></span>
+            </div>
 
-          <div class="started">
-            <span class="label">Started:</span>
-            <span class="started_pid"></span> 
-            <span class="started_name"></span> 
-          </div>
-          
-          <div class="info">
-            <pre class="data"></pre>
-          </div>
-        </li>
-      </ul>
+            <div class="started">
+              <span class="label">Started:</span>
+              <span class="started_pid"></span> 
+              <span class="started_name"></span> 
+            </div>
+            
+            <div class="info">
+              <pre class="data"></pre>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
@@ -125,9 +142,11 @@
     </script>
 
     <script type="text/javascript">
-      // pull in apps list (ws for now, should be a TPL.fetch instead)
-      // TPL.fetch("/apps");
-      TPL.connect("/wh/ws");
+      $('#applications').bind('onupdate', function(e, data) {
+        TPL.update('running', data.running);
+        TPL.update('loaded', data.loaded);
+      });
+      TPL.fetch("/vm");
     </script>
   </body>
 </html>
