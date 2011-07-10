@@ -22,7 +22,6 @@ websocket_init(_TransportName, Req, _Opts) ->
   bigwig_report_reader:rescan(), %% ouch
   bigwig_pubsubhub:register_client(self()),
   Self = self(),
-  io:format("Self ~p~n", [Self]),
   {ok, Req, undefined_state}.
 
 websocket_handle(Bin, Req, State) when is_binary(Bin) ->
@@ -45,6 +44,6 @@ websocket_handle(Msg, Req, State) ->
 
 websocket_terminate(_Reason, _Req, _State) ->
   ok.
-          
+
 report(Report) ->
   jsx:term_to_json([{report, [Report]}]).
