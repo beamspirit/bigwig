@@ -26,6 +26,10 @@ websocket_handle({bigwig, {bigwig_stats_sender, Stats}}, Req, State) ->
     Reply = jsx:term_to_json([{stats, Stats}]),
     {reply, Reply, Req, State};
 
+websocket_handle({bigwig, {bigwig_appmon, Stats}}, Req, State) ->
+    Reply = jsx:term_to_json([{appmon, Stats}]),
+    {reply, Reply, Req, State};
+
 websocket_handle({bigwig, _}, Req, State) ->
     {ok, Req, State};
 
