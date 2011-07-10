@@ -5,7 +5,56 @@
     <link rel="stylesheet" type="text/css" href="/static/css/etop_table.css" />
   </head>
   <body>
-    <h1 id="title">Top</h1>
+    <div id="header">
+      <h1>Top</h1>
+      <div id="attrib">brought to you by <a title="Fork on github" href="https://github.com/spawnfest/beamspirit">Smells Like BEAM Spirit</a></div>
+    </div>
+
+    <div id="side">
+      <div id="topstats">
+        <!-- etop stats -->
+        <table id="node_info">
+          <tr> <th>node</th>     <td id="glob_node"></td>     </tr>
+          <tr> <th>clock</th>    <td id="glob_clock"></td>    </tr>
+          <tr> <th>cpu</th>      <td id="glob_cpu"></td>      </tr>
+          <tr> <th>tot</th>      <td id="glob_tot"></td>      </tr>
+          <tr> <th>bin</th>      <td id="glob_bin"></td>      </tr>
+          <tr> <th>nprocs</th>   <td id="glob_nprocs"></td>   </tr>
+          <tr> <th>procs</th>    <td id="glob_procs"></td>    </tr>
+          <tr> <th>code</th>     <td id="glob_code"></td>     </tr>
+          <tr> <th>runqueue</th> <td id="glob_runqueue"></td> </tr>
+          <tr> <th>atom</th>     <td id="glob_atom"></td>     </tr>
+          <tr> <th>ets</th>      <td id="glob_ets"></td>      </tr>
+        </table>
+      </div>
+    </div>
+
+    <div id="main">
+
+      <div>
+        <form method="POST">
+          <input type="checkbox" name="accumulate" id="accumulate">Accumulate</input>
+          <input type="checkbox" name="pause" id="pause">Pause</input>
+        </form>
+      </div>
+
+      <table class="display" id="etop_table">
+        <thead>
+          <tr>
+            <th>pid</th>
+            <th>name</th>
+            <th>time</th>
+            <th>reds</th>
+            <th>mem</th>
+            <th>mq</th>
+            <th>mfa</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+
     <script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery.dataTables.extra.js"></script>
@@ -47,59 +96,5 @@
         });
        });
     </script>
-    <table cellpadding="0" cellspacing="0" border="0" class="display" id="node_info">
-      <thead>
-        <tr>
-          <th>node</th>
-          <th>clock</th>
-          <th>cpu</th>
-          <th>tot</th>
-          <th>bin</th>
-          <th>nprocs</th>
-          <th>procs</th>
-          <th>code</th>
-          <th>runqueue</th>
-          <th>atom</th>
-          <th>ets</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td id="glob_node"></td>
-          <td id="glob_clock"></td>
-          <td id="glob_cpu"></td>
-          <td id="glob_tot"></td>
-          <td id="glob_bin"></td>
-          <td id="glob_nprocs"></td>
-          <td id="glob_procs"></td>
-          <td id="glob_code"></td>
-          <td id="glob_runqueue"></td>
-          <td id="glob_atom"></td>
-          <td id="glob_ets"></td>
-        </tr>
-      </tbody>
-    </table>
-    <table cellpadding="0" cellspacing="0" border="0" class="display" id="etop_table">
-      <thead>
-        <tr>
-          <th>pid</th>
-          <th>name</th>
-          <th>time</th>
-          <th>reds</th>
-          <th>mem</th>
-          <th>mq</th>
-          <th>mfa</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
-    <form method="POST">
-      <input type="checkbox" name="accumulate" id="accumulate">Accumulate</input>
-    </form>
-    <form method="POST">
-      <input type="checkbox" name="pause" id="pause">Pause</input>
-    </form>
-    <div id="footer">brought to you by <a href="https://github.com/spawnfest/beamspirit">Smells Like BEAM Spirit</a></div>
   </body>
 </html>
