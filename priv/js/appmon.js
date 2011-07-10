@@ -123,7 +123,7 @@ APPMON = (function() {
                 });
 
                 if ('pid' in node.data) {
-                    label.append('<span class="pid">' + node.data.pid + '</span>');
+                    label.append(RENDERER.render_json_val({'_type': 'pid', 'data': node.data.pid}));
                     if (node.data.nodeType == 'appMaster') {
                         label.append('<span class="app-name">' + node.data.name + '</span>');
                         label.append('<span class="app-version">' + node.data.ver + '</span>');
