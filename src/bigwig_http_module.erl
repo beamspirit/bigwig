@@ -38,6 +38,7 @@ not_found(Req, State) ->
 terminate(_Req, _State) ->
     ok.
 
+%% Reads and modifies module_info a bit to be more json friendly
 -spec to_module_info(binary()) -> list().
 to_module_info(Bin) ->
     ModInfo =  case catch(list_to_existing_atom(binary_to_list(Bin))) of
@@ -46,7 +47,24 @@ to_module_info(Bin) ->
     end,
     Exports = proplists:get_value(exports, ModInfo),
     NewExports = [ list_to_binary(lists:flatten(io_lib:format("~w/~w",[F,A]))) || {F,A} <- Exports ],
-    [ {exports, NewExports} | proplists:delete(exports, ModInfo) ].
+    ModInfo2 = [ {exports, NewExports} | proplists:delete(exports, ModInfo) ],
+    ModInfo3 = 
+        case proplists:get_value(compile, ModInfo2) of
+            L when is_list(L) ->
+                case proplists:get_value(time, L) of
+                    T when is_tuple(T) ->
+                        proplists:delete(compile, L) ++
+                        [ {compile, [ {time, [{'_type',<<"date">>},{data,tuple_to_list(T)}]}]} 
+                                    | proplists:delete(time, L) ];
+                    _ ->
+                        ModInfo2
+                end;
+            _ -> 
+                ModInfo2
+        end,
+    ModInfo3.
+
+
 
 json_response(Info, Req, State) ->
     Body = jsx:term_to_json(Info),
