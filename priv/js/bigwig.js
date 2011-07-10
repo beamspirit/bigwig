@@ -19,7 +19,6 @@ BigWig = (function() {
       TPL.update('running', data.running);
       //TPL.update('loaded', data.loaded);
     });
-    TPL.fetch("/vm");
     activate('dashboard');
   })();
 
@@ -28,3 +27,6 @@ BigWig = (function() {
   };
 })();
 
+$(function() {
+    TPL.fetch('/vm');
+});
