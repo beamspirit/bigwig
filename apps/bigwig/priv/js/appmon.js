@@ -9,8 +9,8 @@ $(function() {
     $.getJSON('/appmon/_all', function(data) {
         var nodeName = 'bigwig@virding';
         var json = {
-            id: 'nodeName',
-            name: 'nodeName',
+            id: 'rootNode',
+            name: nodeName,
             data: {
                 name: nodeName,
                 nodeType: 'node'
@@ -129,13 +129,13 @@ $(function() {
                         if (node.data.nodeType == 'appMaster') {
                             label.append('<span class="app-name">' + node.data.name + '</span>');
                             label.append('<span class="app-version">' + node.data.ver + '</span>');
-                        } else if (node.data.nodeType == 'node') {
-                            label.append(node.data.name);
                         } else if ('name' in node.data) {
                             label.append('<span class="registered-name">' + node.data.name + '</span>');
                         }
                     } else if ('port' in node.data) {
                         label.append('<span class="pid">' + node.data.port + '</span>');
+                    } else if (node.data.nodeType == 'node') {
+                        label.append('<span class="node-name">' + node.data.name + '</span>');
                     }
                 },
                 onBeforePlotNode: function(node){
