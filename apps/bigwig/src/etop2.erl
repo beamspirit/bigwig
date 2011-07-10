@@ -301,7 +301,8 @@ update_json(Info, #opts{node=Node, accum=Accum}) ->
    {<<"aaData">>, Ps}].
 
 name(Name) when is_atom(Name) -> Name;
-name({M,F,A}) -> [M, F, A].
+name({M,F,A}) when is_atom(M), is_atom(F), is_integer(A) ->
+  atom_to_list(M) ++ ":" ++ atom_to_list(F) ++ "/" ++ integer_to_list(A).
 
 etop_proc_info_to_json(
   #etop_proc_info{pid=Pid,
