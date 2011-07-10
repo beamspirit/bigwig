@@ -1,9 +1,13 @@
 %% This is a bare bones version of sasl/rb, but modified to load reports and
 %% return them from calls, instead of printing to stdout.
 %%
-%% Also, all filtering/grepping of reports has been removed for now.
+%% One problem with rb is that there is no real permalink for reports, on each
+%% rescan reports are all renumbered with the most recent at number 1.
 %%
--module(rb2).
+%% This version loads reports alongside the index, calculates a hash to be used
+%% as a unique identifier on the web interface, and a rewritten filter system
+%%
+-module(bigwig_report_reader).
 
 -behaviour(gen_server).
 
@@ -27,14 +31,14 @@
 start() -> start([]).
 start(Options) ->
     supervisor:start_child(sasl_sup, 
-			   {rb2_server, {rb2, start_link, [Options]},
-			    temporary, brutal_kill, worker, [rb2]}).
+			   {bigwig_report_reader_server, {bigwig_report_reader, start_link, [Options]},
+			    temporary, brutal_kill, worker, [bigwig_report_reader]}).
 
 start_link(Options) ->
-    gen_server:start_link({local, rb2_server}, rb2, Options, []).
+    gen_server:start_link({local, bigwig_report_reader_server}, bigwig_report_reader, Options, []).
 
 stop() -> 
-    supervisor:terminate_child(sasl_sup, rb2_server).
+    supervisor:terminate_child(sasl_sup, bigwig_report_reader_server).
 
 rescan() -> rescan([]).
 rescan(Options) ->
@@ -55,7 +59,7 @@ make_filter(Props) ->
 %%-----------------------------------------------------------------
 
 call(Req) ->
-    gen_server:call(rb2_server, Req, infinity).
+    gen_server:call(bigwig_report_reader_server, Req, infinity).
 
 build_filter(F, []) -> F;
 build_filter(F, [{limit, L}|Rest]) when is_integer(L) ->
@@ -69,7 +73,7 @@ build_filter(F, [{startdate, D}|Rest]) when is_list(D) ->
 build_filter(F, [{enddate, D}|Rest]) when is_list(D) ->
     build_filter(F#filter{enddate=D}, Rest);
 build_filter(_F, [Err]) ->
-    throw({invalid_rb2_filter_param, Err}).
+    throw({invalid_bigwig_report_reader_filter_param, Err}).
 
 %%-----------------------------------------------------------------
 

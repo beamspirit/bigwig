@@ -20,8 +20,8 @@ terminate(_Req, _State) ->
   ok.
 
 websocket_init(_TransportName, Req, _Opts) ->
-  rb2:start(), %% will only be started once anyway, registered name
-  rb2:rescan(), %% ouch
+  bigwig_report_reader:start(), %% will only be started once anyway, registered name
+  bigwig_report_reader:rescan(), %% ouch
   bigwig_error_handler:register_client(self()),
   Self = self(),
   spawn(fun() -> read_history(Self) end),
@@ -31,7 +31,7 @@ websocket_handle(Bin, Req, State) when is_binary(Bin) ->
   {reply, Bin, Req, State};
 
 websocket_handle({bigwig_error_handler, Report}, Req, State) ->
-  {reply, report(rb2:fmt_report({erlang:localtime(), Report})), Req, State};
+  {reply, report(bigwig_report_reader:fmt_report({erlang:localtime(), Report})), Req, State};
 
 websocket_handle({websocket, Msg}, Req, State) ->
   {reply, << "You said: ", Msg/binary >>, Req, State};
@@ -46,7 +46,7 @@ websocket_terminate(_Reason, _Req, _State) ->
 read_history(To) ->
   lists:foreach(
     fun(Seq) ->
-      number(To, rb2:load_number(?DEFAULT_COUNT + 1 - Seq))
+      number(To, bigwig_report_reader:load_number(?DEFAULT_COUNT + 1 - Seq))
     end, 
     lists:seq(0, ?DEFAULT_COUNT)).
 
