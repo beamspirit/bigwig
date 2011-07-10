@@ -88,9 +88,9 @@ $(function() {
         $.when.apply($, getMap).then(function() {
             var st = new $jit.ST({
                 injectInto: 'appmon-graph',
-                duration: 200,
+                duration: 400,
                 transition: $jit.Trans.Quart.easeInOut,
-                levelDistance: 100,
+                levelDistance: 50,
                 levelsToShow: 3,
                 constrained: false,
                 Navigation: {
