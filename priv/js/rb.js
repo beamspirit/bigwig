@@ -28,9 +28,10 @@ RB = (function() {
         break;
       }
     }
-    //el.click(function() {
-    //  el.toggleClass('selected');
-    //});
+    $('.report_level', el).click(function() {
+      el.toggleClass('selected');
+      return false;
+    });
 
     if(data && data.started) {
       el.addClass('started');
@@ -39,7 +40,7 @@ RB = (function() {
       el.addClass('application_start');
       TPL.update($('.application_start',el), fmt_application_start(data));
     } else {
-      el.addClass('selected');
+      //el.addClass('selected');
     }
     if(data) {
       $('.data', el).text(JSON.stringify(data, null, 4));
@@ -47,9 +48,6 @@ RB = (function() {
       $('.data', el).text(JSON.stringify(report, null, 4));
     }
 
-  });
-  $('#stats').bind('onupdate', function(e, data) {
-    console.log("stats", data);
   });
 
   $('.filter').click(function() {
