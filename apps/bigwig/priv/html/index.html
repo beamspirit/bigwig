@@ -35,49 +35,48 @@
 
       <div id="nodestats">
         <strong>Node Stats</strong>
-        <table id="stats">
-            <tr>
-                <td>Processes</td>
-                <td class="process_count"></td>
-            </tr>   
-            <tr>
-                <td>Reductions</td>
-                <td class="reductions"></td>
-            </tr>
-            <tr>
-                <td>Bytes In</td>
-                <td class="bytes_in"></td>
-            </tr>
-            <tr>
-                <td>Bytes Out</td>
-                <td class="bytes_out"></td>
-            </tr>
-            <tr>
-                <td>Run Queue</td>
-                <td class="run_queue"></td>
-            </tr>
-            <tr>
-                <td>Uptime</td>
-                <td class="uptime"></td>
-            </tr>
-        </table>
+        <dl id="stats">
+          <dt>Processes</dt>
+          <dd class="process_count"></dd>
+          <dt>Reductions</dt>
+          <dd class="reductions"></dd>
+          <dt>Bytes In</dt>
+          <dd class="bytes_in"></dd>
+          <dt>Bytes Out</dt>
+          <dd class="bytes_out"></dd>
+          <dt>Run Queue</dt>
+          <dd class="run_queue"></dd>
+          <dt>Uptime</dt>
+          <dd class="uptime"></dd>
+        </dl>
         <span id="sl_reds"></span>
       </div>
 
       <div id="topstats">
         <!-- etop stats -->
-        <table id="node_info">
-          <tr> <th>node</th>     <td id="glob_node"></td>     </tr>
-          <tr> <th>clock</th>    <td id="glob_clock"></td>    </tr>
-          <tr> <th>cpu</th>      <td id="glob_cpu"></td>      </tr>
-          <tr> <th>tot</th>      <td id="glob_tot"></td>      </tr>
-          <tr> <th>bin</th>      <td id="glob_bin"></td>      </tr>
-          <tr> <th>nprocs</th>   <td id="glob_nprocs"></td>   </tr>
-          <tr> <th>procs</th>    <td id="glob_procs"></td>    </tr>
-          <tr> <th>code</th>     <td id="glob_code"></td>     </tr>
-          <tr> <th>runqueue</th> <td id="glob_runqueue"></td> </tr>
-          <tr> <th>atom</th>     <td id="glob_atom"></td>     </tr>
-          <tr> <th>ets</th>      <td id="glob_ets"></td>      </tr>
+        <dl id="node_info">
+          <dt>Node</dt>
+          <dd id="glob_node"></dd>
+          <dt>Clock</dt>
+          <dd id="glob_clock"></dd>
+          <dt>CPU</dt>
+          <dd id="glob_cpu"></dd>
+          <dt>TOT</dt>
+          <dd id="glob_tot"></dd>
+          <dt>Bin</dt>
+          <dd id="glob_bin"></dd>
+          <dt>NProcesses</dt>
+          <dd id="glob_nprocs"></dd>
+          <dt>Processes</dt>
+          <dd id="glob_procs"></dd>
+          <dt>Code</dt>
+          <dd id="glob_code"></dd>
+          <dt>Run Queue</dt>
+          <dd id="glob_runqueue"></dd>
+          <dt>Atoms</dt>
+          <dd id="glob_atom"></dd>
+          <dt>ETS</dt>
+          <dd id="glob_ets"></dd>
         </table>
       </div>
 
