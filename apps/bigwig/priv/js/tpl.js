@@ -22,13 +22,13 @@ var TPL = (function() {
   }
 
   var host = document.location.host;
-  var sock = null;
+  var socks = {};
   
   var onopen = function() {
   }
 
   var visit = function(href) {
-    sock.send(JSON.stringify({visit:href}));
+    //sock.send(JSON.stringify({visit:href}));
   }
 
   var nn = function(d) {
@@ -137,7 +137,6 @@ var TPL = (function() {
     onjson($.parseJSON(msg.data));
   }
   var onclose = function() {
-
   }
   var fetch = function(url) {
     $.getJSON(url, onjson);
@@ -145,10 +144,10 @@ var TPL = (function() {
   return {
     visit: visit,
     connect: function(to) {
-      sock = new WebSocket("ws://"+host+to);
-      sock.onopen = onopen
-      sock.onmessage = onmessage
-      sock.onclose = onclose
+      socks[to] = new WebSocket("ws://"+host+to);
+      socks[to].onopen = onopen
+      socks[to].onmessage = onmessage
+      socks[to].onclose = onclose
     },
     fetch: fetch,
     clear: function(el) {

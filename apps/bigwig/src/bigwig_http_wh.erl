@@ -19,16 +19,7 @@ terminate(_Req, _State) ->
   exit(websockets_only).
 
 websocket_init(_TransportName, Req, _Opts) ->
-  send([
-      {title, <<"What's Happening">>},
-      apps()
-    ]),
-  %B = jsx:term_to_json([
-  %    {app, [
-  %        [{id, myapp},{name,"My Application"}, {description,"Description"}, {version,"Version"}]
-  %      ]}
-  %  ]),
-  %erlang:start_timer(1000, self(), B),
+  send([{app, apps()}]),
   {ok, Req, undefined_state}.
 
 websocket_handle(Bin, Req, State) when is_binary(Bin) ->
@@ -54,12 +45,11 @@ send(Bin) ->
   self() ! Bin.
 
 apps() ->
-  {app, [
-      [
-        {id, App},
-        {name, App},
-        {description, Desc},
-        {version, Vsn}
-      ]
-      || {App, Desc, Vsn} <- application:which_applications()
-    ]}.
+  [[
+      {id, App},
+      {name, App},
+      {description, Desc},
+      {version, Vsn}
+    ]
+    || {App, Desc, Vsn} <- application:which_applications()
+  ].

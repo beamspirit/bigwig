@@ -4,20 +4,76 @@
     <link rel="stylesheet" type="text/css" href="/static/css/body.css" />
   </head>
   <body>
-    <h1 id="title"></h1>
-    <ul id="app" class="section">
-      <li class="app _tpl">
-        <a href="" class="name permalink"></a> 
-        <span class="version"></span> 
-        <span class="description"></span> 
-        <span class="more"></span>
-      </li>
-    </ul>
-    <div id="footer">brought to you by <a href="https://github.com/spawnfest/beamspirit">Smells Like BEAM Spirit</a></div>
+    <div id="header">
+      <h1>BigWig</h1>
+      <div id="attrib">brought to you by <a title="Fork on github" href="https://github.com/spawnfest/beamspirit">Smells Like BEAM Spirit</a></div>
+    </div>
+    <div id="side">
+      <ul id="app" class="section">
+        <li class="app _tpl"><a href="" class="permalink">
+          <span class="name"></span>
+          <span class="version"></span> 
+          <p class="description"></p>
+        </a></li>
+      </ul>
+    </div>
+    <div id="main">
+      <ul class="menu">
+        <li><a class="filter current" href="/rb">all</a></li>
+        <li><a class="filter" href="/rb?level=error">error</a></li>
+        <li><a class="filter" href="/rb?level=error_report">error report</a></li>
+        <li><a class="filter" href="/rb?level=info_msg">info msg</a></li>
+        <li><a class="filter" href="/rb?level=info_report">info report</a></li>
+      </ul>
+      <ul id="report" class="section all" data-sort="desc" data-filter="all">
+        <li class="report _tpl">
+          <span class="report_level"></span>
+          <span class="group_leader"></span>
+          <span class="pid"></span>
+          <span class="report_type"></span>
+          <span class="date"></span>
+          <pre class="data"></div>
+        </li>
+      </ul>
+    </div>
+
     <script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="/static/js/tpl.js"></script>
     <script type="text/javascript">
       TPL.connect("/wh/ws");
+      function getFilter(level) {
+        return level.split("_")[0];
+      }
+      $('#report ._tpl').data("process", function(el, data) {
+        el.addClass(getFilter(data['report_level']));
+        $('.data', el).text(JSON.stringify(data['data'], null, 4));
+        el.click(function() {
+          el.toggleClass('selected');
+        });
+      });
+      $('#stats').bind('onupdate', function(e, data) {
+        console.log("stats", data);
+      });
+      TPL.connect("/rb/stream");
+      TPL.fetch("/rb/reports?limit=200");
+
+      $('.filter').click(function() {
+        var href = $(this).attr('href');
+        var href_parts = href.split("?");
+        var filter = "all";
+        if(href_parts.length > 1) {
+          filter = $.getQueryString('level', href_parts[1]);
+        }
+        var current = $('#report').attr('data-filter');
+        if(filter != current) {
+          $('.filter').removeClass('current');
+          $(this).addClass('current');
+          $('#report').removeClass(current);
+          $('#report').addClass(filter);
+          $('#report').attr('data-filter', filter);
+        }
+        return false;
+      });
     </script>
   </body>
 </html>
