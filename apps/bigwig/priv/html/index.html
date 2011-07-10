@@ -180,6 +180,8 @@
         var tool = $(this).attr('href');
         $('#main .tool').removeClass('active');
         $('#'+tool).addClass('active');
+        $('#tools .tool').removeClass('current');
+        $(this).addClass('current');
         if(tool == "appmon") {
           APPMON.start();
         }
