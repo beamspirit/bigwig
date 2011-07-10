@@ -78,7 +78,7 @@ var TPL = (function() {
     return t;
   }
 
-  var li = function(type, p, data) {
+  var li = function(p, data) {
     var id = data.id;
     var li = $('li[data-id='+id+']', p);
     var tpl = $('li._tpl',p).first();
@@ -97,10 +97,10 @@ var TPL = (function() {
     }
     var permalink = $('.permalink', li);
     if(permalink) {
-      var uniq = {type: type, id: id};
-      var href = "wh/"+type+"/"+id;
-      permalink.attr('href', href);
-      permalink.bind('click', href_click(uniq));
+      //var uniq = {type: type, id: id};
+      //var href = "wh/"+type+"/"+id;
+      //permalink.attr('href', href);
+      //permalink.bind('click', href_click(uniq));
     }
     updateChildren(li, data);
     if(processFun) {
@@ -109,9 +109,14 @@ var TPL = (function() {
   } 
 
   var update = function(k, data) {
-    var el = $('#'+k);
-    if(el.length==0) {
-      el = $('*[data-id='+k+']').first();
+    var el;
+    if(typeof k == 'object') {
+      el = k;
+    } else {
+      el = $('#'+k);
+      if(el.length==0) {
+        el = $('*[data-id='+k+']').first();
+      }
     }
     var jt = type(data);
 
@@ -120,13 +125,13 @@ var TPL = (function() {
     } else if(jt == "object") {
       if(data[0]) {
         for(var i=0; i<data.length; i++) {
-          li(k, el, data[i])
+          li(el, data[i])
         }
       } else {
         updateChildren(el, data);
       }
     }
-    el.trigger('onupdate', data);
+    el.triggerHandler('onupdate', data);
   }
   var onjson = function(json) {
     for(var k in json) {
@@ -143,7 +148,7 @@ var TPL = (function() {
   }
   return {
     visit: visit,
-    update: updateChildren,
+    update: update,
     connect: function(to) {
       socks[to] = new WebSocket("ws://"+host+to);
       socks[to].onopen = onopen;
