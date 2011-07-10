@@ -20,7 +20,7 @@ terminate(_Req, _State) ->
   ok.
 
 websocket_init(_TransportName, Req, _Opts) ->
-  bigwig_report_reader:start(), %% will only be started once anyway, registered name
+  bigwig_report_reader:start(),  %% will only be started once anyway, registered name
   bigwig_report_reader:rescan(), %% ouch
   bigwig_error_handler:register_client(self()),
   Self = self(),
@@ -30,6 +30,7 @@ websocket_init(_TransportName, Req, _Opts) ->
 websocket_handle(Bin, Req, State) when is_binary(Bin) ->
   {reply, Bin, Req, State};
 
+%% handle sasl reports sent form our custom handler
 websocket_handle({bigwig_error_handler, Report}, Req, State) ->
   {reply, report(bigwig_report_reader:fmt_report({erlang:localtime(), Report})), Req, State};
 

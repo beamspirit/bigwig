@@ -282,11 +282,11 @@ get_report_data_from_file(Dir, No, FileNr, Max, Type) ->
 %%       we may need the last ones.
 %%-----------------------------------------------------------------
 read_reports(No, Fd, Fname, Max, Type) ->
-    io:format("rb: reading report..."),
+    %%io:format("rb: reading report..."),
     case catch read_reports(Fd, [], Type) of
 	{ok, Res} -> 
 	    file:close(Fd),
-	    io:format("done.~n"),
+	    %%io:format("done.~n"),
 	    NewRes = 
 		if
 		    length(Res) > Max ->
