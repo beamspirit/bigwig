@@ -68,9 +68,10 @@ applications() ->
                            end, Loaded0),
 
     Format  = fun(AppList) ->
-                      [  {Name,
-                          [ {description, list_to_binary(Desc)},
-                            {version,     list_to_binary(Ver)} ]} 
+                      [ [
+                            {name, Name},
+                            {description, list_to_binary(Desc)},
+                            {version,     list_to_binary(Ver)} ]
                     || {Name, Desc, Ver} <- AppList
                  ]
               end,
