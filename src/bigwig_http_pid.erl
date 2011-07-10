@@ -21,6 +21,8 @@ handle_path('POST', [<<"pid">>, <<"global">>, Name], Req, State) ->
     handle_post_pid(fun to_global_pid/1, Name, Req, State);
 handle_path('POST', [<<"pid">>, Pid], Req, State) ->
     handle_post_pid(fun to_pid/1, Pid, Req, State);
+handle_path('DELETE', [<<"pid">>, Pid], Req, State) ->
+    handle_delete_pid(fun to_pid/1, Pid, Req, State);
 handle_path(_, _, Req, State) ->
     not_found(Req, State).
 
@@ -41,6 +43,15 @@ handle_post_pid(Get, Pid0, Req, State) ->
     case catch(Get(Pid0)) of
         Pid when is_pid(Pid) ->
             post_pid_response(Pid, Req, State);
+        _ -> not_found(Req, State)
+    end.
+
+handle_delete_pid(Get, Pid0, Req, State) ->
+    case catch(Get(Pid0)) of
+        Pid when is_pid(Pid) ->
+            erlang:exit(Pid, kill),
+            {ok, Req2} = cowboy_http_req:reply(200, [], "killed", Req),
+            {ok, Req2, State};
         _ -> not_found(Req, State)
     end.
 
