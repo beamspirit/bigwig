@@ -10,7 +10,7 @@ var RENDERER = (function() {
                             .dialog({
                                 title: 'process_info(' + Pid + ') &nbsp; ' + 
                                        '<small>(<a href="'+url+'">json</a>)</small>',
-                                width: 460,
+                                width: 550,
                                 buttons: { 
                                     "Close": function() { $(this).dialog("close"); }, 
                                     "Send Msg":  function() { 
@@ -58,7 +58,7 @@ var RENDERER = (function() {
                             .dialog({
                                 title: m + ':module_info() &nbsp; ' + 
                                        '<small>(<a href="'+url+'">json</a>)</small>',
-                                width: 460,
+                                width: 550,
                                 buttons: { 
                                     "Close": function() { $(this).dialog("close"); }, 
                                     "Reload Module":  function() { 
