@@ -12,7 +12,7 @@
 -behaviour(gen_server).
 
 -export([start_link/1, start/0, start/1, stop/0, rescan/0, rescan/1]).
--export([load_number/1, load_list/0, load_list/1, make_filter/1, fmt_report/1]).
+-export([load_number/1, load_list/0, load_list/1, make_filter/1, fmt_report/1, ascii_format_report/2]).
 
 %% gen_server callbacks
 -export([init/1, terminate/2, handle_call/3,
@@ -455,14 +455,18 @@ find_report([], No) ->
 load_rep(Fd, FilePosition, _Device, _Abort, _Log) ->
     case read_rep_msg(Fd, FilePosition) of
 	{Date, Msg} -> 
-        Fn = "/tmp/rb_format.tmp", %% TODO this is horrid
-        {ok, IoDevice} = file:open(Fn, [write]),
-        rb_format_supp:print(Date, Msg, IoDevice),
-        file:close(IoDevice),
-        {ok, ReportBin} = file:read_file(Fn),
+        ReportBin = ascii_format_report(Date, Msg),
         {ok, Date, fmt_report(Msg), ReportBin};
 	_           -> {error, "rb: Cannot read from file"}
     end.
+
+ascii_format_report(Date, Report) ->
+    Fn = "/tmp/rb_format.tmp", %% TODO this is horrid
+    {ok, IoDevice} = file:open(Fn, [write]),
+    rb_format_supp:print(Date, Report, IoDevice),
+    file:close(IoDevice),
+    {ok, ReportBin} = file:read_file(Fn),
+    ReportBin.
     
 read_rep_msg(Fd, FilePosition) ->
     file:position(Fd, {bof, FilePosition}),
