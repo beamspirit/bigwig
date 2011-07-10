@@ -1,6 +1,6 @@
 $(document).ready(function() {
   var oTable = $('#etop_table').dataTable({
-    "bProcessing": true,
+    "bProcessing": false,
     "iDisplayLength": 25,
     "sAjaxSource": '/top',
     // Get data piggy-backed on the main table and update the page
