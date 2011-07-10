@@ -99,7 +99,7 @@ $(function() {
                     height: 60,
                     width: 97,
                     type: 'rectangle',
-                    color: '#0aa',
+                    color: '#ccc',
                     overridable: true
                 },
                 Edge: {
@@ -137,26 +137,22 @@ $(function() {
                     } else if (node.data.nodeType == 'node') {
                         label.append('<span class="node-name">' + node.data.name + '</span>');
                     }
+
+                    if ('q' in node.data) {// && node.data.q > 0) {
+                        label.append('<span class="messages">1' + node.data.q + '<span class="inbox">&#x2709;</span></span>');
+                    }
                 },
                 onBeforePlotNode: function(node){
                     if (node.selected) {
-                        node.data.$color = "#ff7";
-                    }
-                    else {
-                        delete node.data.$color;
-                        // If the node belongs to the last plotted level
-                        if(!node.anySubnode("exist")) {
-                            var count = 0;
-                            node.eachSubnode(function(n) { count++; });
-                            // Assign a node color based on how many children it has
-                            node.data.$color = ['#aaa', '#baa', '#caa', '#daa', '#eaa', '#faa'][count];
-                        }
+//                        node.data.$color = "#000";
+                    } else {
+//                        node.data.$color = "#fff";
                     }
                 },
                 onBeforePlotLine: function(adj){
                     if (adj.nodeFrom.selected && adj.nodeTo.selected) {
                         adj.data.$color = "#46e";
-                        adj.data.$lineWidth = 4;
+                        adj.data.$lineWidth = 2;
                     }
                     else {
                         delete adj.data.$color;

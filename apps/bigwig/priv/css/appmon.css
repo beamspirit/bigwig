@@ -26,3 +26,37 @@
     white-space: pre-wrap;
     word-wrap: break-word;
 }
+
+.inbox {
+    font-family: arial unicode ms;
+    font-size: 14px;
+    padding-left: 2px;
+}
+
+.messages {
+    display: block;
+    position: absolute;
+    bottom: 1px;
+    right: 6px;
+    height: 18px;
+}
+
+.process {
+    border: 1px solid #0ff;
+}
+
+.port {
+    border: 1px dotted #ff0;
+}
+
+.supervisor {
+    border: 2px solid #f00;
+}
+
+.named {
+    border: 2px solid #00f;
+}
+
+h1 {
+    color: #000;
+}
