@@ -3,7 +3,7 @@
 %%
 -module(bigwig_util).
 
--export([parse_term/1, ensure_dot/1, url_decode/1]).
+-export([parse_term/1, ensure_dot/1, url_decode/1, md5/1]).
 -export([date_str/1, date_str/2]).
 
 -spec parse_term(binary() | list()) -> {ok, any()} | {error, any()}.
@@ -41,6 +41,7 @@ url_decode([$%, Hi, Lo | Tail]) ->
             %% deep lists
             url_decode([H|T]) when is_list(H) ->
                    [url_decode(H) | url_decode(T)].
+
 date_str({Date,Time}) ->
   date_str(Date, Time).
 date_str({Y,Mo,D}=Date,{H,Mi,S}=Time) ->
@@ -67,3 +68,8 @@ local_time_to_universal_time({Date,Time}) ->
 	    {Date,Time}
     end.
 
+%% hex ascii md5
+-spec md5(binary()) -> string().
+md5(S) -> string:to_lower(
+                lists:flatten([io_lib:format("~2.16.0b",[N]) 
+                                            || <<N>> <= erlang:md5(S)])).

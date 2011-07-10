@@ -1,9 +1,13 @@
 %% This is a bare bones version of sasl/rb, but modified to load reports and
 %% return them from calls, instead of printing to stdout.
 %%
-%% Also, all filtering/grepping of reports has been removed for now.
+%% One problem with rb is that there is no real permalink for reports, on each
+%% rescan reports are all renumbered with the most recent at number 1.
 %%
--module(rb2).
+%% This version loads reports alongside the index, calculates a hash to be used
+%% as a unique identifier on the web interface, and a rewritten filter system
+%%
+-module(bigwig_report_reader).
 
 -behaviour(gen_server).
 
@@ -16,23 +20,25 @@
 
 -record(state,  {dir, data, device, max, type, abort, log}).
 
--record(filter, {type=all, 
-                 startdate="",
-                 enddate="9999-99-99 99:99:99"
+-record(filter, {type=all,
+                 level=all,
+                 startdate="0000-00-00 00:00:00",
+                 enddate="9999-99-99 99:99:99",
+                 limit=50 
              }).
 
 %%-----------------------------------------------------------------
 start() -> start([]).
 start(Options) ->
     supervisor:start_child(sasl_sup, 
-			   {rb2_server, {rb2, start_link, [Options]},
-			    temporary, brutal_kill, worker, [rb2]}).
+			   {bigwig_report_reader_server, {bigwig_report_reader, start_link, [Options]},
+			    temporary, brutal_kill, worker, [bigwig_report_reader]}).
 
 start_link(Options) ->
-    gen_server:start_link({local, rb2_server}, rb2, Options, []).
+    gen_server:start_link({local, bigwig_report_reader_server}, bigwig_report_reader, Options, []).
 
 stop() -> 
-    supervisor:terminate_child(sasl_sup, rb2_server).
+    supervisor:terminate_child(sasl_sup, bigwig_report_reader_server).
 
 rescan() -> rescan([]).
 rescan(Options) ->
@@ -53,17 +59,21 @@ make_filter(Props) ->
 %%-----------------------------------------------------------------
 
 call(Req) ->
-    gen_server:call(rb2_server, Req, infinity).
+    gen_server:call(bigwig_report_reader_server, Req, infinity).
 
 build_filter(F, []) -> F;
+build_filter(F, [{limit, L}|Rest]) when is_integer(L) ->
+    build_filter(F#filter{limit=L}, Rest);
 build_filter(F, [{type, T}|Rest]) when is_atom(T) ->
     build_filter(F#filter{type=T}, Rest);
+build_filter(F, [{level, L}|Rest]) when is_atom(L) ->
+    build_filter(F#filter{level=L}, Rest);
 build_filter(F, [{startdate, D}|Rest]) when is_list(D) ->
     build_filter(F#filter{startdate=D}, Rest);
 build_filter(F, [{enddate, D}|Rest]) when is_list(D) ->
     build_filter(F#filter{enddate=D}, Rest);
 build_filter(_F, [Err]) ->
-    throw({invalid_rb2_filter_param, Err}).
+    throw({invalid_bigwig_report_reader_filter_param, Err}).
 
 %%-----------------------------------------------------------------
 
@@ -100,17 +110,35 @@ handle_call({rescan, Options}, _From, State) ->
 handle_call(_, _From, #state{data = undefined}) ->
     {reply, {error, no_data}, #state{}};
 
-handle_call({load_list, #filter{type=FType, 
+handle_call({load_list, #filter{type=FType,
+                                level=FLevel,
                                 startdate=FStartDate, 
-                                enddate=FEndDate}}, _From, State) ->
+                                enddate=FEndDate,
+                                limit=Limit}}, _From, State) ->
     Reports = [ {No, RealType, ShortDesc, Date} 
-                || {No, RealType, ShortDesc, Date, _Fname, _FilePos} 
+                || {No, RealType, ShortDesc, Date, _Fname, _Fpos} 
                 <- State#state.data, 
                    (FType == all orelse RealType == FType) andalso
                    Date >= FStartDate andalso
                    Date =< FEndDate 
-               ],
-    {reply, Reports, State};
+              ],
+    
+    #state{dir = Dir, data = Data, device = Device, abort = Abort, log = Log} = State,
+
+    {_,Reports2} = lists:foldl( fun( {No, RealType, ShortDesc, _Date}, {Total,Acc} ) ->
+                            {ok, Date2, Msg, Str} = load_report_by_num(Dir, Data, No, Device, Abort, Log),
+                            case Total < Limit andalso
+                                 (FLevel =:= all orelse
+                                 (catch proplists:get_value(report_level, Msg)) =:= FLevel) of
+                                 true ->
+                                    Hash = bigwig_util:md5(term_to_binary(Msg)),
+                                    {Total+1, [{Hash, RealType, ShortDesc, Date2, Msg, Str}|Acc]};
+                                 false ->
+                                    {Total,Acc}
+                             end
+                     end, {0,[]}, Reports),
+    
+    {reply, Reports2, State};
 
 handle_call({load_number, Number}, _From, State) ->
     #state{dir = Dir, data = Data, device = Device, abort = Abort, log = Log} = State,
@@ -190,6 +218,24 @@ scan_files(RptDir, Max, Type) ->
 	_X -> exit("cannot read the index file")
     end.
 
+%%-----------------------------------------------------------------
+%% Func: scan_files(Dir, Files, Max, Type)
+%% Args: Files is a list of FileName.
+%% Purpose: Scan the report files in the index variable.
+%% Returns: {Number, Type, ShortDescr, Date, FileName, FilePosition}
+%%-----------------------------------------------------------------
+scan_files(Dir, Files, Max, Type) ->
+    scan_files(Dir, 1, Files, [], Max, Type).
+scan_files(_Dir, _, [], Res, _Max, _Type) -> Res;
+scan_files(_Dir, _, _Files, Res, Max, _Type) when Max =< 0 -> Res;
+scan_files(Dir, No, [H|T], Res, Max, Type) ->
+    Data = get_report_data_from_file(Dir, No, H, Max, Type),
+    Len = length(Data),
+    NewMax = dec_max(Max, Len),
+    NewNo = No + Len,
+    NewData = Data ++ Res,
+    scan_files(Dir, NewNo, T, NewData, NewMax, Type).
+
 make_file_list(Dir, FirstFileNo) ->
     case file:list_dir(Dir) of
 	{ok, FileNames} ->
@@ -216,24 +262,6 @@ shift([H | T], First, Res) ->
 shift([], _, Res) ->
     Res.
 
-%%-----------------------------------------------------------------
-%% Func: scan_files(Dir, Files, Max, Type)
-%% Args: Files is a list of FileName.
-%% Purpose: Scan the report files in the index variable.
-%% Returns: {Number, Type, ShortDescr, Date, FileName, FilePosition}
-%%-----------------------------------------------------------------
-scan_files(Dir, Files, Max, Type) ->
-    scan_files(Dir, 1, Files, [], Max, Type).
-scan_files(_Dir, _, [], Res, _Max, _Type) -> Res;
-scan_files(_Dir, _, _Files, Res, Max, _Type) when Max =< 0 -> Res;
-scan_files(Dir, No, [H|T], Res, Max, Type) ->
-    Data = get_report_data_from_file(Dir, No, H, Max, Type),
-    Len = length(Data),
-    NewMax = dec_max(Max, Len),
-    NewNo = No + Len,
-    NewData = Data ++ Res,
-    scan_files(Dir, NewNo, T, NewData, NewMax, Type).
-
 dec_max(all, _) -> all;
 dec_max(X,Y) -> X-Y.
 
@@ -254,11 +282,11 @@ get_report_data_from_file(Dir, No, FileNr, Max, Type) ->
 %%       we may need the last ones.
 %%-----------------------------------------------------------------
 read_reports(No, Fd, Fname, Max, Type) ->
-    io:format("rb: reading report..."),
+    %%io:format("rb: reading report..."),
     case catch read_reports(Fd, [], Type) of
 	{ok, Res} -> 
 	    file:close(Fd),
-	    io:format("done.~n"),
+	    %%io:format("done.~n"),
 	    NewRes = 
 		if
 		    length(Res) > Max ->
@@ -403,8 +431,8 @@ load_report_by_num(Dir, Data, Number, Device, Abort, Log) ->
 	    case file:open(FileName, [read]) of
 		{ok, Fd} -> 
 		    case load_rep(Fd, FilePosition, Device, Abort, Log) of
-                {ok, Date, Msg} ->
-                    {ok, Date, Msg};
+                {ok, Date, Msg, Str} ->
+                    {ok, Date, Msg, Str};
                 Err ->
                     {error, Err}
             end;

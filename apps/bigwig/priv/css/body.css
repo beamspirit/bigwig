@@ -8,6 +8,13 @@ body {
   visibility: none;
 }
 
+.sort {
+  color: blue;
+}
+.current {
+  font-weight: bold;
+}
+
 #apps .name {
 }
 #apps .description {
