@@ -3,6 +3,7 @@ $(document).ready(function() {
     "bProcessing": false,
     "iDisplayLength": 25,
     "sAjaxSource": '/top',
+    "aaSorting": [[5, "desc"]],
     // Get data piggy-backed on the main table and update the page
     "fnServerData": function(sSource, aaData, fnCallback) {
                       $.getJSON( sSource, aaData, function(json) {
@@ -11,10 +12,9 @@ $(document).ready(function() {
                         // Use our RENDERER to format everything
                         for(var i=0; i<json.aaData.length; ++i)
                         {
-                            for(var j = 0; j < json.aaData[i].length; ++j)
-                            {
-                                json.aaData[i][j] = RENDERER.render_json_val(json.aaData[i][j])[0].outerHTML;
-                            }
+                            json.aaData[i][0] = RENDERER.render_json_val(json.aaData[i][0])[0].outerHTML;
+                            json.aaData[i][1] = RENDERER.render_json_val(json.aaData[i][1])[0].outerHTML;
+                            json.aaData[i][6] = RENDERER.render_json_val(json.aaData[i][6])[0].outerHTML;
                         }
                         var gs = ['node','clock','cpu','tot','bin','nprocs','procs','code','runqueue','atom','ets'];
                         for (i = 0; i < gs.length; i++) {
