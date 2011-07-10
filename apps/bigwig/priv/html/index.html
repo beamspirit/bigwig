@@ -16,6 +16,43 @@
           <p class="description"></p>
         </a></li>
       </ul>
+
+      <div id="nodestats">
+        <!-- realtime stats -->
+        <strong>Node Stats</strong>
+        <table id="stats">
+            <tr>    
+                <td>Date</td> 
+                <td class="date"></td>    
+            </tr>
+            <tr>
+                <td>Processes</td>
+                <td class="process_count"></td>
+            </tr>   
+            <tr>
+                <td>Reductions</td>
+                <td class="reductions"></td>
+            </tr>
+            <tr>
+                <td>Bytes In</td>
+                <td class="bytes_in"></td>
+            </tr>
+            <tr>
+                <td>Bytes Out</td>
+                <td class="bytes_out"></td>
+            </tr>
+            <tr>
+                <td>Run Queue</td>
+                <td class="run_queue"></td>
+            </tr>
+            <tr>
+                <td>Uptime</td>
+                <td class="uptime"></td>
+            </tr>
+        </table>
+        <span id="sl_reds"></span>
+      </div>
+
     </div>
     <div id="main">
       <ul class="menu">
@@ -51,8 +88,41 @@
     </div>
 
     <script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.sparkline.min.js"></script>
     <script type="text/javascript" src="/static/js/tpl.js"></script>
     <script type="text/javascript" src="/static/js/rb.js"></script>
+
+    <script type="text/javascript">
+        var MAX_POINTS = 30;
+        var stats_data = {};
+        <!-- connect to realtime stats feed -->
+        $('#stats').bind('onupdate', function(e, data) {
+                // generate sparklines for most of these stats:
+                for(var key in data)
+                {
+                    if( key == 'date' )   continue;
+                    if( key == 'uptime' ) continue;
+                    if(! stats_data[key]) stats_data[key]=[];
+
+                    stats_data[key].push(data[key]);
+                    stats_data[key] = stats_data[key].slice( - (MAX_POINTS+1) );
+                    // generate array of deltas to make sparkline:
+                    var sparkdata = [];
+                    var prevdata = stats_data[key][0];
+                    for(var i = 1; i<stats_data[key].length; ++i)
+                    {
+                        thisdata = stats_data[key][i];
+                        sparkdata.push( thisdata - prevdata );
+                        prevdata = thisdata;
+                    }
+                    // console.log(key, ' data= ' , sparkdata)
+                    $('.' + key).sparkline( sparkdata );
+                }
+                console.log("stats", data);
+                });
+        TPL.connect("/stats-stream");
+    </script>
+
     <script type="text/javascript">
       // pull in apps list (ws for now, should be a TPL.fetch instead)
       // TPL.fetch("/apps");

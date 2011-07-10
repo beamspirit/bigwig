@@ -163,3 +163,22 @@ li.info, li.error, li.warning {
 {
   display: block !important;
 }
+
+#nodestats {
+    padding-top:10px;
+    padding-bottom: 10px;
+}
+
+#stats td {
+  text-align: left;
+  height:16px;
+  font-size: 12px;
+  margin:0;
+  padding-top:1px;
+  padding-bottom:1px;
+}
+#stats td:first-child { 
+    text-align: right; 
+    font-weight: normal;
+}
+
