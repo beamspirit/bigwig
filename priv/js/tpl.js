@@ -41,7 +41,7 @@ var TPL = (function() {
     }
   }
 
-  var str = function(v) {
+  var render = function(v) {
     var t = type(v);
     if(t == "pid") {
       return RENDERER.json(v);
@@ -55,12 +55,15 @@ var TPL = (function() {
 
   var updateChildren = function(el, data) {
     for(var k in data) {
-      var v = str(data[k]);
+      var v = render(data[k]);
       el.data(k, v);
       var child = $("."+k, el);
-      if(child) {
-        $("."+k, el).children().remove();
-        $("."+k, el).append(v);
+      if(child.length > 0 && v) {
+        child.children().remove();
+        try {
+          child.append(v);
+        } catch(err) {
+        }
       }
     }
   }
@@ -148,7 +151,10 @@ var TPL = (function() {
 
     if(jt == "string") {
       el.children().remove();
-      el.append(data);
+      try {
+        el.append(data);
+      } catch(err) {
+      }
     } else if(jt == "object") {
       if(data[0]) {
         for(var i=0; i<data.length; i++) {
