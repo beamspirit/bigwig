@@ -26,6 +26,9 @@ websocket_handle({bigwig, {bigwig_stats_sender, Stats}}, Req, State) ->
     Reply = jsx:term_to_json([{stats, Stats}]),
     {reply, Reply, Req, State};
 
+websocket_handle({bigwig, _}, Req, State) ->
+    {ok, Req, State};
+
 websocket_handle(Msg, Req, State) ->
     io:format("Unhandled msg to ~p ~p\n", [?MODULE, Msg]),
     {ok, Req, State}.
