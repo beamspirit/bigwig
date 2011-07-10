@@ -1,11 +1,10 @@
-A suite of web-based tools for the Erlang VM.
+Bigwig is a suite of web-based tools for the Erlang VM, like webtool.
 
+Tools that we currently include custom versions of:
 
-Tools that we aim to offer sexy, web-based versions of include:
-
-* "etop"
-* "rb"
-* "appmon"
+* "etop"     - see which processes are using the most cpu/heap/reds/etc
+* "rb"       - browse SASL reports
+* "appmon"   - explore application supervision hierarchies 
 
 Also included is a VM dashboard with release_handler details, loaded 
 applications, and VM settings.
@@ -13,7 +12,69 @@ applications, and VM settings.
 
 Conceived for Spawnfest 2011, SMELLS LIKE BEAM SPIRIT.
 
-===========
+
+
+NOTES
+=====
+
+Erlang topology
+---------------
+Run Bigwig as a hidden node, on a distinct VM, and it will connect to nodes of
+your chosing to monitor/examine. No need to install any applications or releases
+on nodes you wish to inspect.
+
+
+Web Architecture
+----------------
+We are using cowboy, with a combination of webservices that return JSON, and 
+websockets to deliver realtime updates to the browser.
+
+
+JSX Json Library
+----------------
+Modified so term_to_json works with pids, ports, etc.
+Eg, a pid is converted to {"_type": "pid", "data": "<1.2.3>"}
+Used when we render complex terms in the browser, like SASL reports.
+
+
+SASL Report Browsing
+--------------------
+'rb' is for reading SASL reports written by the log_mf_h event handler which
+SASL adds to the error_logger process. The on-disk format/writing looks like
+it's been around long before disk_log wrapfiles were conceived, since it sort
+of does what you would nowadays use disk_log for. 
+
+The rb module is designed to print text reports to stdout. 
+The bigwig_report_loader module is our alternative to rb which loads the SASL
+report terms from the file and returns them, which we subsequently convert to
+JSON and render client side. We also use the SASL-provided renderer code and 
+send the familiar looking log format to the client too.
+
+Would *love* to install our own handler that writes the reports as documents to
+couch, or at the very least using disk_log, and with a better separation of
+loading the terms and rendering them. No time for this yet, and at least with 
+our current approach we don't need people to install anything on nodes they 
+wish to examing using Bigwig.
+
+
+eTop
+----
+
+TODO write stuff here
+
+
+AppMon
+------
+
+TODO write stuff here
+
+
+
+
+
+
+URL schemes, blah
+=================
 
 /vm                     lists running apps, releases, process count etc
 
@@ -26,4 +87,5 @@ Conceived for Spawnfest 2011, SMELLS LIKE BEAM SPIRIT.
 /pid/NAME               as above, but using registered process name NAME
 /pid/global/NAME        as above, but using global registered process name NAME
 /module/NAME            NAME:module_info() stuff
+
 
