@@ -17,7 +17,7 @@ $(document).ready(function() {
                             }
                         }
                         var gs = ['node','clock','cpu','tot','bin','nprocs','procs','code','runqueue','atom','ets'];
-                        for (var i = 0; i < gs.length; i++) {
+                        for (i = 0; i < gs.length; i++) {
                           var g = gs[i];
                           if (g in header) {
                             $('#glob_' + g).html(header[g]);
