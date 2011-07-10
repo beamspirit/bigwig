@@ -5,14 +5,42 @@ body {
 }
 ._tpl {
   display: none;
-  visibility: none;
+  visibility: hidden;
 }
 
 .sort {
   color: blue;
 }
+
+li.info, li.error, li.warning {
+  display: none;
+}
+.all li,
+.info li.info,
+.error li.error,
+.warning li.warning {
+  display: block !important;
+}
+
 .current {
   font-weight: bold;
+}
+
+.report {
+  color: #444;
+  cursor: pointer;
+}
+.report:hover {
+  color: #000;
+}
+.report .data {
+  display: none;
+  margin: 0.5em;
+  border: 1px solid #ccc;
+  padding: 0.5em 1em;
+}
+#report .selected .data {
+  display: block !important;
 }
 
 #apps .name {
@@ -20,3 +48,5 @@ body {
 #apps .description {
   color: #888;
 }
+
+
