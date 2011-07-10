@@ -17,6 +17,12 @@
           "sAjaxSource": '/top'
         });
         $(document).everyTime(5000, "poll_etop", function() {oTable.fnReloadAjax();});
+        $('#accumulate').bind('click', function() {
+          $.ajax({
+            type: 'POST',
+            url: '/top/config/accumulate/' + this.checked
+          });
+        });
        });
     </script>
     <table cellpadding="0" cellspacing="0" border="0" class="display" id="etop_table">
@@ -34,6 +40,9 @@
       <tbody>
       </tbody>
     </table>
+    <form method="POST">
+      <input type="checkbox" name="accumulate" id="accumulate">Accumulate</input>
+    </form>
     <div id="footer">brought to you by <a href="https://github.com/spawnfest/beamspirit">Smells Like BEAM Spirit</a></div>
   </body>
 </html>
