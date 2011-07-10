@@ -1,7 +1,7 @@
 -module(bigwig_appmon).
 -behaviour(gen_server).
 
--export([start/1, stop/1]).
+-export([start_link/0, stop/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_cast/2, handle_info/2, terminate/2]).
@@ -16,21 +16,19 @@
          }).
 
 -record(state, {
-          client :: pid(),
           mnodes = [] :: [#mnode{}]
          }).
 
-start(Pid) -> gen_server:start_link(?MODULE, [Pid], []).
+start_link() -> gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-stop(Name) -> gen_server:cast(Name, stop).
+stop() -> gen_server:cast(?MODULE, stop).
 
-init([Pid]) ->
+init([]) ->
     process_flag(trap_exit, true),
     net_kernel:monitor_nodes(true),
     NodesOk = lists:filter(fun check_node/1, nodes()),
     Nodes = [node()|NodesOk],
     {ok, #state{
-       client = Pid,
        mnodes = [monitor_node(N) || N <- Nodes]
       }}.
 
@@ -44,18 +42,24 @@ handle_cast(stop, State) ->
     {stop, normal, State}.
 
 handle_info({statistics, L}, State) ->
-    send({statistics, L}, State),
+    send({statistics, L}),
+    {noreply, State};
+handle_info({node_apps, _} = Msg, State) ->
+    send(Msg),
+    {noreply, State};
+handle_info({node_app_tree, _} = Msg, State) ->
+    send(Msg),
     {noreply, State};
 handle_info({nodeup, Node}, State) ->
     case check_node(Node) of
         true  ->
             case get_mnode(Node, State#state.mnodes) of
-                false -> send({new_node, Node}, State);
+                false -> send({new_node, Node});
                 true  -> ok
             end,
             MNode = monitor_node(Node),
             MNodes = replace_mnode(Node, MNode, State#state.mnodes),
-            send({node_up, Node}, State),
+            send({node_up, Node}),
             {noreply, State#state{mnodes = MNodes}};
         false ->
             {noreply, State}
@@ -67,17 +71,13 @@ handle_info({nodedown, Node}, State) ->
         MNode ->
             MNode1 = MNode#mnode{status = dead},
             MNodes = replace_mnode(Node, MNode1, State#state.mnodes),
-            send({node_down, Node}, State),
+            send({node_down, Node}),
             {noreply, State#state{mnodes = MNodes}}
     end;
-handle_info({'EXIT', Pid, Reason}, State) ->
+handle_info({'EXIT', _Pid, Reason}, State) ->
     case Reason of
         shutdown -> {stop, Reason, State};
-        _ ->
-            case State#state.client of
-                Pid -> {stop, normal, State};
-                _   -> {noreply, State}
-            end
+        _ -> {noreply, State}
     end;
 handle_info(_Msg, State) ->
     {noreply, State}.
@@ -113,7 +113,5 @@ replace_mnode(Node, MNode, [MNode2 | MNodes]) ->
 replace_mnode(_Node, MNode, []) ->
     [MNode].
 
--spec send(any(), #state{}) -> ok.
-send(Term, #state{client = C}) ->
-    C ! {?MODULE, self(), Term},
-    ok.
+-spec send(any()) -> ok.
+send(Term) -> bigwig_pubsubhub:notify({?MODULE, Term}).

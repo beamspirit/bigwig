@@ -12,7 +12,8 @@
 -record(state, {
           client :: pid(),
           stref :: reference(),
-          atref :: reference()
+          atref :: reference(),
+          ttref :: reference()
          }).
 
 -record(db, {q, p, links, links2}).
@@ -45,6 +46,15 @@ handle_info({timeout, Ref, apps},
     {ok, L} = node_apps(),
     Pid ! {node_apps, L},
     {noreply, apps_timer(State)};
+handle_info({timeout, Ref, app_tree},
+            #state{client = Pid, ttref = Ref} = State) ->
+    {ok, L} = node_apps(),
+    Tree = [begin
+                {ok, Info} = calc_app_tree(Name),
+                {Name, Info}
+            end || {_, Name, _} <- L],
+    Pid ! {node_app_tree, Tree},
+    {noreply, app_tree_timer(State)};
 handle_info({timeout, Ref, statistics},
             #state{client = Pid, stref = Ref} = State) ->
     L = [{context_switches, statistics(context_switches)},
@@ -65,7 +75,7 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
--define(TIMERS, [fun statistics_timer/1, fun apps_timer/1]).
+-define(TIMERS, [fun apps_timer/1, fun app_tree_timer/1]). %% TODO: Add statistics?
 
 timers(State) ->
     lists:foldl(fun(F, S) -> F(S) end, State, ?TIMERS).
@@ -83,6 +93,13 @@ apps_timer(#state{atref = Ref} = S) ->
         _ -> erlang:cancel_timer(Ref)
     end,
     S#state{atref = erlang:start_timer(1000, self(), apps)}.
+
+app_tree_timer(#state{ttref = Ref} = S) ->
+    case Ref of
+        undefined -> ok;
+        _ -> erlang:cancel_timer(Ref)
+    end,
+    S#state{ttref = erlang:start_timer(1000, self(), app_tree)}.
 
 node_apps() ->
     {ok, lists:zf(
