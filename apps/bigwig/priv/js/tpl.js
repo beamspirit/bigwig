@@ -143,6 +143,7 @@ var TPL = (function() {
   }
   return {
     visit: visit,
+    update: updateChildren,
     connect: function(to) {
       socks[to] = new WebSocket("ws://"+host+to);
       socks[to].onopen = onopen

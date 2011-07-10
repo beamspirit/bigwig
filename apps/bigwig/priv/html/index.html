@@ -30,48 +30,33 @@
           <span class="pid"></span>
           <span class="report_type"></span>
           <span class="date"></span>
-          <pre class="data"></div>
+
+          <div class="application_start">
+            <span class="label">Application start:</span>
+            <span class="application"></span>
+            <span class="started_at"></span>
+          </div>
+
+          <div class="started">
+            <span class="label">Started:</span>
+            <span class="started_pid"></span> 
+            <span class="started_name"></span> 
+          </div>
+          
+          <div class="info">
+            <pre class="data"></pre>
+          </div>
         </li>
       </ul>
     </div>
 
     <script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="/static/js/tpl.js"></script>
+    <script type="text/javascript" src="/static/js/rb.js"></script>
     <script type="text/javascript">
+      // pull in apps list (ws for now, should be a TPL.fetch instead)
+      // TPL.fetch("/apps");
       TPL.connect("/wh/ws");
-      function getFilter(level) {
-        return level.split("_")[0];
-      }
-      $('#report ._tpl').data("process", function(el, data) {
-        el.addClass(getFilter(data['report_level']));
-        $('.data', el).text(JSON.stringify(data['data'], null, 4));
-        el.click(function() {
-          el.toggleClass('selected');
-        });
-      });
-      $('#stats').bind('onupdate', function(e, data) {
-        console.log("stats", data);
-      });
-      TPL.connect("/rb/stream");
-      TPL.fetch("/rb/reports?limit=200");
-
-      $('.filter').click(function() {
-        var href = $(this).attr('href');
-        var href_parts = href.split("?");
-        var filter = "all";
-        if(href_parts.length > 1) {
-          filter = $.getQueryString('level', href_parts[1]);
-        }
-        var current = $('#report').attr('data-filter');
-        if(filter != current) {
-          $('.filter').removeClass('current');
-          $(this).addClass('current');
-          $('#report').removeClass(current);
-          $('#report').addClass(filter);
-          $('#report').attr('data-filter', filter);
-        }
-        return false;
-      });
     </script>
   </body>
 </html>
