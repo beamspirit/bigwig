@@ -146,9 +146,9 @@ var TPL = (function() {
     update: updateChildren,
     connect: function(to) {
       socks[to] = new WebSocket("ws://"+host+to);
-      socks[to].onopen = onopen
-      socks[to].onmessage = onmessage
-      socks[to].onclose = onclose
+      socks[to].onopen = onopen;
+      socks[to].onmessage = onmessage;
+      socks[to].onclose = onclose;
     },
     fetch: fetch,
     clear: function(el) {
