@@ -34,6 +34,7 @@ dispatch_rules() ->
         ,   {[<<"rb">>, '...'],         bigwig_http_rb, []}
         ,   {[<<"pid">>, '...'],        bigwig_http_pid, []}
         ,   {[<<"module">>, '...'],     bigwig_http_module, []}
+        ,   {[<<"et">>],                bigwig_http_static, [<<"html">>,<<"et.html">>]}
         ,   {[<<"top">>, '...'],        bigwig_http_etop2, []}
         ,   {'_',                       bigwig_http_catchall, []}
     ]}].

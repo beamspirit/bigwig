@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <title>So Peter... what's happening?</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/body.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/etop_table.css" />
+  </head>
+  <body>
+    <h1 id="title">Top</h1>
+    <script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.dataTables.extra.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.timers-1.2.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        var oTable = $('#etop_table').dataTable({
+          "bProcessing": true,
+          "sAjaxSource": '/top'
+        });
+        $(document).everyTime(5000, "poll_etop", function() {oTable.fnReloadAjax();});
+       });
+    </script>
+    <table cellpadding="0" cellspacing="0" border="0" class="display" id="etop_table">
+      <thead>
+        <tr>
+          <th>pid</th>
+          <th>name</th>
+          <th>time</th>
+          <th>reds</th>
+          <th>mem</th>
+          <th>mq</th>
+          <th>mfa</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <div id="footer">brought to you by <a href="https://github.com/spawnfest/beamspirit">Smells Like BEAM Spirit</a></div>
+  </body>
+</html>
