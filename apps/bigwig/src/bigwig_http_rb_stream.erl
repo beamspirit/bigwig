@@ -24,7 +24,7 @@ websocket_init(_TransportName, Req, _Opts) ->
   bigwig_report_reader:rescan(), %% ouch
   bigwig_error_handler:register_client(self()),
   Self = self(),
-  spawn(fun() -> read_history(Self) end),
+  io:format("Self ~p~n", [Self]),
   {ok, Req, undefined_state}.
 
 websocket_handle(Bin, Req, State) when is_binary(Bin) ->

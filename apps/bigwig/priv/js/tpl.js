@@ -1,4 +1,20 @@
 
+/* 
+ * <div id="stats">
+ *   <span class="load"></span>
+ *   <span class="processes"></span>
+ * </div>
+ *
+ * TPL.connect('/path/to/websocket');
+ *
+ * WSPid ! js:term_to_json([
+ *   {stats, [
+ *     {load, 2},
+ *     {processes, 25}
+ *   ]}
+ * ]).
+ *
+ */
 
 var TPL = (function() {
   var title = function(title) {
@@ -36,7 +52,7 @@ var TPL = (function() {
     } else if(t == "date") {
       var d = v.data;
       return d[0] + "-" + nn(d[1]) + "-" + nn(d[2])
-     + " " + nn(d[4]) + ":" + nn(d[5]);
+     + " " + nn(d[3]) + ":" + nn(d[4]) + ":" + nn(d[5]);
     }
     return v;
   }
@@ -65,8 +81,10 @@ var TPL = (function() {
   var li = function(type, p, data) {
     var id = data.id;
     var li = $('li[data-id='+id+']', p);
+    var tpl = $('li._tpl',p).first();
+    var processFun = tpl.data('process');
     if(li.length==0) {
-      li = $('li._tpl',p).clone(false, false);
+      li = tpl.clone(false, false);
       li.attr('data-id', id);
       li.removeClass('_tpl');
       if(p.attr('data-sort')=='desc') {
@@ -85,23 +103,10 @@ var TPL = (function() {
       permalink.bind('click', href_click(uniq));
     }
     updateChildren(li, data);
-  } 
-
-  var filterFun = function(el) {
-    var filter = el.attr('data-filter');
-    var filterBy = el.attr('data-filter-by');
-    if(filter) {
-      var filters = filter.split(',');
-      return function(data, f) {
-        for(var i in filters) {
-          if(data[filterBy] == filters[i]) {
-            f();
-          }
-        }
-      }
+    if(processFun) {
+      processFun(li, data);
     }
-    return function(data, f) { f(); };
-  }
+  } 
 
   var update = function(k, data) {
     var el = $('#'+k);
@@ -114,28 +119,30 @@ var TPL = (function() {
       el.text(data);
     } else if(jt == "object") {
       if(data[0]) {
-        var filter = filterFun(el);
-        console.log(filter, el);
         for(var i=0; i<data.length; i++) {
-          filter(data[i], function() {
-            li(k, el, data[i])
-          });
+          li(k, el, data[i])
         }
       } else {
         updateChildren(el, data);
       }
     }
   }
-
-  var onmessage = function(msg) {
-    var json = $.parseJSON(msg.data);
+  var onjson = function(json) {
     console.log(json);
     for(var k in json) {
       update(k, json[k]);
     }
   }
+  var onmessage = function(msg) {
+    console.log("msg", msg);
+    console.log("json", $.parseJSON(msg.data));
+    onjson($.parseJSON(msg.data));
+  }
   var onclose = function() {
 
+  }
+  var fetch = function(url) {
+    $.getJSON(url, onjson);
   }
   return {
     visit: visit,
@@ -145,6 +152,7 @@ var TPL = (function() {
       sock.onmessage = onmessage
       sock.onclose = onclose
     },
+    fetch: fetch,
     clear: function(el) {
       el.children().each(function(i) {
         var child = $(this);
@@ -155,3 +163,26 @@ var TPL = (function() {
     }
   }
 })();
+
+(function ($) {
+  $.extend({      
+    getQueryString: function (name, qs) {           
+      var q = qs;
+      if(!q) {
+        q = window.location.search.substring(1);
+      }
+      var params = {},
+          e,
+          a = /\+/g,  // Regex for replacing addition symbol with a space
+          r = /([^&=]+)=?([^&]*)/g,
+          d = function (s) { return decodeURIComponent(s.replace(a, " ")); };
+
+      while(e = r.exec(q)) {
+        var k = d(e[1]);
+        if(k==name) {
+          return d(e[2]);
+        }
+      }
+    }
+  });
+})(jQuery);
