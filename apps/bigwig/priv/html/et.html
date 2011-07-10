@@ -14,7 +14,13 @@
       $(document).ready(function() {
         var oTable = $('#etop_table').dataTable({
           "bProcessing": true,
-          "sAjaxSource": '/top'
+          "sAjaxSource": '/top',
+          "fnServerData": function(sSource, aoData, fnCallback) {
+                            $.getJSON( sSource, aoData, function(json) {
+                              $('#accumulate').attr('checked', json.accumulate);
+                              fnCallback(json);
+                            });
+                          }
         });
         $(document).everyTime(5000, "poll_etop", function() {oTable.fnReloadAjax();});
         $('#accumulate').bind('click', function() {

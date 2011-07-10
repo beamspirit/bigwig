@@ -265,7 +265,7 @@ get_mem(Tag, MemI) ->
     _ -> 0
   end.
 
-update_json(Info, #opts{node=Node}) ->
+update_json(Info, #opts{node=Node, accum=Accum}) ->
   {Cpu,NProcs,RQ,Clock0} = loadinfo(Info),
   Clock = iolist_to_binary(Clock0),
   Header =
@@ -294,6 +294,7 @@ update_json(Info, #opts{node=Node}) ->
   Ps = [etop_proc_info_to_json(P) || P <- Info#etop_info.procinfo],
   NumPs = length(Ps),
   [{<<"iTotalRecords">>, NumPs},
+   {<<"accumulate">>, Accum},
    {<<"iTotalDisplayRecords">>, NumPs},
    {<<"sColumns">>, <<"pid,name,time,reds,mem,mq,mfa">>},
    {<<"aaData">>, Ps}].
