@@ -25,14 +25,11 @@ dispatch_rules() ->
 
             {[],                       bigwig_http_static, [<<"html">>,<<"index.html">>]}
         ,   {[<<"static">>, '...'],     bigwig_http_static, []}
-        ,   {[<<"wh">>, <<"ws">>],      bigwig_http_wh, []}
         ,   {[<<"vm">>],                bigwig_http_vm, []}
-        ,   {[<<"rb">>],                bigwig_http_static, [<<"html">>,<<"rb.html">>]}
         ,   {[<<"rb">>, <<"stream">>],  bigwig_http_rb_stream, []}
         ,   {[<<"rb">>, '...'],         bigwig_http_rb, []}
         ,   {[<<"pid">>, '...'],        bigwig_http_pid, []}
         ,   {[<<"module">>, '...'],     bigwig_http_module, []}
-        ,   {[<<"et">>],                bigwig_http_static, [<<"html">>,<<"et.html">>]}
         ,   {[<<"top">>, '...'],        bigwig_http_etop2, []}
         ,   {[<<"appmon">>, '...'],     bigwig_http_appmon, []}
         ,   {[<<"stats-stream">>],      bigwig_http_stats_stream, []}
