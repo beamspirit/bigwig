@@ -7,7 +7,6 @@ $(function() {
 
     $.getJSON('/appmon/_all', function(data) {
         var nodeName = 'bigwig@virding';
-
         var json = {
             id: 'nodeName',
             name: 'nodeName',
@@ -17,9 +16,7 @@ $(function() {
             },
             children: []
         };
-
         var nodes = {};
-
         var i = 0;
 
         var getMap = $.map(data, function(info, pid) {
