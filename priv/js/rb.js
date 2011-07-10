@@ -45,7 +45,7 @@ RB = (function() {
     if(!data) {
       data = report;
     }
-    $('.data', el).html(RENDERER.stringify(data));
+    $('.data', el).html(RENDERER.render_json_val(data));
   });
 
   $('.filter').click(function() {

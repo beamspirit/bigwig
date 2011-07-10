@@ -27,7 +27,7 @@ websocket_handle(Bin, Req, State) when is_binary(Bin) ->
   {reply, Bin, Req, State};
 
 %% handle sasl reports sent form our custom handler
-websocket_handle({bigwig, {bigwig_error_handler, Report}}, Req, State) ->
+websocket_handle({bigwig, {bigwig_error_handler, Report}}, Req, State) -> 
   {reply, report(bigwig_report_reader:fmt_report({erlang:localtime(), Report})), Req, State};
 
 %% ignore other bigwig internal msgs
@@ -45,4 +45,8 @@ websocket_terminate(_Reason, _Req, _State) ->
   ok.
 
 report(Report) ->
-  jsx:term_to_json([{report, [Report]}]).
+  Str = bigwig_report_reader:ascii_format_report("",Report),
+  J = [{report, [ {'_str', Str}|Report ]}],
+  Term = jsx:term_to_json(J),
+  io:format("~p\n", [Term]),
+  Term.
