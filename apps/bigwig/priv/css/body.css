@@ -47,7 +47,9 @@ ul#tools li {
   color: white;
   background: #396cac;
 }
-#tools a.tool:hover {
+#tools a.tool:hover,
+#tools a.tool.current {
+  font-weight: normal;
   background: #3b8a20;
 }
 #main .tool {
