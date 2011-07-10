@@ -47,7 +47,7 @@ confval(Key, Default) ->
     end.
 
 init([]) ->
-    Port            = confval(port, 9999),
+    Port            = confval(port, 40829),
     Ip              = confval(ip, "127.0.0.1"),
     NumAcceptors    = confval(num_acceptors, 16),
 
