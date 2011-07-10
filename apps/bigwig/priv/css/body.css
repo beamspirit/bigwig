@@ -213,7 +213,8 @@ li.info, li.error, li.warning {
   display: block !important;
 }
 
-#nodestats {
+#nodestats,
+#topstats {
   margin: 0.8em;
 }
 
