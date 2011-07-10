@@ -3,6 +3,7 @@
     <title>So Peter... what's happening?</title>
     <link rel="stylesheet" type="text/css" href="/static/css/body.css" />
     <link rel="stylesheet" type="text/css" href="/static/css/etop_table.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/appmon.css" />
   </head>
   <body>
     <div id="header">
@@ -98,6 +99,11 @@
     </div>
     <div id="main">
 
+      <div id="appmon" class="tool">
+        <button id="refresh">Refresh</button>
+        <div id="appmon-graph"></div>
+      </div>
+
       <div id="etop" class="tool">
         <div>
           <form method="POST">
@@ -161,17 +167,22 @@
     <script type="text/javascript" src="/static/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery.dataTables.extra.js"></script>
     <script type="text/javascript" src="/static/js/jquery.timers-1.2.js"></script>
+    <script type="text/javascript" src="/static/js/jit-2.0.1.min.js"></script>
     <script type="text/javascript" src="/static/js/date.js"></script>
     <script type="text/javascript" src="/static/js/tpl.js"></script>
     <script type="text/javascript" src="/static/js/rb.js"></script>
     <script type="text/javascript" src="/static/js/et.js"></script>
     <script type="text/javascript" src="/static/js/stats.js"></script>
+    <script type="text/javascript" src="/static/js/appmon.js"></script>
 
     <script type="text/javascript">
       $('#tools .tool').click(function() {
-        var href = $(this).attr('href');
+        var tool = $(this).attr('href');
         $('#main .tool').removeClass('active');
-        $('#'+href).addClass('active');
+        $('#'+tool).addClass('active');
+        if(tool == "appmon") {
+          APPMON.start();
+        }
         return false;
       });
       $('#applications').bind('onupdate', function(e, data) {
