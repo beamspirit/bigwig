@@ -45,12 +45,15 @@ ul#tools li {
   margin: 0;
   padding: 0.1em 0.3em 0.2em 0.3em;
   color: white;
-  background: #396cac;
+  background-color: #396cac;
+  background-image: url(/static/images/arrow_right.gif);
+  background-position: center right;
+  background-repeat: no-repeat;
 }
 #tools a.tool:hover,
 #tools a.tool.current {
   font-weight: normal;
-  background: #3b8a20;
+  background-color: #3b8a20;
 }
 #main .tool {
   display: none;
