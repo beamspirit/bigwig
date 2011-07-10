@@ -3,6 +3,7 @@
 -module(bigwig_stats_sender).
 -behaviour(gen_server).
 -define(SERVER, ?MODULE).
+-define(INTERVAL, 2000).
 
 %% ------------------------------------------------------------------
 %% API Function Exports
@@ -30,7 +31,7 @@ start_link() ->
 %% ------------------------------------------------------------------
 
 init([]) ->
-    timer:send_interval(5000, calculate),
+    timer:send_interval(?INTERVAL, calculate),
     {ok, #state{}}.
 
 handle_call(_Request, _From, State) ->
