@@ -3,7 +3,7 @@ var $jit = $jit || {};
 
 APPMON = (function() {
     var started = false;
-    function _start() {
+    function _start(nodeName) {
         if(started) return;
         started = true;
         var getFun = function(mfa) {
@@ -169,13 +169,13 @@ APPMON = (function() {
 
         $('#refresh').bind('click', function(event) {
             event.preventDefault();
-            fetchJson('bigwig@virding', function(json) {
+            fetchJson(nodeName, function(json) {
                 st.loadJSON(json);
                 st.refresh();
             });
         });
 
-        fetchJson('bigwig@virding', function(json) {
+        fetchJson(nodeName, function(json) {
             st.loadJSON(json);
             st.compute();
             st.onClick(st.root, {Move: {offsetY: 90}});

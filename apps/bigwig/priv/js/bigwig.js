@@ -6,7 +6,7 @@ BigWig = (function() {
     $('#tools .tool').removeClass('current');
     $('#tools *[href='+tool+']').addClass('current');
     if(tool == "appmon") {
-      APPMON.start();
+      APPMON.start('nonode@nohost');
     }
   }
   (function() {
@@ -19,12 +19,12 @@ BigWig = (function() {
       TPL.update('running', data.running);
       //TPL.update('loaded', data.loaded);
     });
-    TPL.fetch("/vm")
+    TPL.fetch("/vm");
     activate('etop');
   })();
 
   return {
 
-  }
+  };
 })();
 
