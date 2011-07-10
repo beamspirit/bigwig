@@ -3,6 +3,8 @@ var $jit = $jit || {};
 
 APPMON = (function() {
     var started = false;
+    var liveEnabled = true;
+    var lastTree = {};
     function _start(nodeName) {
         if(started) return;
         started = true;
@@ -45,7 +47,7 @@ APPMON = (function() {
                             var parentPid = linkInfo[0];
                             var childPid = linkInfo[1];
                             if (!(parentPid in links)) {
-                                links[parentPid] = [];
+                                links[parentPid] = []; 
                             }
                             links[parentPid].push(childPid);
                         });
@@ -155,14 +157,9 @@ APPMON = (function() {
                     label.append('<span class="messages">' + node.data.q + '<span class="inbox">&#x2709;</span></span>');
                 }
             },
-            onBeforePlotNode: function(node){
-                if (node.selected) {
-                    // node.data.$color = "#000";
-                } else {
-                    // node.data.$color = "#fff";
-                }
+            onBeforePlotNode: function(node) {
             },
-            onBeforePlotLine: function(adj){
+            onBeforePlotLine: function(adj) {
                 if (adj.nodeFrom.selected && adj.nodeTo.selected) {
                     adj.data.$color = "#46e";
                     adj.data.$lineWidth = 2;
@@ -188,20 +185,56 @@ APPMON = (function() {
             }
         };
 
-        $('#refresh').bind('click', function(event) {
-            event.preventDefault();
-            refreshTree();
-        });
-
-        window.setInterval(refreshTree, 2000);
-
         fetchJson(nodeName, function(json) {
             st.loadJSON(json);
             st.compute();
             st.onClick(st.root);
         });
     }
+
+    function refresh() {
+    }
+
+    function updateTree(data) {
+        lastTree = data;
+        if (liveEnabled) {
+            refresh();
+        }
+    }
+
     return {
-        start: _start
+        start: _start,
+        updateTree: updateTree,
+        refresh: refresh,
+        enabled: function() {
+            return liveEnabled;
+        },
+        enable: function() {
+            liveEnabled = true;
+        },
+        disable: function() {
+            liveEnabled = false;
+        }
     };
 })();
+
+$(function() {
+    $('#appmon-live-toggle').bind('click', function(event) {
+        event.preventDefault();
+        if (APPMON.enabled()) {
+            APPMON.disable();
+            $(this).text('Enable live updates');
+        } else {
+            APPMON.enable();
+            $(this).text('Disable live updates');
+            APPMON.refresh();
+        }
+    });
+
+    $('#appmon').bind('onupdate', function(e, data) {
+        if (data._type == 'tuple' && data.data[0] == 'node_app_tree') {
+            // Handle tree update
+            APPMON.updateTree(data.data[1]);
+        }
+    });
+});
