@@ -125,7 +125,7 @@ APPMON = (function() {
                 label.bind('click', function() {
                     st.onClick(node.id, {
                         Move: {
-                            offsetY: -90
+                            offsetY: 90
                         }
                     });
                 });
@@ -178,7 +178,7 @@ APPMON = (function() {
         fetchJson('bigwig@virding', function(json) {
             st.loadJSON(json);
             st.compute();
-            st.onClick(st.root, {Move: {offsetY: -90}});
+            st.onClick(st.root, {Move: {offsetY: 90}});
         });
     }
     return {
