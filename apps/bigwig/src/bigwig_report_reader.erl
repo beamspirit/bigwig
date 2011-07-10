@@ -136,7 +136,7 @@ handle_call({load_list, #filter{type=FType,
                                  false ->
                                     {Total,Acc}
                              end
-                     end, {0,[]}, Reports),
+                     end, {0,[]}, lists:reverse(Reports)),
     
     {reply, Reports2, State};
 

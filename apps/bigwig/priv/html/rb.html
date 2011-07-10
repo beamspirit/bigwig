@@ -5,36 +5,59 @@
   </head>
   <body>
     <h1 id="title">Reports</h1>
-      <a class="filter current" href="/rb" data-filter="">all</a>
+
+    <div id="stats">
+      <span class="load"></span>
+      <span class="processes"></span>
+    </div>
+      <a class="filter current" href="/rb">all</a>
        /
-      <a class="filter" href="/rb?type=error" data-filter="error,error_report">error</a>
+      <a class="filter" href="/rb?type=error">error</a>
        /
-      <a class="filter" href="/rb?type=warning" data-filter="warning,warning_msg,warning_report">warning</a>
+      <a class="filter" href="/rb?type=warning">warning</a>
        /
-      <a class="filter" href="/rb?type=info" data-filter="info,info_msg,info_report">info</a>
-    <ul id="report" class="section" data-sort="desc">
+      <a class="filter" href="/rb?type=info">info</a>
+    <ul id="report" class="section all" data-sort="desc" data-filter="all">
       <li class="report _tpl">
         <span class="report_level"></span>
         <span class="group_leader"></span>
         <span class="pid"></span>
         <span class="report_type"></span>
         <span class="date"></span>
+        <pre class="data"></div>
       </li>
     </ul>
     <div id="footer">brought to you by <a href="https://github.com/spawnfest/beamspirit">Smells Like BEAM Spirit</a></div>
     <script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="/static/js/tpl.js"></script>
     <script type="text/javascript">
+      function getFilter(level) {
+        return level.split("_")[0];
+      }
+      $('#report ._tpl').data("process", function(el, data) {
+        el.addClass(getFilter(data['report_level']));
+        $('.data', el).text(JSON.stringify(data['data'], null, 4));
+        el.click(function() {
+          el.toggleClass('selected');
+        });
+      });
       TPL.connect("/rb/stream");
+      TPL.fetch("/rb/reports?limit=200");
+
       $('.filter').click(function() {
-        var filter = $(this).attr('data-filter');
+        var href = $(this).attr('href');
+        var href_parts = href.split("?");
+        var filter = "all";
+        if(href_parts.length > 1) {
+          filter = $.getQueryString('type', href_parts[1]);
+        }
         var current = $('#report').attr('data-filter');
         if(filter != current) {
           $('.filter').removeClass('current');
           $(this).addClass('current');
-          TPL.clear($('#report'));
+          $('#report').removeClass(current);
+          $('#report').addClass(filter);
           $('#report').attr('data-filter', filter);
-          $('#report').attr('data-filter-by', 'report_level');
         }
         return false;
       });
