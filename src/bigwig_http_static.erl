@@ -22,11 +22,16 @@ handle(Req, OnlyFile = State) ->
   send(Req, OnlyFile, State).
 
 send(Req, PathBins, State) ->
-  Headers = [{<<"Content-Type">>, <<"text/html">>}],
   Path = [ binary_to_list(P) || P <- PathBins ],
-  {ok, Body} = file(filename:join(Path)),
-  {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
-  {ok, Req2, State}.
+  case file(filename:join(Path)) of
+    {ok, Body} ->
+      Headers = [{<<"Content-Type">>, <<"text/html">>}],
+      {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
+      {ok, Req2, State};
+    _ ->
+      {ok, Req2} = cowboy_http_req:reply(404, [], <<"404'd">>, Req),
+      {ok, Req2, State}
+  end.
 
 terminate(_Req, _State) ->
   ok.
