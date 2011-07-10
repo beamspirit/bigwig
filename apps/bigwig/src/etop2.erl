@@ -295,6 +295,7 @@ update_json(Info, #opts{node=Node, accum=Accum}) ->
   NumPs = length(Ps),
   [{<<"iTotalRecords">>, NumPs},
    {<<"accumulate">>, Accum},
+   {<<"header">>, Header},
    {<<"iTotalDisplayRecords">>, NumPs},
    {<<"sColumns">>, <<"pid,name,time,reds,mem,mq,mfa">>},
    {<<"aaData">>, Ps}].
