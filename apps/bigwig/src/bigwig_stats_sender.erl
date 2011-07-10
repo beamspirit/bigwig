@@ -57,14 +57,12 @@ code_change(_OldVsn, State, _Extra) ->
 
 %% Generate a proplist of jsx_to_term compatible data about VM state
 calc_stats() ->
-    {{Y,M,D},{Hr,Sec,Min}} = erlang:universaltime(),
     {{input, InBytes}, {output, OutBytes}} = erlang:statistics(io),
     {RedsTot, _RedsDiff} = erlang:statistics(reductions),
     {Uptime , _} = erlang:statistics(wall_clock),
 
     [
         {process_count, erlang:system_info(process_count)},
-        {date, [Y,M,D,Hr,Sec,Min]},
         {reductions, RedsTot},
         {bytes_in, InBytes},
         {bytes_out, OutBytes},
