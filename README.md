@@ -105,16 +105,16 @@ at the top).
 URL schemes, blah
 =================
 
-/vm                     lists running apps, releases, process count etc
+* `/vm`                     lists running apps, releases, process count etc
 
-/rb/reports             lists available SASL reports
-/rb/reports?type=error  lists SASL reports of a specific type
-/rb/reports/1           returns SASL report id 1
-/rb/stream              websocket endpoint for streaming SASL reports as JSON
+* `/rb/reports`             lists available SASL reports
+* `/rb/reports?type=error`  lists SASL reports of a specific type
+* `/rb/reports/1`           returns SASL report id 1
+* `/rb/stream`              websocket endpoint for streaming SASL reports as JSON
 
-/pid/<1.2.3>            process_info (POST to send msg to pid)
-/pid/NAME               as above, but using registered process name NAME
-/pid/global/NAME        as above, but using global registered process name NAME
-/module/NAME            NAME:module_info() stuff
+* `/pid/<1.2.3>`            process_info (POST to send msg to pid)
+* `/pid/NAME`               as above, but using registered process name NAME
+* `/pid/global/NAME`        as above, but using global registered process name NAME
+* `/module/NAME`            NAME:module_info() stuff
 
 
