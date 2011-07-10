@@ -148,7 +148,11 @@ $(function() {
                     }
 
                     label.onclick = function() {
-                        st.onClick(node.id);
+                        st.onClick(node.id, {
+                            Move: {
+                                offsetY: -90
+                            }
+                        });
                     };
                 },
                 onBeforePlotNode: function(node){
