@@ -1,0 +1,26 @@
+#appmon-graph {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    margin: auto;
+    overflow: hidden;
+}
+
+.app-name,
+.app-version,
+.registered-name,
+.pid-ic,
+.pid-cf,
+.pid {
+    display: block;
+}
+
+#appmon-graph-label div.node {
+    height: 120px;
+    width: 300px;
+    cursor: pointer;
+    color: #333;
+    font-size: 0.9em;
+    text-align: left;
+    padding: 5px;
+}
