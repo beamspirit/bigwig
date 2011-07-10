@@ -74,7 +74,7 @@ var RENDERER = (function() {
                     return render_list(obj.data, '{', '}');
                 case 'pid':
                     var Pid = obj.data.replace(/[<>]/g, '');
-                    return $('<a class="pid" href="#">&lt;'+Pid+'&gt;</a>');
+                    return $('<a class="_pid" href="#">&lt;'+Pid+'&gt;</a>');
                 case 'port':
                     return $(obj.data)
                 default:
@@ -90,11 +90,12 @@ var RENDERER = (function() {
         gen_pid_html: gen_pid_html,
         render_list: render_list,
         render_json_val: render_json_val,
+        json: render_json_val
     }
 
 })();
 
-$("body").delegate("a.pid", "click", function(e){
+$("body").delegate("a._pid", "click", function(e){
     var pid = $(this).text().replace(/[<>]/g,'');
     RENDERER.show_pid_dialog(pid);
     e.preventDefault();

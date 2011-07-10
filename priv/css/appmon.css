@@ -6,12 +6,12 @@
     overflow: hidden;
 }
 
-.app-name,
-.app-version,
-.registered-name,
-.pid-ic,
-.pid-cf,
-.pid {
+#appmon .app-name,
+#appmon .app-version,
+#appmon .registered-name,
+#appmon .pid-ic,
+#appmon .pid-cf,
+#appmon .pid {
     display: block;
 }
 
@@ -27,13 +27,13 @@
     word-wrap: break-word;
 }
 
-.inbox {
+#appmon .inbox {
     font-family: arial unicode ms, sans-serif;
     font-size: 14px;
     padding-left: 2px;
 }
 
-.messages {
+#appmon .messages {
     display: block;
     position: absolute;
     bottom: 1px;
@@ -41,19 +41,19 @@
     height: 18px;
 }
 
-.process {
+#appmon .process {
     border: 1px solid #0ff;
 }
 
-.port {
+#appmon .port {
     border: 1px dotted #ff0;
 }
 
-.supervisor {
+#appmon .supervisor {
     border: 2px solid #f00;
 }
 
-.named {
+#appmon .named {
     border: 2px solid #00f;
 }
 
