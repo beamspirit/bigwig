@@ -222,18 +222,25 @@ li.info, li.error, li.warning {
   margin: 0.8em;
 }
 
-#stats dt {
-  text-align: left;
-  height:16px;
+#side strong {
+  display: block;
+  padding: 6px 0;
   font-size: 12px;
-  margin:0;
-  padding-top:1px;
-  padding-bottom:1px;
+  font-weight: bold;
 }
-#stats dd {
-  float: right;
+
+#side dt {
+  float: left;
+  clear: left;
+  text-align: left;
+  font-size: 12px;
+  height: 16px;
+  display: block;
 }
-#stats td:first-child {
-  text-align: right;
-  font-weight: normal;
+
+#side dd {
+  margin: 0;
+  padding: 0 0 0.5em 0;
+  height: 16px;
+  display: block;
 }
