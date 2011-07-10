@@ -16,39 +16,11 @@ handle(Req, State) ->
 
 %% /rb/reports
 handle_path([<<"rb">>, <<"reports">>], Req0, State) ->
-    %% A version of qs_val that url-decodes values (ie no %20 etc)
-    Qsval = fun(K,R) -> case cowboy_http_req:qs_val(K, R) of
-                            {undefined, R2} -> {undefined, R2};
-                            {ValEnc, R2}    -> {bigwig_util:url_decode(ValEnc), R2}
-                        end
-            end,
-    %% Create a rb filter based on query params
-    {Opts1,Req1} = case Qsval(<<"type">>, Req0) of
-                    {undefined, R1} -> {[], R1};
-                    {TypeBin, R1}   -> {[{type, list_to_atom(TypeBin)}], R1}
-                   end,
-    {Opts2,Req2} = case Qsval(<<"startdate">>, Req1) of
-                    {undefined, R2} -> {Opts1, R2};
-                    {SD, R2}        -> {[{startdate, SD}|Opts1], R2}
-                   end,
-    {Opts3,Req3} = case Qsval(<<"enddate">>, Req2) of
-                    {undefined, R3} -> {Opts2, R3};
-                    {ED, R3}        -> {[{enddate, ED}|Opts2], R3}
-                   end,
-    {Opts4,Req4} = case Qsval(<<"limit">>, Req3) of
-                    {undefined, R4} -> {Opts3, R4};
-                    {IntStr, R4}    -> {[{limit, list_to_integer(IntStr)}|Opts3], R4}
-                   end,
-    {Opts5,Req5} = case Qsval(<<"level">>, Req4) of
-                    {undefined, R5} -> {Opts4, R5};
-                    {LevelBin, R5}   -> {[{level, list_to_atom(LevelBin)}|Opts4], R5}
-                   end,
-    ReportFilter = bigwig_report_reader:make_filter(Opts5),
-    
+    {ReportFilter, Req} = make_report_filter_from_qs(Req0),
     Body = jsx:term_to_json(list_reports(ReportFilter)),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
-    {ok, Req6} = cowboy_http_req:reply(200, Headers, Body, Req5),
-    {ok, Req6, State};
+    {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
+    {ok, Req2, State};
 
 %% /rb/reports/123
 handle_path([<<"rb">>, <<"reports">>, IdBin], Req, State) ->
@@ -87,3 +59,34 @@ format_reports(Reports) ->
         || {Hash,Type,Pid,Date,Rep,Str} <- Reports ].
 
 
+%% Make a proplist to pass to make_filter, from the querstring
+make_report_filter_from_qs(Req0) ->
+    %% A version of qs_val that url-decodes values (ie no %20 etc), and to_list
+    Qsval = fun(K,R) -> case cowboy_http_req:qs_val(K, R) of
+                            {undefined, R2} -> {undefined, R2};
+                            {ValEnc, R2}    -> {bigwig_util:url_decode(ValEnc), R2}
+                        end
+            end,
+    %% Create a rb filter based on query params
+    {Opts1,Req1} = case Qsval(<<"type">>, Req0) of
+                    {undefined, R1} -> {[], R1};
+                    {TypeBin, R1}   -> {[{type, list_to_atom(TypeBin)}], R1}
+                   end,
+    {Opts2,Req2} = case Qsval(<<"startdate">>, Req1) of
+                    {undefined, R2} -> {Opts1, R2};
+                    {SD, R2}        -> {[{startdate, SD}|Opts1], R2}
+                   end,
+    {Opts3,Req3} = case Qsval(<<"enddate">>, Req2) of
+                    {undefined, R3} -> {Opts2, R3};
+                    {ED, R3}        -> {[{enddate, ED}|Opts2], R3}
+                   end,
+    {Opts4,Req4} = case Qsval(<<"limit">>, Req3) of
+                    {undefined, R4} -> {Opts3, R4};
+                    {IntStr, R4}    -> {[{limit, list_to_integer(IntStr)}|Opts3], R4}
+                   end,
+    {Opts5,Req5} = case Qsval(<<"level">>, Req4) of
+                    {undefined, R5} -> {Opts4, R5};
+                    {LevelBin, R5}   -> {[{level, list_to_atom(LevelBin)}|Opts4], R5}
+                   end,
+    Filter = bigwig_report_reader:make_filter(Opts5),
+    {Filter, Req5}.
