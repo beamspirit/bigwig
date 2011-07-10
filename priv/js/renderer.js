@@ -48,7 +48,36 @@ var RENDERER = (function() {
     }
 
     var show_mfa_dialog = function(m, f, a) {
-        alert('MFA DIALOG HERE: ' + m + ':' + f + '/' + a);
+        var url = '/module/' + m;
+        $.ajax({
+                    url: url,
+                    dataType: 'json',
+                    success: function(json){
+                        $('<div class="mfa_dialog"></div>')
+                            .append( gen_pid_html(json) )
+                            .dialog({
+                                title: m + ':module_info() &nbsp; ' + 
+                                       '<small>(<a href="'+url+'">json</a>)</small>',
+                                width: 460,
+                                buttons: { 
+                                    "Close": function() { $(this).dialog("close"); }, 
+                                    "Reload Module":  function() { 
+                                        if(confirm("Sure you want to reload this module?"))
+                                        {
+                                            var thisdiag = $(this);
+                                            $.ajax({
+                                                url:url,
+                                                type:'POST',
+                                                data: {reload: "yes"},
+                                                success: function(resp){
+                                                    alert('Module reloaded');
+                                                }
+                                            })                                                
+                                        }
+                                    }
+                                }
+                            })
+                    }});
     }
 
 
