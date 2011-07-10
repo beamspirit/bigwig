@@ -21,7 +21,6 @@ websocket_init(_TransportName, Req, _Opts) ->
   bigwig_report_reader:start(),  %% will only be started once anyway, registered name
   bigwig_report_reader:rescan(), %% ouch
   bigwig_pubsubhub:register_client(self()),
-  Self = self(),
   {ok, Req, undefined_state}.
 
 websocket_handle(Bin, Req, State) when is_binary(Bin) ->
