@@ -103,11 +103,14 @@ var RENDERER = (function() {
         }
         else
         {
-            d.append( render_json_val(list[0]) );
-            for(var i = 1 ; i < list.length; ++i)
+            var first = true;
+            for(var i in list)
             {
-                d.append(', ');
+                if(!first) {
+                    d.append(', ');
+                }
                 d.append( render_json_val(list[i]) );
+                first = false;
             }
             d.append(etag);
             return d;
