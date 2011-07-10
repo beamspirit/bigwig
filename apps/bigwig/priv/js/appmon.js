@@ -91,6 +91,7 @@ $(function() {
                 duration: 200,
                 transition: $jit.Trans.Quart.easeInOut,
                 levelDistance: 100,
+                levelsToShow: 3,
                 constrained: false,
                 Navigation: {
                     enable: true,
