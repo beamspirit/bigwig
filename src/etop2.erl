@@ -250,7 +250,9 @@ loadinfo(SysI) ->
              now = Now,
              wall_clock = {_, WC},
              runtime = {_, RT}} = SysI,
-  Cpu = round(100*RT/WC),
+  Cpu = try round(100*RT/WC)
+        catch _:_ -> 0
+        end,
   Clock = io_lib:format("~2.2.0w:~2.2.0w:~2.2.0w",
                         tuple_to_list(element(2,calendar:now_to_datetime(Now)))),
   {Cpu,Procs,RQ,Clock}.
