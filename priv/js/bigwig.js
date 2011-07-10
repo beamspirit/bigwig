@@ -20,7 +20,7 @@ BigWig = (function() {
       //TPL.update('loaded', data.loaded);
     });
     TPL.fetch("/vm");
-    activate('etop');
+    activate('dashboard');
   })();
 
   return {
