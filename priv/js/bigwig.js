@@ -24,7 +24,7 @@ BigWig = (function() {
   })();
 
   return {
-
+    activate: activate
   };
 })();
 
