@@ -83,14 +83,47 @@ var TPL = (function() {
     var li = $('li[data-id='+id+']', p);
     var tpl = $('li._tpl',p).first();
     var processFun = tpl.data('process');
+    var sort = p.attr('data-sort');
     if(li.length==0) {
       li = tpl.clone(false, false);
       li.attr('data-id', id);
       li.removeClass('_tpl');
-      if(p.attr('data-sort')=='desc') {
+      if(sort=='desc') {
         p.prepend(li);
       } else {
         p.append(li);
+      }
+      var limit = p.attr('data-limit');
+      if(limit != undefined) {
+        limit = parseInt(limit);
+        var count = parseInt(p.attr('data-count'));
+        console.log("count", count, "limit", limit);
+        if(count >= limit) {
+          var all = $('li',p);
+          if(sort=="desc") {
+            //console.log("remove");
+            var last = all.last();
+            if(last && last.hasClass('_tpl')) {
+              last = last.prev();
+            }
+            if(last) {
+              last.remove();
+            }
+          } else {
+            //console.log("remove first");
+            var first = all.first();
+            //console.log("first", first);
+            if(first && first.hasClass('_tpl')) {
+              first = first.next();
+            }
+            if(first) {
+              first.remove();
+            }
+          }
+        } else {
+          count++;
+        }
+        p.attr('data-count', count);
       }
     } else {
       li = li.first();
@@ -155,15 +188,7 @@ var TPL = (function() {
       socks[to].onmessage = onmessage;
       socks[to].onclose = onclose;
     },
-    fetch: fetch,
-    clear: function(el) {
-      el.children().each(function(i) {
-        var child = $(this);
-        if(!child.hasClass('_tpl')) {
-          child.remove();
-        }
-      });
-    }
+    fetch: fetch
   }
 })();
 
