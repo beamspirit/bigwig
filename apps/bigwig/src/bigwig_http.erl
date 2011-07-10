@@ -23,10 +23,8 @@ dispatch_rules() ->
     %% {Host, list({Path, Handler, Opts})}
     [{'_', [
 
-            {[<<"">>],                  bigwig_http_index, []}
-
+            {[],                       bigwig_http_static, [<<"html">>,<<"index.html">>]}
         ,   {[<<"static">>, '...'],     bigwig_http_static, []}
-        ,   {[<<"wh">>],                bigwig_http_static, [<<"html">>,<<"index.html">>]}
         ,   {[<<"wh">>, <<"ws">>],      bigwig_http_wh, []}
         ,   {[<<"vm">>],                bigwig_http_vm, []}
         ,   {[<<"rb">>],                bigwig_http_static, [<<"html">>,<<"rb.html">>]}

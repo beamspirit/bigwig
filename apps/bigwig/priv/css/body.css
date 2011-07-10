@@ -2,14 +2,120 @@ body {
   font-family: Consolas, "Droid Sans Mono", Monaco, Courier, monospace;
   font-size: 12px;
   letter-spacing: 1px;
+  margin:0;
+  padding:0;
 }
 ._tpl {
   display: none;
   visibility: hidden;
 }
+#header {
+  border-bottom: 8px solid #eee;
+  background: #0b3e77;
+  position: relative;
+}
+h1 {
+  color: white;
+  margin:0;
+  padding:0.2em 0.4em;
+}
+#attrib {
+  color: white;
+  float: right;
+  top: -1.5em;
+  right: 1em;
+  position: relative;
+}
+#attrib a {
+  color: white;
+}
+
+#side {
+  display: block;
+  width: 15%;
+  height: 100%;
+  background: #eee;
+  border-right: 1px solid #ccc;
+  position: absolute;
+}
+#main {
+  border-left: 1px solid white;
+  border-top: 1px solid #ccc;
+  margin-left: 15%;
+  padding: 1em;
+}
+
+ul.menu {
+  list-style: none;
+  margin:-1em -1em 0 -1em;
+  padding:0 0 0.2em 0.3em;
+  background: #396cac;
+}
+ul.menu li {
+  display: inline;
+}
+ul.menu li a {
+  color: white;
+  display: inline-block;
+  padding: 0.3em 0.5em 0.2em 0.5em;
+}
+
+ul#app {
+  margin:0;
+  padding:0;
+  list-style: none;
+}
+ul#app li {
+  padding: 0;
+}
+ul#app li a {
+  border-style: solid;
+  border-width: 0;
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+  border-left-width: 5px;
+  border-color: transparent;
+  display: block;
+  padding: 0.4em 0.4em;
+  text-decoration: none;
+}
+ul#app li .name {
+  font-size: 1.1em;
+}
+ul#app li .version {
+  font-size: 0.8em;
+  color: #999;
+}
+ul#app li p.description {
+  font-size: 0.9em;
+  color: #777;
+  margin: 0;
+}
+ul#app li a:hover {
+  background: #ccc;
+  border-color: #999;
+  border-left-color: #4169E1; 
+}
+
 
 .sort {
   color: blue;
+}
+
+#report {
+  list-style: none;
+  margin: 0 -1em 0 -1em;
+  padding:0;
+}
+#report li.report {
+  margin:0.2em 0 0.2em 0;
+  padding:0.2em 1em 0.2em 1em;
+  color: #444;
+  cursor: pointer;
+  border-bottom: 1px solid #ccc;
+}
+#report li.report:hover {
+  color: #000;
 }
 
 li.info, li.error, li.warning {
@@ -26,13 +132,6 @@ li.info, li.error, li.warning {
   font-weight: bold;
 }
 
-.report {
-  color: #444;
-  cursor: pointer;
-}
-.report:hover {
-  color: #000;
-}
 .report .data {
   display: none;
   margin: 0.5em;
