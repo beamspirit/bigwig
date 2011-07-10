@@ -95,11 +95,11 @@ var RENDERER = (function() {
         
     }
 
-    var render_list = function( list, stag, etag ) {
-        var d = $('<span>'+stag+'</span>');
+    var render_list = function( list) {
+        var d = $('<span>[</span>');
         if(list.length == 0)
         {
-            return d.append(' ' + etag);
+            return d.append(' ]');
         }
         else
         {
@@ -112,8 +112,73 @@ var RENDERER = (function() {
                 d.append( render_json_val(list[i]) );
                 first = false;
             }
-            d.append(etag);
+            d.append(']');
             return d;
+        }
+    }
+
+    var pad = function pad(number, length) {
+        var str = '' + number;
+        while (str.length < length) str = '0' + str;
+        return str;
+    }
+
+    var render_object = function( obj ) {
+        switch (obj._type)
+        {
+            // Node we use delegate to bind onclick for all a.pid, a.mfa
+            case 'tuple':
+                if(obj.data.length == 3 && (typeof obj.data[2] == 'number'))
+                {
+                    return $('<a class="mfa" href="#">' + obj.data[0] + ':' + obj.data[1] + '/' + obj.data[2] + '</a>'); 
+                } 
+                return render_list(obj.data, '{', '}');
+            case 'pid':
+                var Pid = obj.data.replace(/[<>]/g, '');
+                return $('<a class="_pid" href="#">&lt;'+Pid+'&gt;</a>');
+            case 'port':
+                return $(obj.data)
+            case 'date':
+                var o = obj.data;
+                var str = o[0] + '-' + pad(o[1],2) + '-' + pad(o[2],2) +
+                          ' ' + pad(o[3],2) + ':' + pad(o[4],2) + ':' + pad(o[5],2);
+                return $('<span>' + str + '</span>');
+            case 'bag':
+                var d = $('<span>{</span>');
+                var first = true;
+                for(var k=0;k<obj.data.length;++k)
+                {
+                    if(!first) {
+                        d.append(', ');
+                    }
+                    d.append( render_json_val(obj.data[k]) );
+                    first = false;
+                }
+                d.append('}');
+                return d;
+                    
+            default:
+                var d = $('<span>{</span>');
+                if(obj.length == 0)
+                {
+                    return d.append(' }');
+                }
+                else
+                {
+                    var first = true;
+                    for(var i in obj)
+                    {
+                        if(!first) {
+                            d.append(', ');
+                        }
+                        d.append( render_json_val(i) );
+                        d.append(' : ');
+                        d.append( render_json_val(obj[i]) );
+                        first = false;
+                    }
+                    d.append('}');
+                    return d;
+                }
         }
     }
 
@@ -122,27 +187,9 @@ var RENDERER = (function() {
         if( obj === false ) return $('<span>false</span>');
         if( typeof obj == 'number' ) return $('<span>' + obj + '</span>');
         if( typeof obj == 'string' ) return $('<span>' + obj + '</span>');
-        if( $.isArray(obj) ) return render_list(obj, '[', ']');
-        if( typeof obj == 'object' ) 
-        {
-            switch (obj._type)
-            {
-                // Node we use delegate to bind onclick for all a.pid, a.mfa
-                case 'tuple':
-                    if(obj.data.length == 3 && (typeof obj.data[2] == 'number'))
-                    {
-                        return $('<a class="mfa" href="#">' + obj.data[0] + ':' + obj.data[1] + '/' + obj.data[2] + '</a>'); 
-                    } 
-                    return render_list(obj.data, '{', '}');
-                case 'pid':
-                    var Pid = obj.data.replace(/[<>]/g, '');
-                    return $('<a class="_pid" href="#">&lt;'+Pid+'&gt;</a>');
-                case 'port':
-                    return $(obj.data)
-                default:
-                    return render_list(obj, '{', '}');
-            }
-        }
+        if( $.isArray(obj) ) return render_list(obj);
+        if( typeof obj == 'object' ) return render_object(obj);
+        console.log("ERRRR what type is this");
     }
     var stringify = function(json) {
         return (JSON.stringify(json, null, 4)).replace(/\<(\d+)\.(\d+)\.(\d+)\>/, '<a class="_pid" href="#">&lt;$1.$2.$3&gt;</a>');
@@ -154,6 +201,7 @@ var RENDERER = (function() {
         show_mfa_dialog: show_mfa_dialog,
         gen_pid_html: gen_pid_html,
         render_list: render_list,
+        render_object: render_object,
         render_json_val: render_json_val,
         json: render_json_val,
         stringify: stringify
