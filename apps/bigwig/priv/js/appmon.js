@@ -1,5 +1,6 @@
 var $ = $ || {};
 var $jit = $jit || {};
+
 $(function() {
     var getFun = function(mfa) {
         return 'fun ' + mfa[0] + ':' + mfa[1] + '/' + mfa[2];
@@ -95,9 +96,9 @@ $(function() {
                     panning: true
                 },
                 Node: {
-                    height: 120,
-                    width: 300,
-                    type: 'ellipse',
+                    height: 60,
+                    width: 97,
+                    type: 'rectangle',
                     color: '#0aa',
                     overridable: true
                 },
@@ -111,46 +112,31 @@ $(function() {
                 onAfterCompute: function() {
                     // Done loading
                 },
-                onCreateLabel: function(label, node) {
-                    label.id = node.id;
+                onCreateLabel: function(labelObj, node) {
+                    var label = $(labelObj);
+                    label.attr('id', node.id);
 
-                    label.innerHTML = "";
-
-                    // Set up label
-                    if ('pid' in node.data) {
-                        label.innerHTML += '<span class="pid">'
-                            + node.data.pid + '</span>';
-                    } else if ('port' in node.data) {
-                        label.innerHTML += '<span class="pid">'
-                            + node.data.port + '</span>';
-                    }
-                    if (node.data.nodeType == 'appMaster') {
-                        label.innerHTML += '<span class="app-name">'
-                            + node.data.name
-                            + '</span><span class="app-version">'
-                            + node.data.ver + '</span>';
-                    } else if (node.data.nodeType == 'node') {
-                        label.innerHTML += node.data.name;
-                    } else if ('name' in node.data) {
-                        label.innerHTML += '<span class="registered-name">' + node.data.name + '</span>';
-                    }
-                    if ('cf' in node.data) {
-                        label.innerHTML += '<span class="pid-cf">' + getFun(node.data.cf) + '</span>';
-                    }
-                    if ('ic' in node.data) {
-                        label.innerHTML += '<span class="pid-ic">' + getFun(node.data.ic) + '</span>';
-                    }
-                    if ('q' in node.data) {
-                        label.innerHTML += '<span class="mq-len">Msgs: ' + node.data.q + '</span>';
-                    }
-
-                    label.onclick = function() {
+                    label.bind('click', function() {
                         st.onClick(node.id, {
                             Move: {
                                 offsetY: -90
                             }
                         });
-                    };
+                    });
+
+                    if ('pid' in node.data) {
+                        label.append('<span class="pid">' + node.data.pid + '</span>');
+                        if (node.data.nodeType == 'appMaster') {
+                            label.append('<span class="app-name">' + node.data.name + '</span>');
+                            label.append('<span class="app-version">' + node.data.ver + '</span>');
+                        } else if (node.data.nodeType == 'node') {
+                            label.append(node.data.name);
+                        } else if ('name' in node.data) {
+                            label.append('<span class="registered-name">' + node.data.name + '</span>');
+                        }
+                    } else if ('port' in node.data) {
+                        label.append('<span class="pid">' + node.data.port + '</span>');
+                    }
                 },
                 onBeforePlotNode: function(node){
                     if (node.selected) {
