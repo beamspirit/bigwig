@@ -98,12 +98,12 @@ $(function() {
                 Node: {
                     height: 120,
                     width: 300,
-                    type: 'rectangle',
+                    type: 'ellipse',
                     color: '#0aa',
                     overridable: true
                 },
                 Edge: {
-                    type: 'bezier',
+                    type: 'quadratic:end',
                     overridable: true
                 },
                 onBeforeCompute: function(node) {
