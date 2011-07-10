@@ -12,6 +12,33 @@ applications, and VM settings.
 
 Conceived for Spawnfest 2011, SMELLS LIKE BEAM SPIRIT.
 
+USAGE
+=====
+Start up the dev server and head to http://localhost:40829/
+
+    ./start-dev.sh
+
+or include as a rebar dep and start your own node:
+
+    {bigwig, ".*", {git, "https://github.com/spawnfest/beamspirit.git", {branch, "master"}}}
+
+rebar get-deps, compile, and then make sure your config includes the following
+so that binary sasl reports are generated (which are used by bigwig):
+
+    {sasl, [
+         {errlog_type, error},
+         {error_logger_mf_dir, "log/sasl"},      % Log directory
+         {error_logger_mf_maxbytes, 10485760},   % 10 MB max file size
+         {error_logger_mf_maxfiles, 5}           % 5 files max
+       ]}
+
+then run your project:
+
+    mkdir -p log/sasl/
+    ./start-myproject-dev.sh
+    1> bigwig:start().
+    =INFO REPORT==== 10-Jul-2011::20:59:44 ===
+    Bigwig listening on http://127.0.0.1:40829/
 
 
 NOTES
