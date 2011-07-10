@@ -56,25 +56,25 @@ var RENDERER = (function() {
     }
 
     var render_json_val = function( obj ) {
-        if( obj === true ) return 'true';
-        if( obj === false ) return 'false';
-        if( typeof obj == 'number' ) return obj;
-        if( typeof obj == 'string' ) return obj;
+        if( obj === true ) return $('<span>true</span>');
+        if( obj === false ) return $('<span>false</span>');
+        if( typeof obj == 'number' ) return $('<span>' + obj + '</span>');
+        if( typeof obj == 'string' ) return $('<span>' + obj + '</span>');
         if( $.isArray(obj) ) return render_list(obj, '[', ']');
         if( typeof obj == 'object' ) 
         {
             switch (obj._type)
             {
+                // Node we use delegate to bind onclick for all a.pid, a.mfa
                 case 'tuple':
                     if(obj.data.length == 3 && (typeof obj.data[2] == 'number'))
                     {
-                        return $('<a class="mfa" href="#">' + obj.data[0] + ':' + obj.data[1] + '/' + obj.data[2] + '</a>').click(function(e){ show_mfa_dialog(obj.data[0],obj.data[1],obj.data[2]); e.preventDefault()});
+                        return $('<a class="mfa" href="#">' + obj.data[0] + ':' + obj.data[1] + '/' + obj.data[2] + '</a>'); 
                     } 
                     return render_list(obj.data, '{', '}');
                 case 'pid':
                     var Pid = obj.data.replace(/[<>]/g, '');
-                    return $('<a href="#">&lt;'+Pid+'&gt;</a>')
-                        .click(function(e){ show_pid_dialog(Pid); e.preventDefault();});
+                    return $('<a class="pid" href="#">&lt;'+Pid+'&gt;</a>');
                 case 'port':
                     return $(obj.data)
                 default:
@@ -82,6 +82,7 @@ var RENDERER = (function() {
             }
         }
     }
+
 
     return {
         show_pid_dialog: show_pid_dialog,
@@ -92,3 +93,16 @@ var RENDERER = (function() {
     }
 
 })();
+
+$("body").delegate("a.pid", "click", function(e){
+    var pid = $(this).text().replace(/[<>]/g,'');
+    RENDERER.show_pid_dialog(pid);
+    e.preventDefault();
+});
+$("body").delegate("a.mfa", "click", function(e){
+    var x1 = $(this).text().split(':');
+    var x2 = x1[1].split('/');
+    RENDERER.show_mfa_dialog(x1[0],x2[0],parseInt(x2[1]));
+    e.preventDefault();
+});
+

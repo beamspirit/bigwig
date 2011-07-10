@@ -302,7 +302,7 @@ update_json(Info, #opts{node=Node, accum=Accum}) ->
 
 name(Name) when is_atom(Name) -> Name;
 name({M,F,A}) when is_atom(M), is_atom(F), is_integer(A) ->
-  atom_to_list(M) ++ ":" ++ atom_to_list(F) ++ "/" ++ integer_to_list(A).
+    {M,F,A}.
 
 etop_proc_info_to_json(
   #etop_proc_info{pid=Pid,
@@ -312,7 +312,8 @@ etop_proc_info_to_json(
                   runtime=Time,
                   cf=MFA,
                   mq=MQ}) ->
-  [list_to_binary(pid_to_list(Pid)),name(Name),Time,Reds,Mem,MQ,name(MFA)].
+  
+  [Pid,name(Name),Time,Reds,Mem,MQ,name(MFA)].
 
 %% Connect to a node and potentially set up tracing
 -spec connect(#opts{}) -> {ok, #opts{}} | {error, any()}.
