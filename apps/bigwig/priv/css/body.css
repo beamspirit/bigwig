@@ -50,6 +50,12 @@ ul#tools li {
 #tools a.tool:hover {
   background: #3b8a20;
 }
+#main .tool {
+  display: none;
+}
+#main .tool.active {
+  display: block !important;
+}
 
 #side {
   display: block;

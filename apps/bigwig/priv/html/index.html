@@ -2,6 +2,7 @@
   <head>
     <title>So Peter... what's happening?</title>
     <link rel="stylesheet" type="text/css" href="/static/css/body.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/etop_table.css" />
   </head>
   <body>
     <div id="header">
@@ -10,9 +11,9 @@
     </div>
     <div id="side">
       <ul id="tools">
-        <li><a class="tool" href="#">Reports</a></li>
-        <li><a class="tool" href="#">Process Load</a></li>
-        <li><a class="tool" href="#">Applications</a>
+        <li><a class="tool" href="reports">Reports</a></li>
+        <li><a class="tool" href="etop">Process Load</a></li>
+        <li><a class="tool" href="appmon">Applications</a>
           <div id="applications">
             <ul id="running"> 
               <li class="running app _tpl"><a href="">
@@ -31,21 +32,6 @@
           </div>
         </li>
       </ul>
-      <div id="system_info">
-        <strong>System Info</strong>
-        <dl>
-          <dt>Process Limit</dt>
-          <dd class="process_limit"></dd>
-          <dt>Kernel Poll</dt>
-          <dd class="kernel_poll"></dd>
-          <dt>Logical Processors</dt>
-          <dd class="logical_processors"></dd>
-          <dt>OTP Release</dt>
-          <dd class="otp_release"></dd>
-          <dt>Architecture</dt>
-          <dd class="system_architecture"></dd>
-        </dl>
-      </div> 
 
       <div id="nodestats">
         <strong>Node Stats</strong>
@@ -78,8 +64,65 @@
         <span id="sl_reds"></span>
       </div>
 
+      <div id="topstats">
+        <!-- etop stats -->
+        <table id="node_info">
+          <tr> <th>node</th>     <td id="glob_node"></td>     </tr>
+          <tr> <th>clock</th>    <td id="glob_clock"></td>    </tr>
+          <tr> <th>cpu</th>      <td id="glob_cpu"></td>      </tr>
+          <tr> <th>tot</th>      <td id="glob_tot"></td>      </tr>
+          <tr> <th>bin</th>      <td id="glob_bin"></td>      </tr>
+          <tr> <th>nprocs</th>   <td id="glob_nprocs"></td>   </tr>
+          <tr> <th>procs</th>    <td id="glob_procs"></td>    </tr>
+          <tr> <th>code</th>     <td id="glob_code"></td>     </tr>
+          <tr> <th>runqueue</th> <td id="glob_runqueue"></td> </tr>
+          <tr> <th>atom</th>     <td id="glob_atom"></td>     </tr>
+          <tr> <th>ets</th>      <td id="glob_ets"></td>      </tr>
+        </table>
+      </div>
+
+      <div id="system_info">
+        <strong>System Info</strong>
+        <dl>
+          <dt>Process Limit</dt>
+          <dd class="process_limit"></dd>
+          <dt>Kernel Poll</dt>
+          <dd class="kernel_poll"></dd>
+          <dt>Logical Processors</dt>
+          <dd class="logical_processors"></dd>
+          <dt>OTP Release</dt>
+          <dd class="otp_release"></dd>
+          <dt>Architecture</dt>
+          <dd class="system_architecture"></dd>
+        </dl>
+      </div> 
     </div>
     <div id="main">
+
+      <div id="etop" class="tool">
+        <div>
+          <form method="POST">
+            <input type="checkbox" name="accumulate" id="accumulate">Accumulate</input>
+            <input type="checkbox" name="pause" id="pause">Pause</input>
+          </form>
+        </div>
+        <table class="display" id="etop_table">
+          <thead>
+            <tr>
+              <th>pid</th>
+              <th>name</th>
+              <th>time</th>
+              <th>reds</th>
+              <th>mem</th>
+              <th>mq</th>
+              <th>mfa</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+
       <div id="reports" class="tool">
         <ul class="menu">
           <li><a class="filter current" href="/rb">all</a></li>
@@ -116,46 +159,22 @@
 
     <script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery.sparkline.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.dataTables.extra.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.timers-1.2.js"></script>
     <script type="text/javascript" src="/static/js/date.js"></script>
     <script type="text/javascript" src="/static/js/tpl.js"></script>
     <script type="text/javascript" src="/static/js/rb.js"></script>
+    <script type="text/javascript" src="/static/js/et.js"></script>
+    <script type="text/javascript" src="/static/js/stats.js"></script>
 
     <script type="text/javascript">
-        var MAX_POINTS = 30;
-        var stats_data = {};
-        <!-- connect to realtime stats feed -->
-        $('#stats').bind('onupdate', function(e, data) {
-                // generate sparklines for most of these stats:
-                for(var key in data)
-                {
-                    if( key == 'date' )   continue;
-                    if( key == 'uptime' ) continue;
-                    if(! stats_data[key]) stats_data[key]=[];
-
-                    stats_data[key].push(data[key]);
-                    stats_data[key] = stats_data[key].slice( - (MAX_POINTS+1) );
-                    // generate array of deltas to make sparkline:
-                    var sparkdata = [];
-                    var prevdata = stats_data[key][0];
-                    for(var i = 1; i<stats_data[key].length; ++i)
-                    {
-                        thisdata = stats_data[key][i];
-                        sparkdata.push( thisdata - prevdata );
-                        prevdata = thisdata;
-                    }
-                    $('.' + key).sparkline( sparkdata );
-                }
-                var formattedUptime = (new Date).clearTime()
-                                      .addSeconds(parseInt(data['uptime']/1000))
-                                      .toString('H:mm:ss');
-                var numDays = Math.floor( data['uptime']/86400000 );
-                if(numDays) formattedUptime = numDays + ':' + formattedUptime;                
-                $('.uptime').text( formattedUptime );
-                });
-        TPL.connect("/stats-stream");
-    </script>
-
-    <script type="text/javascript">
+      $('#tools .tool').click(function() {
+        var href = $(this).attr('href');
+        $('#main .tool').removeClass('active');
+        $('#'+href).addClass('active');
+        return false;
+      });
       $('#applications').bind('onupdate', function(e, data) {
         TPL.update('running', data.running);
         TPL.update('loaded', data.loaded);
