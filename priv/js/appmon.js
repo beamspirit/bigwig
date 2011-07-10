@@ -95,6 +95,7 @@ APPMON = (function() {
                     if ('selectedNode' in st
                         && st.selectedNode
                         && !(st.selectedNode in nodesById)) {
+                        console.log('selected node (' + st.selectedNode + ') disappeared, returning to root node...');
                         st.select(st.root);
                         delete st.selectedNode;
                     }
