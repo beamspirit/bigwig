@@ -59,6 +59,26 @@ ul#tools li {
   border-right: 1px solid #ccc;
   position: absolute;
 }
+#system_info {
+  margin: 0.8em;
+}
+dl {
+  margin: 0;
+  padding: 0;
+}
+dt {
+  display: block;  
+  margin: 0;
+  padding: 0;
+  font-size: 0.7em;
+}
+dd {
+  display: block;
+  margin: -0.2em 0 0 0;
+  padding: 0;
+  color: #444;
+  text-align: right;
+}
 #main {
   border-left: 1px solid white;
   border-top: 1px solid #ccc;
@@ -200,7 +220,7 @@ li.info, li.error, li.warning {
   padding-bottom:1px;
 }
 #stats td:first-child { 
-    text-align: right; 
-    font-weight: normal;
+  text-align: right; 
+  font-weight: normal;
 }
 
