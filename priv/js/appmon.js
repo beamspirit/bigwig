@@ -95,7 +95,8 @@ APPMON = (function() {
                     if ('selectedNode' in st
                         && st.selectedNode
                         && !(st.selectedNode in nodesById)) {
-                        st.select('rootNode');
+                        st.select(st.root);
+                        delete st.selectedNode;
                     }
                     callback(json);
                 });
