@@ -56,7 +56,7 @@ APPMON = (function() {
             };
             json.children.push(child);
             nodes[pid] = child;
-            nodes[nodeId] = child;
+            nodesById[nodeId] = child;
 
             // Create links lookup table
             var links = {};
