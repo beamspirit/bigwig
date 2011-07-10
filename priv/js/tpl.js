@@ -59,9 +59,8 @@ var TPL = (function() {
       el.data(k, v);
       var child = $("."+k, el);
       if(child.length > 0 && v) {
-        child.children().remove();
         try {
-          child.append(v);
+          child.html(v);
         } catch(err) {
         }
       }
@@ -150,9 +149,8 @@ var TPL = (function() {
     var jt = type(data);
 
     if(jt == "string") {
-      el.children().remove();
       try {
-        el.append(data);
+        el.html(data);
       } catch(err) {
       }
     } else if(jt == "object") {
