@@ -1,0 +1,50 @@
+<html>
+  <head>
+    <title>So Peter... what's happening?</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/body.css" />
+  </head>
+  <body>
+    <h1 id="title">STATS</h1>
+
+    <!-- realtime stats -->
+    <table id="stats">
+        <tr>
+            <td>Date</td>
+            <td class="date"></td>
+        </tr>
+        <tr>
+            <td>Processes</td>
+            <td class="process_count"></td>
+        </tr>
+        <tr>
+            <td>Reductions</td>
+            <td class="reductions"></td>
+        </tr>
+        <tr>
+            <td>Bytes In</td>
+            <td class="bytes_in"></td>
+        </tr>
+        <tr>
+            <td>Bytes Out</td>
+            <td class="bytes_out"></td>
+        </tr>
+        <tr>
+            <td>Run Queue</td>
+            <td class="run_queue"></td>
+        </tr>
+        <tr>
+            <td>Uptime</td>
+            <td class="uptime"></td>
+        </tr>
+    </table>
+
+    <script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="/static/js/tpl.js"></script>
+    <script type="text/javascript">
+      $('#stats').bind('onupdate', function(e, data) {
+        console.log("stats", data);
+      });
+      TPL.connect("/stats-stream");
+    </script>
+  </body>
+</html>
