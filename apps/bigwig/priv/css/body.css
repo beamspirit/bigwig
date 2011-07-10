@@ -132,20 +132,34 @@ li.info, li.error, li.warning {
   font-weight: bold;
 }
 
-.report .data {
+.report .info {
   display: none;
+}
+#report .selected .info {
+  display: block !important;
+}
+.report .data {
   margin: 0.5em;
   border: 1px solid #ccc;
   padding: 0.5em 1em;
 }
-#report .selected .data {
+.report .date {
+  float: right;
+}
+
+.label {
+  font-weight: bold;
+}
+/**
+ * report types
+ */
+.report .started,
+.report .application_start
+{
+  display: none;
+}
+.report.started .started,
+.report.application_start .application_start
+{
   display: block !important;
 }
-
-#apps .name {
-}
-#apps .description {
-  color: #888;
-}
-
-
