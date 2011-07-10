@@ -97,10 +97,6 @@ $(function() {
         levelDistance: 50,
         levelsToShow: 3,
         constrained: true,
-        Navigation: {
-            enable: true,
-            panning: true
-        },
         Node: {
             height: 60,
             width: 97,
