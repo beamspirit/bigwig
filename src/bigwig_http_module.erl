@@ -13,6 +13,16 @@ handle(Req0, State) ->
     {Method, Req1} = cowboy_http_req:method(Req),
     handle_path(Method, Path, Req1, State).
 
+handle_path('POST', [<<"module">>, Module], Req, State) ->
+    {Props, Req2} = cowboy_http_req:body_qs(Req),
+    case proplists:get_value(<<"reload">>, Props) of
+        undefined -> 
+            not_found(Req2, State);
+        <<"yes">> -> 
+            c:l(list_to_existing_atom(binary_to_list(Module))),
+            {ok, Req3} = cowboy_http_req:reply(200, [], <<"ok">>, Req2),
+            {ok, Req3, State}
+    end;
 handle_path('GET', [<<"module">>, Module], Req, State) ->
     case to_module_info(Module) of
         [_|_] = Info -> json_response(Info, Req, State);
@@ -30,10 +40,13 @@ terminate(_Req, _State) ->
 
 -spec to_module_info(binary()) -> list().
 to_module_info(Bin) ->
-    case catch(list_to_existing_atom(binary_to_list(Bin))) of
+    ModInfo =  case catch(list_to_existing_atom(binary_to_list(Bin))) of
         Mod when is_atom(Mod) -> catch(Mod:module_info());
         _ -> []
-    end.
+    end,
+    Exports = proplists:get_value(exports, ModInfo),
+    NewExports = [ list_to_binary(lists:flatten(io_lib:format("~w/~w",[F,A]))) || {F,A} <- Exports ],
+    [ {exports, NewExports} | proplists:delete(exports, ModInfo) ].
 
 json_response(Info, Req, State) ->
     Body = jsx:term_to_json(Info),
