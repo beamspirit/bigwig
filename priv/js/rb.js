@@ -42,12 +42,10 @@ RB = (function() {
     } else {
       //el.addClass('selected');
     }
-    if(data) {
-      $('.data', el).text(JSON.stringify(data, null, 4));
-    } else {
-      $('.data', el).text(JSON.stringify(report, null, 4));
+    if(!data) {
+      data = report;
     }
-
+    $('.data', el).html(RENDERER.stringify(data));
   });
 
   $('.filter').click(function() {

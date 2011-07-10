@@ -16,6 +16,7 @@ USAGE
 =====
 Start up the dev server and head to http://localhost:40829/
 
+    ./rebar get-deps
     ./start-dev.sh
 
 or include as a rebar dep and start your own node:

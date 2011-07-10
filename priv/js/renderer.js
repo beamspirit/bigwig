@@ -141,6 +141,9 @@ var RENDERER = (function() {
             }
         }
     }
+    var stringify = function(json) {
+        return (JSON.stringify(json, null, 4)).replace(/\<(\d+)\.(\d+)\.(\d+)\>/, '<a class="_pid" href="#">&lt;$1.$2.$3&gt;</a>');
+    }
 
 
     return {
@@ -149,7 +152,8 @@ var RENDERER = (function() {
         gen_pid_html: gen_pid_html,
         render_list: render_list,
         render_json_val: render_json_val,
-        json: render_json_val
+        json: render_json_val,
+        stringify: stringify
     }
 
 })();
