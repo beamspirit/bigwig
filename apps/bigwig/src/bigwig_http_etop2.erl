@@ -26,10 +26,6 @@ not_found(Req, State) ->
     {ok, Req2} = cowboy_http_req:reply(404, [], <<"<h1>404</h1>">>, Req),
     {ok, Req2, State}.
 
-forbidden(Req, State) ->
-    {ok, Req2} = cowboy_http_req:reply(403, [], <<"<h1>403</h1>">>, Req),
-    {ok, Req2, State}.
-
 terminate(_Req, _State) ->
     ok.
 

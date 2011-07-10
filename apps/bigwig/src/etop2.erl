@@ -72,7 +72,7 @@ start_link(Opts) ->
 update() ->
   gen_server:call(?SERVER, update).
 
--spec node(atom()) -> ok.
+-spec node(atom()) -> ok | {error, any()}.
 node(Node) ->
   gen_server:call(?SERVER, {node, Node}).
 
@@ -116,7 +116,7 @@ handle_call({node, Node}, _From, State) ->
       clear_ets(State3),
       {reply, ok, State3};
     {error, Error} ->
-      {reply, Error, State2}
+      {reply, {error, Error}, State2}
   end.
 
 handle_info(_Info, State) ->
@@ -348,7 +348,7 @@ stop_tracing(State=#opts{tracing=on}) ->
 stop_tracing(State) ->
   State.
 
--spec clear_ets(#opts{}) -> ok | {error, any()}.
+-spec clear_ets(#opts{accum_tab::atom() | ets:tid()}) -> true.
 clear_ets(#opts{accum_tab=AccumTab}) ->
   ets:delete_all_objects(AccumTab).
 
@@ -358,7 +358,8 @@ check_runtime_config(sort,S)
 check_runtime_config(accumulate,A) when A=:=true; A=:=false -> ok;
 check_runtime_config(_Key,_Value) -> error.
 
--spec parse_config_value(binary(), binary()) -> {ok, atom() | integer()} | error.
+-spec parse_config_value(binary(), binary()) ->
+                            {ok, atom(), atom() | integer()} | error.
 parse_config_value(K, V) ->
   case {config_key(K), config_value(V)} of
     {{ok, Key}, {ok, Value}} ->
