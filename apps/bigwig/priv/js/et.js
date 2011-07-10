@@ -7,8 +7,8 @@ $(document).ready(function() {
     "fnServerData": function(sSource, aoData, fnCallback) {
                       $.getJSON( sSource, aoData, function(json) {
                         $('#accumulate').attr('checked', json.accumulate);
-                        header = json.header;
-                        gs = ['node','clock','cpu','tot','bin','nprocs','procs','code','runqueue','atom','ets'];
+                        var header = json.header;
+                        var gs = ['node','clock','cpu','tot','bin','nprocs','procs','code','runqueue','atom','ets'];
                         for (var i = 0; i < gs.length; i++) {
                           var g = gs[i];
                           if (g in header) {
