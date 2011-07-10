@@ -23,13 +23,10 @@ APPMON = (function() {
 
             $.getJSON('/appmon/_all', function(data) {
                 var nodes = {};
-                var i = 0;
-
                 var getMap = $.map(data, function(info, pid) {
-                    i += 1;
                     var child = {
-                        id: 'node' + i,
-                        name: 'node' + i,
+                        id: 'master-' + pid,
+                        name: 'master-' + pid,
                         data: $.extend(info, {
                             nodeType: 'appMaster',
                             pid: pid
@@ -51,10 +48,9 @@ APPMON = (function() {
                         });
                         $.each(appData.p, function(childPid, pidInfo) {
                             if (!(childPid in nodes)) {
-                                i += 1;
                                 nodes[childPid] = {
-                                    id: 'node' + i,
-                                    name: 'node' + i,
+                                    id: 'pid-' + childPid,
+                                    name: 'pid-' + childPid,
                                     data: $.extend(pidInfo, {
                                         nodeType: 'normal',
                                         pid: childPid
@@ -69,10 +65,9 @@ APPMON = (function() {
                                     if (child in nodes) {
                                         nodes[parent].children.push(nodes[child]);
                                     } else if (child._type == 'port') {
-                                        i += 1;
                                         nodes[parent].children.push({
-                                            id: 'node' + i,
-                                            name: 'node' + i,
+                                            id: 'port-' + child.data,
+                                            name: 'port-' + child.data,
                                             data: {
                                                 nodeType: 'port',
                                                 port: child.data
@@ -123,11 +118,8 @@ APPMON = (function() {
                 label.attr('id', node.id);
 
                 label.bind('click', function() {
-                    st.onClick(node.id, {
-                        Move: {
-                            offsetY: 90
-                        }
-                    });
+                    st.selectedNode = node.id;
+                    st.onClick(node.id);
                 });
 
                 if ('pid' in node.data) {
@@ -167,18 +159,27 @@ APPMON = (function() {
             }
         });
 
-        $('#refresh').bind('click', function(event) {
-            event.preventDefault();
+        var refreshTree = function() {
             fetchJson(nodeName, function(json) {
                 st.loadJSON(json);
                 st.refresh();
+                if (st.selectedNode) {
+                    st.select(st.selectedNode);
+                } else {
+                    st.onClick(st.root);
+                }
             });
+        };
+
+        $('#refresh').bind('click', function(event) {
+            event.preventDefault();
+            refreshTree();
         });
 
         fetchJson(nodeName, function(json) {
             st.loadJSON(json);
             st.compute();
-            st.onClick(st.root, {Move: {offsetY: 90}});
+            st.onClick(st.root);
         });
     }
     return {
