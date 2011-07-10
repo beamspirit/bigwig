@@ -16,24 +16,7 @@
         <li><a class="tool" href="dashboard">Dashboard</a></li>
         <li><a class="tool" href="reports">Reports</a></li>
         <li><a class="tool" href="etop">Processes</a></li>
-        <li><a class="tool" href="appmon">Applications</a>
-          <div id="applications">
-            <ul id="running">
-              <li class="running app _tpl"><a href="javascript:BigWig.activate('appmon');">
-                <span class="name"></span>
-                <span class="version"></span>
-                <p class="description"></p>
-              </a></li>
-            </ul>
-            <ul id="loaded">
-              <li class="loaded app _tpl"><a href="javascript:BigWig.activate('appmon');">
-                <span class="name"></span>
-                <span class="version"></span>
-                <p class="description"></p>
-              </a></li>
-            </ul>
-          </div>
-        </li>
+        <li><a class="tool" href="appmon">Applications</a></li>
       </ul>
 
       <div id="nodestats">
@@ -103,6 +86,22 @@
     <div id="main">
 
       <div id="dashboard" class="tool">
+          <div id="applications">
+            <ul id="running">
+              <li class="running app _tpl"><a href="javascript:BigWig.activate('appmon');">
+                <span class="name"></span>
+                <span class="version"></span>
+                <p class="description"></p>
+              </a></li>
+            </ul>
+            <ul id="loaded">
+              <li class="loaded app _tpl"><a href="javascript:BigWig.activate('appmon');">
+                <span class="name"></span>
+                <span class="version"></span>
+                <p class="description"></p>
+              </a></li>
+            </ul>
+          </div>
       </div>
 
       <div id="appmon" class="tool">
