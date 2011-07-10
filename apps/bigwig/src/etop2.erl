@@ -39,7 +39,7 @@
 
 -define(ACCUM_TAB, accum_tab).
 
--define(DEFAULT_LINES, 40).
+-define(DEFAULT_LINES, 1000).
 
 %% Options are set as parameters to etop2:start_link([{node, a@host}, {...}])
 %%
