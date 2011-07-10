@@ -183,7 +183,11 @@ $(function() {
             });
             st.loadJSON(json);
             st.compute();
-            st.onClick(st.root);
+            st.onClick(st.root, {
+                Move: {
+                    offsetY: -90
+                }
+            });
         });
     });
 });
