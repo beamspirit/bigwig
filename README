@@ -96,11 +96,10 @@ through results.
 AppMon
 ------
 
-TODO write stuff here
-
-
-
-
+A 'SpaceTree' browser of a node's application masters and supervision
+hierarchies. Click nodes to browse the hierarchy. It will
+automatically update unless live updates are disabled (via the button
+at the top).
 
 
 URL schemes, blah
