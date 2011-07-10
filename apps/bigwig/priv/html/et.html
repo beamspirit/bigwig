@@ -15,9 +15,18 @@
         var oTable = $('#etop_table').dataTable({
           "bProcessing": true,
           "sAjaxSource": '/top',
+          // Get data piggy-backed on the main table and update the page
           "fnServerData": function(sSource, aoData, fnCallback) {
                             $.getJSON( sSource, aoData, function(json) {
                               $('#accumulate').attr('checked', json.accumulate);
+                              header = json.header;
+                              gs = ['node','clock','cpu','tot','bin','nprocs','procs','code','runqueue','atom','ets'];
+                              for (var i = 0; i < gs.length; i++) {
+                                var g = gs[i];
+                                if (g in header) {
+                                  $('#glob_' + g).html(header[g]);
+                                }
+                              }
                               fnCallback(json);
                             });
                           }
@@ -29,8 +38,47 @@
             url: '/top/config/accumulate/' + this.checked
           });
         });
+        $('#pause').bind('click', function() {
+          if (this.checked) {
+            $(document).stopTime("poll_etop");
+          } else {
+            $(document).everyTime(5000, "poll_etop", function() {oTable.fnReloadAjax();});
+          }
+        });
        });
     </script>
+    <table cellpadding="0" cellspacing="0" border="0" class="display" id="node_info">
+      <thead>
+        <tr>
+          <th>node</th>
+          <th>clock</th>
+          <th>cpu</th>
+          <th>tot</th>
+          <th>bin</th>
+          <th>nprocs</th>
+          <th>procs</th>
+          <th>code</th>
+          <th>runqueue</th>
+          <th>atom</th>
+          <th>ets</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td id="glob_node"></td>
+          <td id="glob_clock"></td>
+          <td id="glob_cpu"></td>
+          <td id="glob_tot"></td>
+          <td id="glob_bin"></td>
+          <td id="glob_nprocs"></td>
+          <td id="glob_procs"></td>
+          <td id="glob_code"></td>
+          <td id="glob_runqueue"></td>
+          <td id="glob_atom"></td>
+          <td id="glob_ets"></td>
+        </tr>
+      </tbody>
+    </table>
     <table cellpadding="0" cellspacing="0" border="0" class="display" id="etop_table">
       <thead>
         <tr>
@@ -48,6 +96,9 @@
     </table>
     <form method="POST">
       <input type="checkbox" name="accumulate" id="accumulate">Accumulate</input>
+    </form>
+    <form method="POST">
+      <input type="checkbox" name="pause" id="pause">Pause</input>
     </form>
     <div id="footer">brought to you by <a href="https://github.com/spawnfest/beamspirit">Smells Like BEAM Spirit</a></div>
   </body>
