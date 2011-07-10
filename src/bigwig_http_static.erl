@@ -46,4 +46,7 @@ file(Path) ->
   file:read_file(filename:join(Priv, Path)).
 
 priv() ->
-  code:priv_dir(bigwig).
+  case code:priv_dir(bigwig) of
+    {error,_} -> "priv";
+    Priv -> Priv
+  end.
