@@ -28,10 +28,12 @@ init([]) ->
     Http        = ?CHILD(bigwig_http, worker),
     ErrMon      = ?CHILD(bigwig_error_handler_mon, worker),
     Etop        = ?CHILD(etop2, worker),
+    AppMon      = ?CHILD(bigwig_appmon, worker),
 
-    Specs       = [ Pubsub, 
+    Specs       = [ Pubsub,
                     StatsSender,
-                    ErrMon, 
+                    AppMon,
+                    ErrMon,
                     Etop,
                     Http
                   ],
