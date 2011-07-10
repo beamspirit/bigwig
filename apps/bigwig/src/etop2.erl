@@ -292,7 +292,11 @@ update_json(Info, #opts{node=Node}) ->
          {<<"ets">>, Ets}]
     end,
   Ps = [etop_proc_info_to_json(P) || P <- Info#etop_info.procinfo],
-  {[{<<"header">>, Header}, {<<"procs">>, Ps}]}.
+  NumPs = length(Ps),
+  [{<<"iTotalRecords">>, NumPs},
+   {<<"iTotalDisplayRecords">>, NumPs},
+   {<<"sColumns">>, <<"pid,name,time,reds,mem,mq,mfa">>},
+   {<<"aaData">>, Ps}].
 
 name(Name) when is_atom(Name) -> Name;
 name({M,F,A}) -> [M, F, A].
@@ -305,13 +309,7 @@ etop_proc_info_to_json(
                   runtime=Time,
                   cf=MFA,
                   mq=MQ}) ->
-  [{<<"pid">>, list_to_binary(pid_to_list(Pid))},
-   {<<"name">>, name(Name)},
-   {<<"time">>, Time},
-   {<<"reds">>, Reds},
-   {<<"mem">>, Mem},
-   {<<"mq">>, MQ},
-   {<<"mfa">>, name(MFA)}].
+  [list_to_binary(pid_to_list(Pid)),name(Name),Time,Reds,Mem,MQ,name(MFA)].
 
 %% Connect to a node and potentially set up tracing
 -spec connect(#opts{}) -> {ok, #opts{}} | {error, any()}.
