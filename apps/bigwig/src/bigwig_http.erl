@@ -38,6 +38,7 @@ dispatch_rules() ->
         ,   {[<<"top">>, '...'],        bigwig_http_etop2, []}
         ,   {[<<"appmon">>],            bigwig_http_static, [<<"html">>,<<"appmon.html">>]}
         ,   {[<<"appmon">>, '...'],     bigwig_http_appmon, []}
+        ,   {[<<"stats-stream">>],      bigwig_http_stats_stream, []}
         ,   {'_',                       bigwig_http_catchall, []}
     ]}].
 
