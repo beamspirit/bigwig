@@ -3,7 +3,7 @@ var $jit = $jit || {};
 
 APPMON = (function() {
     var started = false;
-    function start() {
+    function _start() {
         if(started) return;
         started = true;
         var getFun = function(mfa) {
@@ -182,6 +182,6 @@ APPMON = (function() {
         });
     }
     return {
-        start: start
-    }
+        start: _start
+    };
 })();
