@@ -138,8 +138,8 @@ $(function() {
                         label.append('<span class="node-name">' + node.data.name + '</span>');
                     }
 
-                    if ('q' in node.data) {// && node.data.q > 0) {
-                        label.append('<span class="messages">1' + node.data.q + '<span class="inbox">&#x2709;</span></span>');
+                    if ('q' in node.data && node.data.q > 0) {
+                        label.append('<span class="messages">' + node.data.q + '<span class="inbox">&#x2709;</span></span>');
                     }
                 },
                 onBeforePlotNode: function(node){
