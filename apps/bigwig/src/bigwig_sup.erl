@@ -23,11 +23,18 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
+    Pubsub      = ?CHILD(bigwig_pubsubhub, worker),
+    StatsSender = ?CHILD(bigwig_stats_sender, worker),
     Http        = ?CHILD(bigwig_http, worker),
     ErrMon      = ?CHILD(bigwig_error_handler_mon, worker),
     Etop        = ?CHILD(etop2, worker),
 
-    Specs       = [ ErrMon, Http, Etop ],
+    Specs       = [ Pubsub, 
+                    StatsSender,
+                    ErrMon, 
+                    Etop,
+                    Http
+                  ],
 
     {ok, { {one_for_one, 5, 10}, Specs} }.
 

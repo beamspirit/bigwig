@@ -49,7 +49,7 @@ list_reports(Filter)  ->
     format_reports(Reports).
 
 format_reports(Reports) -> 
-    lists:map(fun format_report/1, Reports).
+    [{report, lists:map(fun format_report/1, Reports)}].
 
 %% NB: added a is_list guard, hpefully all reports are proplists here?
 %% if not, add a format_report that wraps it into an obj that includes hash?
