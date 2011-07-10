@@ -21,10 +21,6 @@
         <!-- realtime stats -->
         <strong>Node Stats</strong>
         <table id="stats">
-            <tr>    
-                <td>Date</td> 
-                <td class="date"></td>    
-            </tr>
             <tr>
                 <td>Processes</td>
                 <td class="process_count"></td>
@@ -89,6 +85,7 @@
 
     <script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery.sparkline.min.js"></script>
+    <script type="text/javascript" src="/static/js/date.js"></script>
     <script type="text/javascript" src="/static/js/tpl.js"></script>
     <script type="text/javascript" src="/static/js/rb.js"></script>
 
@@ -115,10 +112,14 @@
                         sparkdata.push( thisdata - prevdata );
                         prevdata = thisdata;
                     }
-                    // console.log(key, ' data= ' , sparkdata)
                     $('.' + key).sparkline( sparkdata );
                 }
-                console.log("stats", data);
+                var formattedUptime = (new Date).clearTime()
+                                      .addSeconds(parseInt(data['uptime']/1000))
+                                      .toString('H:mm:ss');
+                var numDays = Math.floor( data['uptime']/86400000 );
+                if(numDays) formattedUptime = numDays + ':' + formattedUptime;                
+                $('.uptime').text( formattedUptime );
                 });
         TPL.connect("/stats-stream");
     </script>
