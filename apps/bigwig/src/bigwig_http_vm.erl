@@ -34,7 +34,6 @@ system_info() ->
              (V) when is_atom(V)   -> V end,
 
     Keys = [
-            process_count,
             process_limit,
             kernel_poll,
             logical_processors,
