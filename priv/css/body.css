@@ -78,7 +78,7 @@ dl {
   padding: 0;
 }
 dt {
-  display: block;  
+  display: block;
   margin: 0;
   padding: 0;
   font-size: 0.7em;
@@ -230,8 +230,8 @@ li.info, li.error, li.warning {
   padding-top:1px;
   padding-bottom:1px;
 }
-#stats td:first-child { 
-  text-align: right; 
+#stats td:first-child {
+  text-align: right;
   font-weight: normal;
 }
 
