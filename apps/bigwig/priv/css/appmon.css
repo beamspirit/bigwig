@@ -1,7 +1,7 @@
 #appmon-graph {
     position: relative;
-    width: 1024;
-    height: 768;
+    width: 1024px;
+    height: 768px;
     margin: auto;
     overflow: hidden;
 }
@@ -57,6 +57,3 @@
     border: 2px solid #00f;
 }
 
-h1 {
-    color: #000;
-}
