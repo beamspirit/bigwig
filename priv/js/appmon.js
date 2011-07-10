@@ -5,108 +5,122 @@ APPMON = (function() {
     var started = false;
     var liveEnabled = true;
     var lastTree = {};
-    function _start(nodeName) {
-        if(started) return;
-        started = true;
-        var getFun = function(mfa) {
-            return 'fun ' + mfa[0] + ':' + mfa[1] + '/' + mfa[2];
-        };
+    var nodeName = 'nonode@nohost';
+    var st = undefined;
+    var initialised = false;
+    var nodes = {};
+    var nodesById = {};
+    var apps = {};
 
-        var fetchJson = function(nodeName, callback) {
-            var json = {
-                id: 'rootNode',
+    function updateApps(data) {
+        // TODO: this is hideous
+        apps = {};
+        $.each(data, function(index, app) {
+            var pid = app.data[0].data;
+            apps[pid] = {
+                name: app.data[2].data[0],
+                desc: app.data[2].data[1],
+                ver: app.data[2].data[2]
+            };
+        });
+    }
+
+    function getJSONTree() {
+        var json = {
+            id: 'rootNode',
+            name: nodeName,
+            data: {
                 name: nodeName,
-                data: {
-                    name: nodeName,
-                    nodeType: 'node'
-                },
+                nodeType: 'node'
+            },
+            children: []
+        };
+        nodesById = {'rootNode': json};
+        nodes = {};
+
+        $.each(lastTree, function(appName, appData) {
+            var pid = appData.root;
+            var nodeId = 'master-' + pid;
+            var info = appData.p[pid];
+            if (pid in apps) {
+                $.extend(info, apps[pid]);
+            }
+            var child = {
+                id: nodeId,
+                name: nodeId,
+                data: $.extend(info, {
+                    nodeType: 'appMaster',
+                    pid: pid
+                }),
                 children: []
             };
+            json.children.push(child);
+            nodes[pid] = child;
+            nodes[nodeId] = child;
 
-            $.getJSON('/appmon/_all', function(data) {
-                var nodes = {};
-                var nodesById = {'rootNode': json};
-                var getMap = $.map(data, function(info, pid) {
-                    var nodeId = 'master-' + pid;
-                    var child = {
+            // Create links lookup table
+            var links = {};
+            $.each(appData.l, function(index, linkInfo) {
+                var parentPid = linkInfo[0];
+                var childPid = linkInfo[1];
+                if (!(parentPid in links)) {
+                    links[parentPid] = [];
+                }
+                links[parentPid].push(childPid);
+            });
+
+            // Iterate over pids and set up nodes
+            $.each(appData.p, function(childPid, pidInfo) {
+                if (!(childPid in nodes)) {
+                    var nodeId = 'pid-' + childPid;
+                    nodes[childPid] = {
                         id: nodeId,
                         name: nodeId,
-                        data: $.extend(info, {
-                            nodeType: 'appMaster',
-                            pid: pid
+                        data: $.extend(pidInfo, {
+                            nodeType: 'normal',
+                            pid: childPid
                         }),
                         children: []
                     };
-                    json.children.push(child);
-                    nodes[pid] = child;
-                    nodes[nodeId] = child;
-                    return $.getJSON('/appmon/' + info.name, function(appData) {
-                        $.extend(nodes[pid].data, appData.p[pid]);
-                        var links = {};
-                        $.each(appData.l, function(index, linkInfo) {
-                            var parentPid = linkInfo[0];
-                            var childPid = linkInfo[1];
-                            if (!(parentPid in links)) {
-                                links[parentPid] = []; 
-                            }
-                            links[parentPid].push(childPid);
-                        });
-                        $.each(appData.p, function(childPid, pidInfo) {
-                            if (!(childPid in nodes)) {
-                                var nodeId = 'pid-' + childPid;
-                                nodes[childPid] = {
-                                    id: nodeId,
-                                    name: nodeId,
-                                    data: $.extend(pidInfo, {
-                                        nodeType: 'normal',
-                                        pid: childPid
-                                    }),
-                                    children: []
-                                };
-                                nodesById[nodeId] = nodes[childPid];
-                            }
-                        });
-                        $.each(links, function(parent, children) {
-                            if (parent in nodes) {
-                                $.each(children, function(index, child) {
-                                    if (child in nodes) {
-                                        nodes[parent].children.push(nodes[child]);
-                                    } else if (child._type == 'port') {
-                                        var portNodeId = 'port-' + child.data;
-                                        var portNode = {
-                                            id: portNodeId,
-                                            name: portNodeId,
-                                            data: {
-                                                nodeType: 'port',
-                                                port: child.data
-                                            },
-                                            children: []
-                                        };
-                                        nodes[parent].children.push(portNode);
-                                        nodesById[portNodeId] = portNode;
-                                    } else {
-                                        console.log('could not find child ' + JSON.stringify(child));
-                                    }
-                                });
-                            }
-                        });
-                    });
-                });
-
-                $.when.apply($, getMap).then(function() {
-                    if ('selectedNode' in st
-                        && st.selectedNode
-                        && !(st.selectedNode in nodesById)) {
-                        console.log('selected node (' + st.selectedNode + ') disappeared, returning to root node...');
-                        st.select(st.root);
-                        delete st.selectedNode;
-                    }
-                    callback(json);
-                });
+                    nodesById[nodeId] = nodes[childPid];
+                }
             });
-        };
 
-        var st = new $jit.ST({
+            // Wire up links
+            $.each(links, function(parent, children) {
+                if (parent in nodes) {
+                    $.each(children, function(index, child) {
+                        if (child in nodes) {
+                            nodes[parent].children.push(nodes[child]);
+                        } else if (child._type == 'port') {
+                            var portNodeId = 'port-' + child.data;
+                            var portNode = {
+                                id: portNodeId,
+                                name: portNodeId,
+                                data: {
+                                    nodeType: 'port',
+                                    port: child.data
+                                },
+                                children: []
+                            };
+                            nodes[parent].children.push(portNode);
+                            nodesById[portNodeId] = portNode;
+                        } else {
+                            console.log('could not find child ' + JSON.stringify(child));
+                        }
+                    });
+                }
+            });
+        });
+
+        return json;
+    }
+
+    function _start(newNodeName) {
+        if (started) return;
+        started = true;
+        nodeName = newNodeName;
+        st = new $jit.ST({
             injectInto: 'appmon-graph',
             duration: 400,
             transition: $jit.Trans.Quart.easeInOut,
@@ -142,8 +156,10 @@ APPMON = (function() {
                 if ('pid' in node.data) {
                     label.append(RENDERER.render_json_val({'_type': 'pid', 'data': node.data.pid}));
                     if (node.data.nodeType == 'appMaster') {
-                        label.append('<span class="app-name">' + node.data.name + '</span>');
-                        label.append('<span class="app-version">' + node.data.ver + '</span>');
+                        if ('name' in node.data && 'ver' in node.data) {
+                            label.append('<span class="app-name">' + node.data.name + '</span>');
+                            label.append('<span class="app-version">' + node.data.ver + '</span>');
+                        }
                     } else if ('name' in node.data) {
                         label.append('<span class="registered-name">' + node.data.name + '</span>');
                     }
@@ -170,29 +186,34 @@ APPMON = (function() {
                 }
             }
         });
-
-        var refreshTree = function() {
-            if (!st.busy) {
-                fetchJson(nodeName, function(json) {
-                    st.loadJSON(json);
-                    st.refresh();
-                    if (st.selectedNode) {
-                        st.select(st.selectedNode);
-                    } else {
-                        st.onClick(st.root);
-                    }
-                });
-            }
-        };
-
-        fetchJson(nodeName, function(json) {
-            st.loadJSON(json);
-            st.compute();
-            st.onClick(st.root);
-        });
     }
 
     function refresh() {
+        if (!st) {
+            return;
+        }
+        if ('selectedNode' in st
+            && st.selectedNode
+            && !(st.selectedNode in nodesById)) {
+            console.log('selected node (' + st.selectedNode + ') disappeared, returning to root node...');
+            st.select(st.root);
+            delete st.selectedNode;
+        }
+        if (!st.busy) {
+            st.loadJSON(getJSONTree());
+            if (initialised) {
+                st.refresh();
+                if (st.selectedNode) {
+                    st.select(st.selectedNode);
+                } else {
+                    st.onClick(st.root);
+                }
+            } else {
+                initialised = true;
+                st.compute();
+                st.onClick(st.root);
+            }
+        }
     }
 
     function updateTree(data) {
@@ -205,6 +226,7 @@ APPMON = (function() {
     return {
         start: _start,
         updateTree: updateTree,
+        updateApps: updateApps,
         refresh: refresh,
         enabled: function() {
             return liveEnabled;
@@ -214,7 +236,8 @@ APPMON = (function() {
         },
         disable: function() {
             liveEnabled = false;
-        }
+        },
+        getJSONTree: getJSONTree
     };
 })();
 
@@ -235,6 +258,8 @@ $(function() {
         if (data._type == 'tuple' && data.data[0] == 'node_app_tree') {
             // Handle tree update
             APPMON.updateTree(data.data[1]);
+        } else if (data._type == 'tuple' && data.data[0] == 'node_apps') {
+            APPMON.updateApps(data.data[1]);
         }
     });
 });
