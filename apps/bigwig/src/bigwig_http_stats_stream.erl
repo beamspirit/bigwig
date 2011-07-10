@@ -23,7 +23,7 @@ websocket_init(_TransportName, Req, _Opts) ->
 %% TODO handle stuff like {bigwig, {appmon, ... }} and send that too
 
 websocket_handle({bigwig, {bigwig_stats_sender, Stats}}, Req, State) ->
-    Reply = jsx:term_to_json({stats, Stats}),
+    Reply = jsx:term_to_json([{stats, Stats}]),
     {reply, Reply, Req, State};
 
 websocket_handle(Msg, Req, State) ->

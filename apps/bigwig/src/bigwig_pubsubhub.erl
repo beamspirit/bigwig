@@ -39,7 +39,7 @@ init([]) ->
 handle_call({register_client, Pid}, _From, State) ->
     NewListeners = [ Pid | State#state.listeners ],
     erlang:monitor(process, Pid),
-    {ok, ok, State#state{ listeners=NewListeners }}.
+    {reply, ok, State#state{ listeners=NewListeners }}.
 
 handle_cast({notify, Msg}, State) ->
     %%io:format("BROADCASTING: ~p\n", [Msg]),
@@ -48,7 +48,7 @@ handle_cast({notify, Msg}, State) ->
 
 handle_info({'DOWN', _MonitorRef, process, Pid, _Reason}, State) ->
     NewListeners = lists:delete(Pid, State#state.listeners),
-    {ok, State#state{ listeners=NewListeners }};
+    {noreply, State#state{ listeners=NewListeners }};
 
 handle_info(_Info, State) ->
   {noreply, State}.
