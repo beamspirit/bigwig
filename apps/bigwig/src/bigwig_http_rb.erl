@@ -48,16 +48,16 @@ list_reports(Filter)  ->
     Reports = bigwig_report_reader:load_list(Filter),
     format_reports(Reports).
 
-format_reports(Reports) ->
-    [ [    {hash, list_to_binary(Hash)},
-           {type, list_to_binary(atom_to_list(Type))},
-           {pid,  list_to_binary(Pid)},
-           {date, list_to_binary(Date)},
-           {report, Rep},
-           {report_str, Str}
-        ]
-        || {Hash,Type,Pid,Date,Rep,Str} <- Reports ].
+format_reports(Reports) -> 
+    lists:map(fun format_report/1, Reports).
 
+%% NB: added a is_list guard, hpefully all reports are proplists here?
+%% if not, add a format_report that wraps it into an obj that includes hash?
+format_report({Hash,_Type,_Pid,_Date,Rep,Str}) when is_list(Rep) ->
+    [ {'_hash', list_to_binary(Hash)},
+      {'_str',  Str}
+      | Rep 
+    ].
 
 %% Make a proplist to pass to make_filter, from the querstring
 make_report_filter_from_qs(Req0) ->
