@@ -1,7 +1,7 @@
 #appmon-graph {
     position: relative;
-    width: 100%;
-    height: 100%;
+    width: 1024;
+    height: 768;
     margin: auto;
     overflow: hidden;
 }
