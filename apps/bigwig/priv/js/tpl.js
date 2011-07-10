@@ -97,11 +97,9 @@ var TPL = (function() {
       if(limit != undefined) {
         limit = parseInt(limit);
         var count = parseInt(p.attr('data-count'));
-        console.log("count", count, "limit", limit);
         if(count >= limit) {
           var all = $('li',p);
           if(sort=="desc") {
-            //console.log("remove");
             var last = all.last();
             if(last && last.hasClass('_tpl')) {
               last = last.prev();
@@ -110,9 +108,7 @@ var TPL = (function() {
               last.remove();
             }
           } else {
-            //console.log("remove first");
             var first = all.first();
-            //console.log("first", first);
             if(first && first.hasClass('_tpl')) {
               first = first.next();
             }
