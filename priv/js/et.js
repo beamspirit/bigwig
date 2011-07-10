@@ -4,10 +4,18 @@ $(document).ready(function() {
     "iDisplayLength": 25,
     "sAjaxSource": '/top',
     // Get data piggy-backed on the main table and update the page
-    "fnServerData": function(sSource, aoData, fnCallback) {
-                      $.getJSON( sSource, aoData, function(json) {
+    "fnServerData": function(sSource, aaData, fnCallback) {
+                      $.getJSON( sSource, aaData, function(json) {
                         $('#accumulate').attr('checked', json.accumulate);
                         var header = json.header;
+                        // Use our RENDERER to format everything
+                        for(var i=0; i<json.aaData.length; ++i)
+                        {
+                            for(var j = 0; j < json.aaData[i].length; ++j)
+                            {
+                                json.aaData[i][j] = RENDERER.render_json_val(json.aaData[i][j])[0].outerHTML;
+                            }
+                        }
                         var gs = ['node','clock','cpu','tot','bin','nprocs','procs','code','runqueue','atom','ets'];
                         for (var i = 0; i < gs.length; i++) {
                           var g = gs[i];
