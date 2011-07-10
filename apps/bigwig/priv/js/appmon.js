@@ -90,7 +90,7 @@ $(function() {
                 transition: $jit.Trans.Quart.easeInOut,
                 levelDistance: 50,
                 levelsToShow: 3,
-                constrained: false,
+                constrained: true,
                 Navigation: {
                     enable: true,
                     panning: true
