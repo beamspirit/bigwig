@@ -41,6 +41,9 @@
           el.toggleClass('selected');
         });
       });
+      $('#stats').bind('onupdate', function(e, data) {
+        console.log("stats", data);
+      });
       TPL.connect("/rb/stream");
       TPL.fetch("/rb/reports?limit=200");
 

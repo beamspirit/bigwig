@@ -126,16 +126,14 @@ var TPL = (function() {
         updateChildren(el, data);
       }
     }
+    el.trigger('onupdate', data);
   }
   var onjson = function(json) {
-    console.log(json);
     for(var k in json) {
       update(k, json[k]);
     }
   }
   var onmessage = function(msg) {
-    console.log("msg", msg);
-    console.log("json", $.parseJSON(msg.data));
     onjson($.parseJSON(msg.data));
   }
   var onclose = function() {
