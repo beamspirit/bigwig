@@ -21,7 +21,7 @@ Start up the dev server and head to http://localhost:40829/
 
 or include as a rebar dep and start your own node:
 
-    {bigwig, ".*", {git, "git@github.com:spawnfest/beamspirit.git", {branch, "master"}}}
+    {bigwig, ".*", {git, "git://github.com/beamspirit/bigwig.git", {branch, "master"}}}
 
 rebar get-deps, compile, and then make sure your config includes the following
 so that binary sasl reports are generated (which are used by bigwig):
