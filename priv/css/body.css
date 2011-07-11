@@ -19,6 +19,9 @@ h1 {
   margin:0;
   padding:0.2em 0.4em;
 }
+#dashboard h1 {
+  color: #000;
+}
 #attrib {
   color: white;
   float: right;
