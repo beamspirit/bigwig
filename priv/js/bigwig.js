@@ -28,5 +28,8 @@ BigWig = (function() {
 })();
 
 $(function() {
-    TPL.fetch('/vm');
+    $.getJSON('/vm', function(json) {
+        $('#dashboard').append($('<h1>Dashboard dump</h1>'));
+        $('#dashboard').append($('<pre class="dbdump">' + JSON.stringify(json, null, 4) + '</pre>'));
+    });
 });
