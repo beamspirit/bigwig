@@ -4,7 +4,8 @@
 -behaviour(cowboy_http_handler).
 -behaviour(cowboy_http_websocket_handler).
 -export([init/3, handle/2, terminate/2]).
--export([websocket_init/3, websocket_handle/3, websocket_terminate/3]).
+-export([websocket_init/3, websocket_handle/3, websocket_terminate/3,
+				 websocket_info/3]).
 
 
 init({tcp, http}, _Req, _Opts) ->
@@ -22,20 +23,22 @@ websocket_init(_TransportName, Req, _Opts) ->
 
 %% TODO handle stuff like {bigwig, {appmon, ... }} and send that too
 
-websocket_handle({bigwig, {bigwig_stats_sender, Stats}}, Req, State) ->
+websocket_info({bigwig, {bigwig_stats_sender, Stats}}, Req, State) ->
     Reply = jsx:term_to_json([{stats, Stats}]),
-    {reply, Reply, Req, State};
+    {reply, {text, Reply}, Req, State};
 
-websocket_handle({bigwig, {bigwig_appmon, Stats}}, Req, State) ->
+websocket_info({bigwig, {bigwig_appmon, Stats}}, Req, State) ->
     Reply = jsx:term_to_json([{appmon, Stats}]),
-    {reply, Reply, Req, State};
+    {reply, {text, Reply}, Req, State};
 
-websocket_handle({bigwig, _}, Req, State) ->
+websocket_info({bigwig, _}, Req, State) ->
     {ok, Req, State};
 
-websocket_handle(Msg, Req, State) ->
-    io:format("Unhandled msg to ~p ~p\n", [?MODULE, Msg]),
+websocket_info(Info, Req, State) ->
+    io:format("Unhandled msg to ~p ~p\n", [?MODULE, Info]),
     {ok, Req, State}.
 
 websocket_terminate(_Reason, _Req, _State) -> ok.
 
+websocket_handle(_Msg, Req, State) ->
+	{ok, Req, State}.
