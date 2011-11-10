@@ -4,7 +4,7 @@
 %% @doc Erlang module for automatically reloading modified modules
 %% during development.
 
--module(reloader).
+-module(bigwig_reloader).
 -author("Matthew Dempsky <matthew@mochimedia.com>").
 
 -include_lib("kernel/include/file.hrl").
