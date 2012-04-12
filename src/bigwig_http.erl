@@ -39,7 +39,7 @@ dispatch_rules() ->
 confval(Key, Default) ->
     case application:get_env(Key) of
         undefined -> Default;
-        Val       -> Val
+        {ok, Val} -> Val
     end.
 
 init([]) ->
