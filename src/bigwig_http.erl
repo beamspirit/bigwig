@@ -44,7 +44,8 @@ confval(Key, Default) ->
 
 init([]) ->
     Port            = confval(port, 40829),
-    Ip              = confval(ip, "127.0.0.1"),
+	{ok, Hostname} 	= inet:gethostname(),
+    Ip              = confval(ip, Hostname),
     NumAcceptors    = confval(num_acceptors, 16),
 
     IpStr = case is_list(Ip) of true -> Ip; false -> inet_parse:ntoa(Ip) end,
