@@ -8,5 +8,5 @@
                   stdlib
                  ]},
   {mod, { bigwig_app, []}},
-  {env, []}
+  {env, [{port, 28989}]}
  ]}.
