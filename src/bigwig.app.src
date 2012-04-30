@@ -5,7 +5,9 @@
   {registered, []},
   {applications, [
                   kernel,
-                  stdlib
+                  stdlib,
+                  cowboy,
+                  jsx
                  ]},
   {mod, { bigwig_app, []}},
   {env, []}
