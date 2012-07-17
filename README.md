@@ -45,12 +45,6 @@ then run your project:
 NOTES
 =====
 
-Erlang topology
----------------
-Run Bigwig as a hidden node, on a distinct VM, and it will connect to nodes of
-your chosing to monitor/examine. No need to install any applications or releases
-on nodes you wish to inspect.
-
 
 Web Architecture
 ----------------
@@ -117,4 +111,11 @@ URL schemes, blah
 * `/pid/global/NAME`        as above, but using global registered process name NAME
 * `/module/NAME`            NAME:module_info() stuff
 
+TODO
+====
 
+Erlang topology
+---------------
+Run Bigwig as a hidden node, on a distinct VM, and it will connect to nodes of
+your chosing to monitor/examine. No need to install any applications or releases
+on nodes you wish to inspect.
