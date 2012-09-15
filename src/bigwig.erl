@@ -1,19 +1,19 @@
 -module(bigwig).
 -export([start/0, stop/0]).
 
-ensure_started(App) ->
-    case application:start(App) of
-        ok ->
-            ok;
-        {error, {already_started, App}} ->
-            ok
-    end.
-
 start() ->
-    ensure_started(crypto),
-    ensure_started(sasl),
-    ensure_started(cowboy),
-    application:start(bigwig).
-
+    start(bigwig).
 stop() ->
     application:stop(bigwig).
+start(App) ->
+    start_ok(App, application:start(App, permanent)).
+
+start_ok(_App, ok) ->
+    ok;
+start_ok(_App, {error, {already_started, _App}}) ->
+    ok;
+start_ok(App, {error, {not_started, Dep}}) ->
+    ok = start(Dep),
+    start(App);
+start_ok(_App, {error, Reason}) ->
+    erlang:error({app_start_failed, Reason}).
