@@ -244,15 +244,24 @@ handle_args([_| R], C) ->
 handle_args([], C) ->
   C.
 
+calc_cpu([]) ->
+  0.0;
+
+calc_cpu(undefined) ->
+  0.0;
+
+calc_cpu(Schedulers) ->
+  Usage = lists:map(fun({_SchId, Active, Total}) -> Active / Total end,
+                    Schedulers),
+  Sum = lists:foldl(fun(X, Acc) -> X + Acc end, 0.0, Usage),
+  round(100.0 * Sum / length(Usage)).
+
 loadinfo(SysI) ->
   #etop_info{n_procs = Procs,
              run_queue = RQ,
              now = Now,
-             wall_clock = {_, WC},
-             runtime = {_, RT}} = SysI,
-  Cpu = try round(100*RT/WC)
-        catch _:_ -> 0
-        end,
+             runtime = Runtime} = SysI,
+  Cpu = calc_cpu(Runtime),
   Clock = io_lib:format("~2.2.0w:~2.2.0w:~2.2.0w",
                         tuple_to_list(element(2,calendar:now_to_datetime(Now)))),
   {Cpu,Procs,RQ,Clock}.
