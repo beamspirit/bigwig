@@ -3,7 +3,7 @@
 %%
 -module(bigwig_http_vm).
 -behaviour(cowboy_http_handler).
--export([init/3, handle/2, terminate/2]).
+-export([init/3, handle/2, terminate/3]).
 
 -compile(export_all).
 
@@ -13,10 +13,10 @@ init({tcp, http}, Req, _Opts) ->
 handle(Req, State) ->
     Body = jsx:term_to_json(all()),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
-    {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
+    {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
     {ok, Req2, State}.
 
-terminate(_Req, _State) ->
+terminate(_Reason, _Req, _State) ->
     ok.
 
 
