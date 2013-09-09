@@ -50,8 +50,7 @@ websocket_terminate(_Reason, _Req, _State) ->
   ok.
 
 report(Report) ->
-  Str = bigwig_report_reader:ascii_format_report("",Report),
-  J = [{report, [ {'_str', Str}|Report ]}],
+  J = [{report, [Report]}],
   Term = jsx:term_to_json(J),
   io:format("~p\n", [Term]),
   Term.

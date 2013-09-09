@@ -12,7 +12,7 @@
 -behaviour(gen_server).
 
 -export([start_link/1, start/0, start/1, stop/0, rescan/0, rescan/1]).
--export([load_number/1, load_list/0, load_list/1, make_filter/1, fmt_report/1, ascii_format_report/2]).
+-export([load_number/1, load_list/0, load_list/1, make_filter/1, fmt_report/1]).
 
 %% gen_server callbacks
 -export([init/1, terminate/2, handle_call/3,
