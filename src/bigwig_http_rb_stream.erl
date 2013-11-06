@@ -3,8 +3,8 @@
 %%
 -module(bigwig_http_rb_stream).
 -behaviour(cowboy_http_handler).
--behaviour(cowboy_http_websocket_handler).
--export([init/3, handle/2, terminate/2]).
+-behaviour(cowboy_websocket_handler).
+-export([init/3, handle/2, terminate/3]).
 -export([websocket_init/3, websocket_handle/3, websocket_terminate/3,
 				 websocket_info/3]).
 
@@ -15,7 +15,7 @@ handle(Req, State) ->
   {ok, Req2} = cowboy_http_req:reply(404, [], <<"Websockets only here pls">>, Req),
   {ok, Req2, State}.
 
-terminate(_Req, _State) ->
+terminate(_Reason, _Req, _State) ->
   ok.
 
 websocket_init(_TransportName, Req, _Opts) ->

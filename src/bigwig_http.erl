@@ -4,7 +4,12 @@
 
 -export([start_link/0]).
 
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+-export([init/1, 
+         handle_call/3, 
+         handle_cast/2, 
+         handle_info/2, 
+         terminate/2, 
+         code_change/3]).
 
 -record(state, {}).
 
@@ -51,7 +56,7 @@ init([]) ->
     error_logger:info_msg("Bigwig listening on http://~s:~B/~n", [IpStr,Port]),
     %%
     %% Name, NbAcceptors, Transport, TransOpts, Protocol, ProtoOpts
-    cowboy:start_listener(http, NumAcceptors,
+    ranch:start_listener(http, NumAcceptors,
         cowboy_tcp_transport, [{port, Port}],
         cowboy_http_protocol, [{dispatch, dispatch_rules()}]
     ),

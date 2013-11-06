@@ -3,7 +3,7 @@
 %%
 -module(bigwig_http_appmon).
 -behaviour(cowboy_http_handler).
--export([init/3, handle/2, terminate/2]).
+-export([init/3, handle/2, terminate/3]).
 
 -define(P2B(P), list_to_binary(pid_to_list(P))).
 -define(L2B(L), list_to_binary(L)).
@@ -46,5 +46,5 @@ not_found(Req, State) ->
     {ok, Req2} = cowboy_http_req:reply(404, [], <<"<h1>404</h1>">>, Req),
     {ok, Req2, State}.
 
-terminate(_Req, _State) ->
+terminate(_Reason, _Req, _State) ->
     ok.

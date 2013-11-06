@@ -2,8 +2,10 @@
 %%
 -module(bigwig_http_stats_stream).
 -behaviour(cowboy_http_handler).
--behaviour(cowboy_http_websocket_handler).
--export([init/3, handle/2, terminate/2]).
+%-behaviour(cowboy_http_websocket_handler).
+-behaviour(cowboy_websocket_handler).
+
+-export([init/3, handle/2, terminate/3]).
 -export([websocket_init/3, websocket_handle/3, websocket_terminate/3,
 				 websocket_info/3]).
 
@@ -14,7 +16,7 @@ init({tcp, http}, _Req, _Opts) ->
 handle(_Req, _State) ->
     exit(websockets_only).
 
-terminate(_Req, _State) ->
+terminate(_Reason, _Req, _State) ->
     exit(websockets_only).
 
 websocket_init(_TransportName, Req, _Opts) ->

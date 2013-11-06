@@ -3,7 +3,7 @@
 %%
 -module(bigwig_http_pid).
 -behaviour(cowboy_http_handler).
--export([init/3, handle/2, terminate/2]).
+-export([init/3, handle/2, terminate/3]).
 
 init({tcp, http}, Req, _Opts) ->
     {ok, Req, undefined_state}.
@@ -30,7 +30,7 @@ not_found(Req, State) ->
     {ok, Req2} = cowboy_http_req:reply(404, [], <<"<h1>404</h1>">>, Req),
     {ok, Req2, State}.
 
-terminate(_Req, _State) ->
+terminate(_Reason, _Req, _State) ->
     ok.
 
 handle_get_pid(Get, Pid0, Req, State) ->
