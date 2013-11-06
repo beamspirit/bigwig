@@ -3,7 +3,7 @@
 %%
 -module(bigwig_http_static).
 -behaviour(cowboy_http_handler).
--export([init/3, handle/2, terminate/2]).
+-export([init/3, handle/2, terminate/3]).
 
 -export([html/1, css/1, js/1]).
 
@@ -33,7 +33,7 @@ send(Req, PathBins, State) ->
       {ok, Req2, State}
   end.
 
-terminate(_Req, _State) ->
+terminate(_Reason, _Req, _State) ->
   ok.
 
 html(Name) ->
