@@ -1,17 +1,15 @@
 %% Websocket connection that sends periodic stats about the VM
 %%
 -module(bigwig_http_stats_stream).
--behaviour(cowboy_http_handler).
-%-behaviour(cowboy_http_websocket_handler).
 -behaviour(cowboy_websocket_handler).
 
 -export([init/3, handle/2, terminate/3]).
--export([websocket_init/3, websocket_handle/3, websocket_terminate/3,
-				 websocket_info/3]).
+-export([websocket_init/3, websocket_handle/3,
+				 websocket_info/3, websocket_terminate/3]).
 
 
 init({tcp, http}, _Req, _Opts) ->
-    {upgrade, protocol, cowboy_http_websocket}.
+    {upgrade, protocol, cowboy_websocket}.
 
 handle(_Req, _State) ->
     exit(websockets_only).
