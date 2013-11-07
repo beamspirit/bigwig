@@ -12,9 +12,12 @@ init({tcp, http}, Req, _Opts) ->
     {ok, Req, undefined_state}.
 
 handle(Req, State) ->
+    io:format("===> vm ~p", [all()]),
     Body = jsx:term_to_json(all()),
+    
+    io:format("===> vm ~p", [Body]),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
-    {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
+    {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
     {ok, Req2, State}.
 
 terminate(_Reason, _Req, _State) ->
@@ -23,8 +26,9 @@ terminate(_Reason, _Req, _State) ->
 
 all() ->
     [{system_info, system_info()},
-     {releases,    releases()},
-     {applications,applications()}].
+     {releases,    releases()}
+    % {applications,applications()}
+    ].
 
 
 %% Funs to load data about aspects of the system, mochiJSON formatted:
@@ -52,9 +56,9 @@ releases() ->
     [
         {list_to_binary(Name),
          [
-          {version, list_to_binary(Version)},
-          {status,  list_to_binary(atom_to_list(Status))},
-          {deps,    FmtDeps(Deps)}
+          {version, list_to_binary(Version)}% ,
+          % {status,  list_to_binary(atom_to_list(Status))}% ,
+          % {deps,    FmtDeps(Deps)}
          ]}
         || {Name, Version, Deps, Status} <- Rels
     ].

@@ -17,6 +17,7 @@ start(_StartType, _StartArgs) ->
                {"/",              cowboy_static,        {priv_file, bigwig, "html/index.html"}},
                {"/static/[...]",  cowboy_static,        {priv_dir,  bigwig, "",
                                                          [{mimetypes, cow_mimetypes, all}]}},
+               {"/vm",            bigwig_http_vm,       []},
                {"/pid",           bigwig_http_pid,      []},
                {"/top",           bigwig_http_etop2,    []},
                {"/appmon",        bigwig_http_appmon,   []},
