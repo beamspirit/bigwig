@@ -28,8 +28,6 @@ websocket_info({bigwig, {bigwig_stats_sender, Stats}}, Req, State) ->
     {reply, {text, Reply}, Req, State};
 
 websocket_info({bigwig, {bigwig_appmon, Stats}}, Req, State) ->
-
-    io:format("stats is ~p",[Stats]),
     Reply = jsx:term_to_json([{appmon, [Stats]}]),
     {reply, {text, Reply}, Req, State};
 
