@@ -22,10 +22,19 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0, start_link/1, update/0, node/1, config/2]).
+-export([start_link/0,
+         start_link/1,
+         update/0,
+         node/1,
+         config/2]).
 
 %% gen_server callbacks
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3, terminate/2]).
+-export([init/1,
+         handle_call/3,
+         handle_cast/2,
+         handle_info/2,
+         code_change/3,
+         terminate/2]).
 
 %% Internal
 -export([loadinfo/1, meminfo/2]).
@@ -133,35 +142,35 @@ terminate(_Reason, _) ->
 %% Internal functions
 
 check_runtime_tools_vsn(Node) ->
-  case rpc:call(Node,observer_backend,vsn,[]) of
-    {ok, Vsn} -> check_vsn(Vsn);
-    _ -> {error, "faulty version of runtime_tools on remote node"}
+  case rpc:call(Node, observer_backend, vsn, []) of
+      {ok, Vsn} -> check_vsn(Vsn);
+      _ -> {error, "faulty version of runtime_tools on remote node"}
   end.
 check_vsn(_Vsn) -> ok.
 
-update(#opts{store=Store,node=Node,tracing=Tracing}=Opts) ->
-  Pid = spawn_link(Node,observer_backend,etop_collect,[self()]),
-  Info = receive {Pid,I} -> I
-         after 1000 -> exit(connection_lost)
-         end,
-  #etop_info{procinfo=ProcInfo} = Info,
-  ProcInfo1 =
-    if Tracing == on ->
-        PI=lists:map(fun(PI=#etop_proc_info{pid=P}) ->
-                         case ets:lookup(Store,P) of
-                           [{P,T}] -> PI#etop_proc_info{runtime=T};
-                           [] -> PI
-                         end
-                     end,
-                     ProcInfo),
-        PI;
-       true ->
-        lists:map(fun(PI) -> PI#etop_proc_info{runtime='-'} end,ProcInfo)
-    end,
-  ProcInfo2 = sort(Opts,ProcInfo1),
-  Info#etop_info{procinfo=ProcInfo2}.
+update(#opts{store=Store, node=Node, tracing=Tracing} = Opts) ->
+    Pid = spawn_link(Node, observer_backend, etop_collect, [self()]),
+    Info = receive {Pid,I} -> I
+           after 1000 -> exit(connection_lost)
+           end,
+    #etop_info{procinfo=ProcInfo} = Info,
+    ProcInfo1 =
+        if Tracing == on ->
+                PI=lists:map(fun(PI=#etop_proc_info{pid=P}) ->
+                                     case ets:lookup(Store,P) of
+                                         [{P,T}] -> PI#etop_proc_info{runtime=T};
+                                         [] -> PI
+                                     end
+                             end,
+                             ProcInfo),
+                PI;
+           true ->
+                lists:map(fun(PI) -> PI#etop_proc_info{runtime='-'} end,ProcInfo)
+        end,
+    ProcInfo2 = sort(Opts,ProcInfo1),
+    Info#etop_info{procinfo=ProcInfo2}.
 
-sort(Opts,PI) ->
+sort(Opts, PI) ->
   Tag = get_tag(Opts#opts.sort),
   PI1 = if Opts#opts.accum ->
             PI;
@@ -244,18 +253,27 @@ handle_args([_| R], C) ->
 handle_args([], C) ->
   C.
 
-loadinfo(SysI) ->
-  #etop_info{n_procs = Procs,
-             run_queue = RQ,
-             now = Now,
-             wall_clock = {_, WC},
-             runtime = {_, RT}} = SysI,
-  Cpu = try round(100*RT/WC)
-        catch _:_ -> 0
-        end,
-  Clock = io_lib:format("~2.2.0w:~2.2.0w:~2.2.0w",
-                        tuple_to_list(element(2,calendar:now_to_datetime(Now)))),
-  {Cpu,Procs,RQ,Clock}.
+loadinfo(#etop_info{} = SysI) ->
+    #etop_info{now = Now,
+               n_procs = Procs,
+               run_queue = RQ} = SysI,
+    
+    %#etop_info{n_procs = Procs,
+    %%           run_queue = RQ,
+    %           now = Now,
+    %           wall_clock = {_, WC} %,
+               % runtime = {_, RT}
+    %          } = SysI,
+
+    
+    WC = 1,
+    RT = 0,
+    Cpu = try round(100 * RT / WC)
+          catch _:_ -> 0
+          end,
+    Clock = io_lib:format("~2.2.0w:~2.2.0w:~2.2.0w",
+                          tuple_to_list(element(2,calendar:now_to_datetime(Now)))),
+    {Cpu,Procs,RQ,Clock}.
 
 meminfo(MemI, [Tag|Tags]) ->
   [round(get_mem(Tag, MemI)/1024)|meminfo(MemI, Tags)];
@@ -268,39 +286,40 @@ get_mem(Tag, MemI) ->
   end.
 
 update_json(Info, #opts{node=Node, accum=Accum}) ->
-  {Cpu,NProcs,RQ,Clock0} = loadinfo(Info),
-  Clock = iolist_to_binary(Clock0),
-  Header =
-    case Info#etop_info.memi of
-      undefined ->
-        [{<<"node">>, Node},
-         {<<"clock">>, Clock},
-         {<<"cpu">>, Cpu},
-         {<<"nprocs">>, NProcs},
-         {<<"runqueue">>, RQ}];
-      Memi ->
-        [Tot,Procs,Atom,Bin,Code,Ets] =
-          etop2:meminfo(Memi, [total,processes,atom,binary,code,ets]),
-        [{<<"node">>, Node},
-         {<<"clock">>, Clock},
-         {<<"cpu">>, Cpu},
-         {<<"tot">>, Tot},
-         {<<"bin">>, Bin},
-         {<<"nprocs">>, NProcs},
-         {<<"procs">>, Procs},
-         {<<"code">>, Code},
-         {<<"runqueue">>, RQ},
-         {<<"atom">>, Atom},
-         {<<"ets">>, Ets}]
-    end,
-  Ps = [etop_proc_info_to_json(P) || P <- Info#etop_info.procinfo],
-  NumPs = length(Ps),
-  [{<<"iTotalRecords">>, NumPs},
-   {<<"accumulate">>, Accum},
-   {<<"header">>, Header},
-   {<<"iTotalDisplayRecords">>, NumPs},
-   {<<"sColumns">>, <<"pid,name,time,reds,mem,mq,mfa">>},
-   {<<"aaData">>, Ps}].
+    {Cpu, NProcs, RQ, Clock0} = loadinfo(Info),
+    Clock = iolist_to_binary(Clock0),
+    Header =
+        case Info#etop_info.memi of
+            undefined ->
+                [{<<"node">>, atom_to_binary(Node, utf8)},
+                 {<<"clock">>, Clock},
+                 {<<"cpu">>, Cpu},
+                 {<<"nprocs">>, NProcs},
+                 {<<"runqueue">>, RQ}];
+            Memi ->
+                [Tot,Procs,Atom,Bin,Code,Ets] =
+                    etop2:meminfo(Memi, [total,processes,atom,binary,code,ets]),
+                [{<<"node">>, atom_to_binary(Node, utf8)},
+                 {<<"clock">>, Clock},
+                 {<<"cpu">>, Cpu},
+                 {<<"tot">>, Tot},
+                 {<<"bin">>, Bin},
+                 {<<"nprocs">>, NProcs},
+                 {<<"procs">>, Procs},
+                 {<<"code">>, Code},
+                 {<<"runqueue">>, RQ},
+                 {<<"atom">>, Atom},
+                 {<<"ets">>, Ets}]
+        end,
+    Ps = [etop_proc_info_to_json(P) || P <- Info#etop_info.procinfo],
+    Ps2 = <<"">>,
+    NumPs = length(Ps),
+    [{<<"iTotalRecords">>, NumPs},
+     {<<"accumulate">>, Accum},
+     {<<"header">>, Header},
+     {<<"iTotalDisplayRecords">>, NumPs},
+     {<<"sColumns">>, <<"pid,name,time,reds,mem,mq,mfa">>},
+     {<<"aaData">>, Ps2}].
 
 name(Name) when is_atom(Name) -> Name;
 name({M,F,A}) when is_atom(M), is_atom(F), is_integer(A) ->
