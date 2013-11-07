@@ -9,7 +9,7 @@
 -export([init/1]).
 
 %% Helper macro for declaring children of supervisor
-%-define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
+-define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
 
 %% ===================================================================
 %% API functions
@@ -23,21 +23,20 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    %Pubsub      = ?CHILD(bigwig_pubsubhub, worker),
-    %StatsSender = ?CHILD(bigwig_stats_sender, worker),
+    Pubsub      = ?CHILD(bigwig_pubsubhub, worker),
+    StatsSender = ?CHILD(bigwig_stats_sender, worker),
     % Http        = ?CHILD(bigwig_http, worker),
-    %ErrMon      = ?CHILD(bigwig_error_handler_mon, worker),
-    %Etop        = ?CHILD(etop2, worker),
-    %AppMon      = ?CHILD(bigwig_appmon, worker),
+    ErrMon      = ?CHILD(bigwig_error_handler_mon, worker),
+    Etop        = ?CHILD(etop2, worker),
+    AppMon      = ?CHILD(bigwig_appmon, worker),
 
-    %Specs       = [ Pubsub,
-    %                StatsSender,
-    %                AppMon,
-    %                ErrMon,
-    %                Etop,
-    %                Http
-    %              ],
-    
-    Procs = [],
-    {ok, {{one_for_one, 10, 10}, Procs}}.
+    Specs       = [ Pubsub,
+                    StatsSender,
+                    AppMon,
+                    ErrMon,
+                    Etop %,
+                   % Http
+                  ],
+
+    {ok, { {one_for_one, 5, 10}, Specs} }.
 
