@@ -15,6 +15,7 @@ init({tcp, http}, Req, _Opts) ->
 handle(Req0, State) ->
     {Path, Req} = cowboy_req:path(Req0),
     {Method, Req1} = cowboy_req:method(Req),
+    io:format("~p----> ~p~n", [Method, Path]),
     handle_path(Method, Path, Req1, State).
 
 handle_path('GET', [<<"/appmon">>, <<"_all">>], Req, State) ->
