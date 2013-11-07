@@ -105,8 +105,9 @@ node_apps() ->
     {ok, lists:zf(
            fun(App) ->
                    Name = element(1, App),
+                   Value = element(2, App),
                    case catch application_controller:get_master(Name) of
-                       Pid when is_pid(Pid) -> {true, {Pid, Name, App}};
+                       Pid when is_pid(Pid) -> {true, {Name,Value}};
                        _ -> false
                    end
            end, application:which_applications())}.
