@@ -312,18 +312,19 @@ update_json(Info, #opts{node=Node, accum=Accum}) ->
                  {<<"ets">>, Ets}]
         end,
     Ps = [etop_proc_info_to_json(P) || P <- Info#etop_info.procinfo],
-    Ps2 = <<"">>,
+    %io:format("ps is ~p",[Ps]),
+    %Ps2 = <<"">>,
     NumPs = length(Ps),
     [{<<"iTotalRecords">>, NumPs},
      {<<"accumulate">>, Accum},
      {<<"header">>, Header},
      {<<"iTotalDisplayRecords">>, NumPs},
      {<<"sColumns">>, <<"pid,name,time,reds,mem,mq,mfa">>},
-     {<<"aaData">>, Ps2}].
+     {<<"aaData">>, Ps}].
 
-name(Name) when is_atom(Name) -> Name;
+name(Name) when is_atom(Name) -> atom_to_binary(Name, utf8);
 name({M,F,A}) when is_atom(M), is_atom(F), is_integer(A) ->
-    {M,F,A}.
+    list_to_binary([atom_to_list(M),":", atom_to_list(F),"/",integer_to_list(A)]).
 
 etop_proc_info_to_json(
   #etop_proc_info{pid=Pid,
@@ -334,7 +335,8 @@ etop_proc_info_to_json(
                   cf=MFA,
                   mq=MQ}) ->
   
-  [Pid,name(Name),Time,Reds,Mem,MQ,name(MFA)].
+  [ list_to_binary(pid_to_list(Pid)), name(Name),%atom_to_binary(Name,utf8),
+  atom_to_binary(Time,utf8), Reds, Mem, MQ, name(MFA) ].
 
 %% Connect to a node and potentially set up tracing
 -spec connect(#opts{}) -> {ok, #opts{}} | {error, any()}.
