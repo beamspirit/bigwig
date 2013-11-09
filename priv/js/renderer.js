@@ -1,6 +1,6 @@
 var RENDERER = (function() {
     var show_pid_dialog = function(Pid) {
-        var url = '/pid/' + Pid;
+        var url = '/pid/'+ Pid;
         $.ajax({
                     url: url,
                     dataType: 'json',
