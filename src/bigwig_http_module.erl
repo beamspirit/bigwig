@@ -9,18 +9,18 @@ init({tcp, http}, Req, _Opts) ->
     {ok, Req, undefined_state}.
 
 handle(Req0, State) ->
-    {Path, Req} = cowboy_http_req:path(Req0),
-    {Method, Req1} = cowboy_http_req:method(Req),
+    {Path, Req} = cowboy_req:path(Req0),
+    {Method, Req1} = cowboy_req:method(Req),
     handle_path(Method, Path, Req1, State).
 
 handle_path('POST', [<<"module">>, Module], Req, State) ->
-    {Props, Req2} = cowboy_http_req:body_qs(Req),
+    {Props, Req2} = cowboy_req:body_qs(Req),
     case proplists:get_value(<<"reload">>, Props) of
         undefined -> 
             not_found(Req2, State);
         <<"yes">> -> 
             c:l(list_to_existing_atom(binary_to_list(Module))),
-            {ok, Req3} = cowboy_http_req:reply(200, [], <<"ok">>, Req2),
+            {ok, Req3} = cowboy_req:reply(200, [], <<"ok">>, Req2),
             {ok, Req3, State}
     end;
 handle_path('GET', [<<"module">>, Module], Req, State) ->
@@ -32,7 +32,7 @@ handle_path(_, _, Req, State) ->
     not_found(Req, State).
 
 not_found(Req, State) ->
-    {ok, Req2} = cowboy_http_req:reply(404, [], <<"<h1>404</h1>">>, Req),
+    {ok, Req2} = cowboy_req:reply(404, [], <<"<h1>404</h1>">>, Req),
     {ok, Req2, State}.
 
 terminate(_Reason, _Req, _State) ->
@@ -69,5 +69,5 @@ to_module_info(Bin) ->
 json_response(Info, Req, State) ->
     Body = jsx:term_to_json(Info),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
-    {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
+    {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
     {ok, Req2, State}.
