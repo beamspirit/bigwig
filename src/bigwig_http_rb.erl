@@ -11,7 +11,7 @@ init({tcp, http}, Req, _Opts) ->
     {ok, Req, undefined_state}.
 
 handle(Req, State) ->
-    {Path, Req2} = cowboy_http_req:path(Req),
+    {Path, Req2} = cowboy_req:path(Req),
     handle_path(Path, Req2, State).
 
 %% /rb/reports
@@ -19,7 +19,7 @@ handle_path([<<"rb">>, <<"reports">>], Req0, State) ->
     {ReportFilter, Req} = make_report_filter_from_qs(Req0),
     Body = jsx:term_to_json(list_reports(ReportFilter)),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
-    {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
+    {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
     {ok, Req2, State};
 
 %% /rb/reports/123
@@ -27,11 +27,11 @@ handle_path([<<"rb">>, <<"reports">>, IdBin], Req, State) ->
     Id = list_to_integer(binary_to_list(IdBin)),
     Rep = bigwig_report_reader:load_number(Id),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
-    {ok, Req2} = cowboy_http_req:reply(200, Headers, report_to_json(Rep), Req),
+    {ok, Req2} = cowboy_req:reply(200, Headers, report_to_json(Rep), Req),
     {ok, Req2, State};
 
 handle_path(Path, Req, State) ->
-    {ok, Req2} = cowboy_http_req:reply(404, [], io_lib:format("Not found: ~p", [Path]), Req), %% FIXME injection
+    {ok, Req2} = cowboy_req:reply(404, [], io_lib:format("Not found: ~p", [Path]), Req), %% FIXME injection
     {ok, Req2, State}.
 
 
@@ -62,7 +62,7 @@ format_report({Hash,_Type,_Pid,_Date,Rep,Str}) when is_list(Rep) ->
 %% Make a proplist to pass to make_filter, from the querstring
 make_report_filter_from_qs(Req0) ->
     %% A version of qs_val that url-decodes values (ie no %20 etc), and to_list
-    Qsval = fun(K,R) -> case cowboy_http_req:qs_val(K, R) of
+    Qsval = fun(K,R) -> case cowboy_req:qs_val(K, R) of
                             {undefined, R2} -> {undefined, R2};
                             {ValEnc, R2}    -> {bigwig_util:url_decode(ValEnc), R2}
                         end
