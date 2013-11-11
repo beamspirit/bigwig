@@ -11,7 +11,8 @@ init({tcp, http}, Req, _Opts) ->
 handle(Req0, State) ->
     {Path, Req} = cowboy_req:path(Req0),
     {Method, Req1} = cowboy_req:method(Req),
-    handle_path(Method, Path, Req1, State).
+    Path1=lists:delete(<<>>,binary:split(Path,[<<"/">>],[global])),
+    handle_path(binary_to_atom(Method,utf8), Path1, Req1, State).
 
 handle_path('GET', [<<"pid">>, <<"global">>, Name], Req, State) ->
     handle_get_pid(fun to_global_pid/1, Name, Req, State);
@@ -85,11 +86,39 @@ to_global_pid(Name) ->
     global:whereis_name(list_to_existing_atom(binary_to_list(Name))).
 
 pid_response(Pid, Req, State) ->
+ %   io:format("pid is ~p,info is ~p",[Pid,erlang:process_info(Pid)]),
     case erlang:process_info(Pid) of
         undefined -> not_found(Req, State);
         Info ->
-            Body = jsx:term_to_json(Info),
+            Info1=lists:map(fun(T) -> to_json(T) end,Info),
+            Info2=lists:keydelete(dictionary,1,lists:keydelete(links,1,Info1)),
+            Info3=lists:keydelete(garbage_collection,1,Info2),
+            io:format("info is ~p",[Info3]),
+            Body = jsx:term_to_json(Info3),
             Headers = [{<<"Content-Type">>, <<"application/json">>}],
             {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
             {ok, Req2, State}
     end.
+
+to_json(T) ->
+ case T of
+  {Key,Value}->
+        case Value of
+            Value when is_atom(Value) == true -> 
+                {Key,atom_to_binary(Value,utf8)};
+            Value when is_pid(Value) == true ->
+                {Key,list_to_binary(pid_to_list(Value))};         
+            {M,F,A} -> {Key,list_to_binary(["{", atom_to_list(M), ":", atom_to_list(F), "/", integer_to_list(A), "}"])};
+            [H|E]-> 
+                    {Key,[to_json(H),lists:map(fun(X) -> to_json(X) end,E)]};
+            [] -> {Key,[]};
+            _ -> {Key,Value}
+        end;
+   T when is_atom(T) == true ->
+           atom_to_binary(T,utf8);
+   T when is_pid(T) == true  ->
+           list_to_binary(pid_to_list(T));
+   T when is_port(T) == true ->
+          list_to_binary(erlang:port_to_list(T))
+  end.
+            

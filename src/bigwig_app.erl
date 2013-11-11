@@ -20,10 +20,10 @@ start(_StartType, _StartArgs) ->
                {"/vm",              bigwig_http_vm,       []},
                {"/rb/[...]",        bigwig_http_rb, []},
                {"/rb/stream",       bigwig_http_rb_stream, []},
-               {"/pid/:pid",        bigwig_http_pid, []},
+               {"/pid/[...]",        bigwig_http_pid, []},
                {"/top",             bigwig_http_etop2,    []},
                {"/appmon",          bigwig_http_appmon,   []},
-               {"/module/:module",    bigwig_http_module,   []},
+               {"/module/[...]",    bigwig_http_module,   []},
                {"/stats-stream",    bigwig_http_stats_stream, []},
                {'_',                bigwig_http_catchall, []}
               ]}
