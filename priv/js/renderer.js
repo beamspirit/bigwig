@@ -43,7 +43,51 @@ var RENDERER = (function() {
                                     } 
                                 }
                         });
+                    },
+
+                    undefined:function(json)
+                    {
+                        $('<div class="pid_dialog"></div>')
+                            .append( gen_pid_html(json) )
+                            .dialog({
+                                title: 'process_info(' + Pid + ') &nbsp; ' + 
+                                       '<small>(<a href="'+url+'">json</a>)</small>',
+                                width: 550,
+                                buttons: { 
+                                    "Close": function() { $(this).dialog("close"); }, 
+                                    "Send Msg":  function() { 
+                                        var msg = prompt("Enter Erlang term to send to <" + Pid + ">");
+                                        if(msg)
+                                        {
+                                            var thisdiag = $(this);
+                                            $.ajax({
+                                                url:url,
+                                                type:'POST',
+                                                data: {msg: msg},
+                                                success: function(resp){
+                                                    alert('Sent ok');
+                                                }
+                                            })                                                
+                                        }
+                                    }, 
+                                    "Kill" :  function() { 
+                                        if(confirm("Sure you want to kill <" + Pid + ">"))
+                                        {
+                                            var thisdiag = $(this);
+                                            $.ajax({
+                                                url:url,
+                                                type:'DELETE',
+                                                success: function(resp){
+                                                    thisdiag.dialog("close"); 
+                                                }
+                                            })                                                
+                                        }
+                                    } 
+                                }
+                        });
+
                     }
+
                 });
     }
 
@@ -210,7 +254,7 @@ var RENDERER = (function() {
 })();
 
 $("body").delegate("a._pid", "click", function(e){
-    var pid = $(this).text().replace(/[<>]/g,'');
+   var pid = $(this).text().replace(/[<>]/g,'');
     RENDERER.show_pid_dialog(pid);
     e.preventDefault();
 });
