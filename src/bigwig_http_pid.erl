@@ -12,17 +12,17 @@ handle(Req0, State) ->
     {Path, Req} = cowboy_req:path(Req0),
     {Method, Req1} = cowboy_req:method(Req),
     Path1=lists:delete(<<>>,binary:split(Path,[<<"/">>],[global])),
-    handle_path(binary_to_atom(Method,utf8), Path1, Req1, State).
+    handle_path(Method, Path1, Req1, State).
 
-handle_path('GET', [<<"pid">>, <<"global">>, Name], Req, State) ->
+handle_path(<<"GET">>, [<<"pid">>, <<"global">>, Name], Req, State) ->
     handle_get_pid(fun to_global_pid/1, Name, Req, State);
-handle_path('GET', [<<"pid">>, Pid], Req, State) ->
+handle_path(<<"GET">>, [<<"pid">>, Pid], Req, State) ->
     handle_get_pid(fun to_pid/1, Pid, Req, State);
-handle_path('POST', [<<"pid">>, <<"global">>, Name], Req, State) ->
+handle_path(<<"POST">>, [<<"pid">>, <<"global">>, Name], Req, State) ->
     handle_post_pid(fun to_global_pid/1, Name, Req, State);
-handle_path('POST', [<<"pid">>, Pid], Req, State) ->
+handle_path(<<"POST">>, [<<"pid">>, Pid], Req, State) ->
     handle_post_pid(fun to_pid/1, Pid, Req, State);
-handle_path('DELETE', [<<"pid">>, Pid], Req, State) ->
+handle_path(<<"DELETE">>, [<<"pid">>, Pid], Req, State) ->
     handle_delete_pid(fun to_pid/1, Pid, Req, State);
 handle_path(_, _, Req, State) ->
     not_found(Req, State).
@@ -86,15 +86,12 @@ to_global_pid(Name) ->
     global:whereis_name(list_to_existing_atom(binary_to_list(Name))).
 
 pid_response(Pid, Req, State) ->
- %   io:format("pid is ~p,info is ~p",[Pid,erlang:process_info(Pid)]),
     case erlang:process_info(Pid) of
         undefined -> not_found(Req, State);
         Info ->
             Info1=lists:map(fun(T) -> to_json(T) end,Info),
             Info2=lists:keydelete(dictionary,1,lists:keydelete(links,1,Info1)),
-            Info3=lists:keydelete(garbage_collection,1,Info2),
-            io:format("info is ~p",[Info3]),
-            Body = jsx:term_to_json(Info3),
+            Body = jsx:term_to_json(Info2),
             Headers = [{<<"Content-Type">>, <<"application/json">>}],
             {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
             {ok, Req2, State}
@@ -110,7 +107,7 @@ to_json(T) ->
                 {Key,list_to_binary(pid_to_list(Value))};         
             {M,F,A} -> {Key,list_to_binary(["{", atom_to_list(M), ":", atom_to_list(F), "/", integer_to_list(A), "}"])};
             [H|E]-> 
-                    {Key,[to_json(H),lists:map(fun(X) -> to_json(X) end,E)]};
+                    {Key,[to_json(H)]++lists:map(fun(X) -> to_json(X) end,E)};
             [] -> {Key,[]};
             _ -> {Key,Value}
         end;
