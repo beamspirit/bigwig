@@ -56,9 +56,9 @@ to_module_info(Bin) ->
                      T when is_tuple(T) ->
                        {Year,Month,Day,Hour,Minute,Sec}=T,
                         proplists:delete(compile, L) ++
-                        [ {compile, [ {time, [{'_type',<<"date">>},{data,list_to_binary([integer_to_list(Year)
-                            ,integer_to_list(Month),integer_to_list(Day),integer_to_list(Hour),
-                            integer_to_list(Minute),integer_to_list(Sec)])}]}]} 
+                        [ {compile, [ {time, [{'_type',<<"date">>},{data,[integer_to_binary(Year)
+                            ,integer_to_binary(Month),integer_to_binary(Day),integer_to_binary(Hour),
+                            integer_to_binary(Minute),integer_to_binary(Sec)]}]}]} 
                                     | proplists:delete(time, L) ];
                     _ ->
                         ModInfo2
