@@ -17,10 +17,18 @@ $(document).ready(function() {
                             //json.aaData[i][0] = ($('<a class="_pid" href="#">&lt;'+Pid+'&gt;</a>'))[0].outerHTML;
                             var Pid = json.aaData[i][0];
                             var Mfa = $('<a class="mfa" href="#">' + json.aaData[i][6] + '</a>');
+                            var Name = $('<a class="mfa" href="#">' + json.aaData[i][1] + '</a>');
+
                             json.aaData[i][0]= ($('<a class="_pid" href="#">'+Pid+'</a>'))[0].outerHTML;
-                            json.aaData[i][1] = RENDERER.render_json_val(json.aaData[i][1])[0].outerHTML;
+                            var Str = json.aaData[i][1];
+                            if( Str.indexOf(":") == -1) {
+                                json.aaData[i][1] = RENDERER.render_json_val(json.aaData[i][1])[0].outerHTML;
+                              }
+                            else {
+                                json.aaData[i][1] = (Name)[0].outerHTML;  
+                            }
+                                                       
                             json.aaData[i][6] = (Mfa)[0].outerHTML;
-                            //json.aaData[i][6] = RENDERER.render_json_val(json.aaData[i][6])[0].outerHTML;
                         }
                         var gs = ['node','clock','cpu','tot','bin','nprocs','procs','code','runqueue','atom','ets'];
                         for (i = 0; i < gs.length; i++) {
