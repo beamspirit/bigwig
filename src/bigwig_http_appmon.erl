@@ -25,9 +25,7 @@ handle_path(<<"GET">>, [<<"appmon">>], Req, State) ->
           [{name, App},
            {desc, ?L2B(Desc)},
            {ver, ?L2B(Ver)}]} || {Pid, _, {App, Desc, Ver}} <- RawApps],
-    io:format("Info is ~p", [Info]),
     Body = jsx:term_to_json(Info),
-    io:format("Body is ~p", [Body]),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
     {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
     {ok, Req2, State};
