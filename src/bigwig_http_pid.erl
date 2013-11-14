@@ -89,33 +89,33 @@ pid_response(Pid, Req, State) ->
     case erlang:process_info(Pid) of
         undefined -> not_found(Req, State);
         Info ->
-            Info1=lists:map(fun(T) -> to_json(T) end,Info),
-            Info2=lists:keydelete(dictionary,1,lists:keydelete(links,1,Info1)),
-            Body = jsx:term_to_json(Info2),
+ %           Info1=lists:map(fun(T) -> to_json(T) end,Info),
+ %           Info2=lists:keydelete(dictionary,1,lists:keydelete(links,1,Info1)),
+            Body = jsx:term_to_json(Info),
             Headers = [{<<"Content-Type">>, <<"application/json">>}],
             {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
             {ok, Req2, State}
     end.
 
-to_json(T) ->
- case T of
-  {Key,Value}->
-        case Value of
-            Value when is_atom(Value) == true -> 
-                {Key,atom_to_binary(Value,utf8)};
-            Value when is_pid(Value) == true ->
-                {Key,list_to_binary(pid_to_list(Value))};         
-            {M,F,A} -> {Key,list_to_binary(["{", atom_to_list(M), ":", atom_to_list(F), "/", integer_to_list(A), "}"])};
-            [H|E]-> 
-                    {Key,[to_json(H)]++lists:map(fun(X) -> to_json(X) end,E)};
-            [] -> {Key,[]};
-            _ -> {Key,Value}
-        end;
-   T when is_atom(T) == true ->
-           atom_to_binary(T,utf8);
-   T when is_pid(T) == true  ->
-           list_to_binary(pid_to_list(T));
-   T when is_port(T) == true ->
-          list_to_binary(erlang:port_to_list(T))
-  end.
+%to_json(T) ->
+% case T of
+%  {Key,Value}->
+%        case Value of
+%            Value when is_atom(Value) == true -> 
+%                {Key,atom_to_binary(Value,utf8)};
+%            Value when is_pid(Value) == true ->
+%                {Key,list_to_binary(pid_to_list(Value))};         
+%            {M,F,A} -> {Key,list_to_binary(["{", atom_to_list(M), ":", atom_to_list(F), "/", integer_to_list(A), "}"])};
+%            [H|E]-> 
+%                    {Key,[to_json(H)]++lists:map(fun(X) -> to_json(X) end,E)};
+%            [] -> {Key,[]};
+%            _ -> {Key,Value}
+%        end;
+%   T when is_atom(T) == true ->
+ %          atom_to_binary(T,utf8);
+ %  T when is_pid(T) == true  ->
+ %          list_to_binary(pid_to_list(T));
+ %  T when is_port(T) == true ->
+ %         list_to_binary(erlang:port_to_list(T))
+ % end.
             
