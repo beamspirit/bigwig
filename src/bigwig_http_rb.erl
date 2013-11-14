@@ -3,7 +3,7 @@
 %%
 -module(bigwig_http_rb).
 -behaviour(cowboy_http_handler).
--export([init/3, handle/2, terminate/3]).
+-export([init/3, handle/2, terminate/3,list_reports/1]).
 
 init({tcp, http}, Req, _Opts) ->
     bigwig_report_reader:start(), %% will only be started once anyway, registered name
@@ -12,7 +12,8 @@ init({tcp, http}, Req, _Opts) ->
 
 handle(Req, State) ->
     {Path, Req2} = cowboy_req:path(Req),
-    handle_path(Path, Req2, State).
+    Path1=lists:delete(<<>>,binary:split(Path,[<<"/">>],[global])),
+    handle_path(Path1, Req2, State).
 
 %% /rb/reports
 handle_path([<<"rb">>, <<"reports">>], Req0, State) ->
