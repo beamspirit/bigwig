@@ -30,7 +30,8 @@ $(document).ready(function() {
                                                        
                             json.aaData[i][6] = (Mfa)[0].outerHTML;
                         }
-                        var gs = ['node','clock','cpu','tot','bin','nprocs','procs','code','runqueue','atom','ets'];
+                        var gs = ['node','clock','cpu','tot','bin','nprocs','procs','code','runqueue','atom','ets',
+                        'limit','poll','processors','release','architecture'];
                         for (i = 0; i < gs.length; i++) {
                           var g = gs[i];
                           if (g in header) {
