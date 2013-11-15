@@ -299,6 +299,13 @@ update_json(Info, #opts{node=Node, accum=Accum}) ->
             Memi ->
                 [Tot,Procs,Atom,Bin,Code,Ets] =
                     etop2:meminfo(Memi, [total,processes,atom,binary,code,ets]),
+                case erlang:system_info(kernel_poll) of
+                  false ->
+                      Poll = 0;
+                  true ->
+                      Poll = 1
+                end,
+
                 [{<<"node">>, atom_to_binary(Node, utf8)},
                  {<<"clock">>, Clock},
                  {<<"cpu">>, Cpu},
@@ -311,7 +318,7 @@ update_json(Info, #opts{node=Node, accum=Accum}) ->
                  {<<"atom">>, Atom},
                  {<<"ets">>, Ets},
                  {<<"limit">>, erlang:system_info(process_limit)},
-                 {<<"poll">>,erlang:system_info(kernel_poll)},
+                 {<<"poll">>, Poll},%erlang:system_info(kernel_poll)},
                  {<<"processors">>,erlang:system_info(logical_processors)},
                  {<<"release">>,erlang:system_info(otp_release)},
                  {<<"architecture">>,erlang:system_info(system_architecture)}
