@@ -309,7 +309,13 @@ update_json(Info, #opts{node=Node, accum=Accum}) ->
                  {<<"code">>, Code},
                  {<<"runqueue">>, RQ},
                  {<<"atom">>, Atom},
-                 {<<"ets">>, Ets}]
+                 {<<"ets">>, Ets},
+                 {<<"limit">>, erlang:system_info(process_limit)},
+                 {<<"poll">>,erlang:system_info(kernel_poll)},
+                 {<<"processors">>,erlang:system_info(logical_processors)},
+                 {<<"release">>,erlang:system_info(otp_release)},
+                 {<<"architecture">>,erlang:system_info(system_architecture)}
+                 ]
         end,
     Ps = [etop_proc_info_to_json(P) || P <- Info#etop_info.procinfo],
     %io:format("ps is ~p",[Ps]),
