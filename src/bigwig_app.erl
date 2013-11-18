@@ -25,6 +25,7 @@ start(_StartType, _StartArgs) ->
                {"/appmon/[...]",          bigwig_http_appmon,   []},
                {"/module/[...]",    bigwig_http_module,   []},
                {"/stats-stream",    bigwig_http_stats_stream, []},
+               {"/log/[...]",        bigwig_http_lager, []},
                {'_',                bigwig_http_catchall, []}
               ]}
     ]),

@@ -17,6 +17,7 @@
         <li><a class="tool" href="reports">Reports</a></li>
         <li><a class="tool" href="etop">Processes</a></li>
         <li><a class="tool" href="appmon">Applications</a></li>
+        <li><a class="tool" href="log">Lager Logging</a></li>
       </ul>
 
       <div id="nodestats">
@@ -133,6 +134,25 @@
         </table>
       </div>
 
+      <div id="log" class="tool">
+        <div>
+          <form method="POST">
+            Tracer: <input type="text" name="tracer" id="tracer"></input>
+            <input type="button" value="start trace" onclick="">
+          </form>
+        </div>
+        <div id="lager_status"></div>
+        <table class="display" id="log_table">
+          <thead>
+            <tr>
+              <th>trace</th>
+              <th>log</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
       <div id="reports" class="tool">
         <ul class="menu">
           <li><a class="filter current" href="/rb">all</a></li>
