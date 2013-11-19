@@ -18,7 +18,7 @@ handle(Req0, State) ->
 handle_path(<<"GET">>, [<<"lager">>, <<"status">>], Req, State) ->
     handle_get_status(Req, State);
 handle_path(<<"GET">>, [<<"lager">>, <<"tracer">>, RoutingKey], Req, State) ->
-    not_found(Req, State);
+    handle_get_log(RoutingKey, Req, State);
 handle_path(<<"PUT">>, [<<"lager">>, <<"tracer">>, Tracer], Req, State) ->
     not_found(Req, State);
 handle_path(<<"DELETE">>, [<<"lager">>, <<"tracer">>, Tracer], Req, State) ->
@@ -33,7 +33,8 @@ handle_get_status(Req,State) ->
   Headers = [{<<"Content-Type">>, <<"application/json">>}],
   {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
   {ok, Req2, State}.
-
+handle_get_log(RoutingKey, Req, State) ->
+  {ok, Req, State}.
 not_found(Req, State) ->
     {ok, Req2} = cowboy_req:reply(404, [], <<"<h1>404</h1>">>, Req),
     {ok, Req2, State}.
