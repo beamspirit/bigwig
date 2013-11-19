@@ -32,4 +32,14 @@ $(function() {
         $('#dashboard').append($('<h1>Dashboard dump</h1>'));
         $('#dashboard').append($('<pre class="dbdump">' + JSON.stringify(json, null, 4) + '</pre>'));
     });
+    $.getJSON('/lager/status', function(json) {
+        $('#lager_status').append($('<h2>Lager Status</h2>'));
+        var jsonText = JSON.stringify(json, null, 4);
+//        for(var i=0; i<jsonText.ActiveTraces.length; ++i)
+//         {
+//           jsonText.ActiveTraces[i]=($('<a class="tracer" href="#">' + jsonText.ActiveTraces[i] + '</a>'))[0].outerHTML;
+//           alert(jsonText.ActiveTraces[i]);
+//         }
+        $('#lager_status').append($('<pre class="dbdump">' + jsonText + '</pre>'));
+    });
 });
