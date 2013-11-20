@@ -147,7 +147,6 @@ var TPL = (function() {
       }
     }
     var jt = type(data);
-
     if(jt == "string") {
       try {
         el.html(data);

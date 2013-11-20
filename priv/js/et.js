@@ -42,6 +42,24 @@ $(document).ready(function() {
                       });
                     }
   });
+  var oTable1 = $('#log_table').dataTable({
+    "bProcessing": false,
+    "iDisplayLength": 25,
+    "sAjaxSource": '/lager/status',
+    "aaSorting": [[5, "desc"]],
+    // Get data piggy-backed on the main table and update the page
+    "fnServerData": function(sSource, aaData, fnCallback) {
+                      $.getJSON( sSource, aaData, function(json) {
+
+                        // Use our RENDERER to format everything
+                        for(var i=0; i<json.ActiveTraces.length; ++i)
+                        {
+                            json.ActiveTraces[i]=($('<a class="tracer" href="#">' + json.ActiveTraces[i] + '</a>'))[0].outerHTML;
+                        }
+                        fnCallback(json);
+                      });
+                    }
+  });
   $(document).everyTime(5000, "poll_etop", function() {oTable.fnReloadAjax();});
   $('#accumulate').bind('click', function() {
     $.ajax({

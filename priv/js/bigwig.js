@@ -34,12 +34,13 @@ $(function() {
     });
     $.getJSON('/lager/status', function(json) {
         $('#lager_status').append($('<h2>Lager Status</h2>'));
-        var jsonText = JSON.stringify(json, null, 4);
-//        for(var i=0; i<jsonText.ActiveTraces.length; ++i)
-//         {
-//           jsonText.ActiveTraces[i]=($('<a class="tracer" href="#">' + jsonText.ActiveTraces[i] + '</a>'))[0].outerHTML;
-//           alert(jsonText.ActiveTraces[i]);
-//         }
-        $('#lager_status').append($('<pre class="dbdump">' + jsonText + '</pre>'));
+        for(var i=0; i<json.ActiveTraces.length; ++i)
+         {
+          json.ActiveTraces[i]=($('<a class="tracer" href="#">' + json.ActiveTraces[i] + '</a>'))[0].outerHTML;
+         }
+         var jsonText=JSON.stringify(json, null, 4);
+         var result=jsonText.replace(/\\"/g,"\"");
+         var result1=result.replace(/  /g,"");
+        $('#lager_status').append($('<pre class="dbdump">' + result1 + '</pre>'));
     });
 });

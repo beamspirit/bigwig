@@ -34,7 +34,11 @@ handle_get_status(Req,State) ->
   {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
   {ok, Req2, State}.
 handle_get_log(RoutingKey, Req, State) ->
-  {ok, Req, State}.
+%  amqp_subscriber:start_link(RoutingKey),
+  Body = jsx:term_to_json(RoutingKey),
+  Headers = [{<<"Content-Type">>, <<"application/json">>}],
+  {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
+  {ok, Req2, State}.
 not_found(Req, State) ->
     {ok, Req2} = cowboy_req:reply(404, [], <<"<h1>404</h1>">>, Req),
     {ok, Req2, State}.
@@ -49,7 +53,7 @@ remove(Status) ->
    Reductions2 = lists:delete("\n",Reductions1),
    Status1 = [
                {<<"Lager status">>, LStatus1}, 
-               {<<"Active Traces">>, Traces}, 
+               {<<"ActiveTraces">>, Traces}, 
                {<<"Tracing Reductions">>,Reductions2}
                ],
    Status1.

@@ -123,7 +123,25 @@ var RENDERER = (function() {
                             })
                     }});
     }
-
+    var show_log_dialog  = function(r) {
+        var url = '/lager/tracer' + r;
+        alert(url);
+        $.ajax({
+                   url: url,
+                   dataType: 'json',
+                   success: function(json){ 
+                        $('<div class="log_dialog"></div>')
+                            .dialog({
+                                title: r + ':trace_info() &nbsp; ' + 
+                                       '<small>(<a href="'+url+'">json</a>)</small>',
+                                width: 550,
+                                buttons: { 
+                                    "Close": function() { $(this).dialog("close"); }
+                                }
+                            })
+                   }
+            });
+    }
 
     var gen_pid_html = function( json ) {
         var t = $('<table></table>');
@@ -264,4 +282,8 @@ $("body").delegate("a.mfa", "click", function(e){
     RENDERER.show_mfa_dialog(x1[0],x2[0],parseInt(x2[1]));
     e.preventDefault();
 });
-
+$("body").delegate("a.tracer", "click", function(e){
+    var tracer = 123;
+    RENDERER.show_log_dialog(tracer);
+    e.preventDefault();
+});
