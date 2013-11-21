@@ -18,13 +18,14 @@ start(_StartType, _StartArgs) ->
                {"/static/[...]",  cowboy_static,        {priv_dir,  bigwig, "",
                                                          [{mimetypes, cow_mimetypes, all}]}},
                {"/vm",              bigwig_http_vm,       []},
+               {"/rb/stream",       bigwig_http_rb_stream, []},               
                {"/rb/[...]",        bigwig_http_rb, []},
-               {"/rb/stream",       bigwig_http_rb_stream, []},
                {"/pid/[...]",        bigwig_http_pid, []},
                {"/top/[...]",             bigwig_http_etop2,    []},
                {"/appmon/[...]",          bigwig_http_appmon,   []},
                {"/module/[...]",    bigwig_http_module,   []},
                {"/stats-stream",    bigwig_http_stats_stream, []},
+               {"/lager/stream",    bigwig_http_lager_stream, []},
                {"/lager/[...]",        bigwig_http_lager, []},
                {'_',                bigwig_http_catchall, []}
               ]}
