@@ -370,19 +370,23 @@ find_avoid() ->
                 [undefined],
                 ?IGNORE_APPS).
 
-pid_info({P}) ->
+pid_info({P})  ->
+    Node = node(P),
     L =
-        case process_info(P, registered_name) of
+%        case process_info(P, registered_name) of
+    case rpc:call(Node,erlang, process_info, [P,registered_name]) of
             {registered_name, Name} -> [{name, Name}];
             _ -> []
         end,
     L1 =
-        case process_info(P, current_function) of
+%        case process_info(P, current_function) of
+    case rpc:call(Node,erlang, process_info, [P,current_function]) of
             {current_function, CMfa} -> [{cf, tuple_to_list(CMfa)}];
             _ -> []
         end,
     L2 =
-        case process_info(P, dictionary) of
+%        case process_info(P, dictionary) of
+    case rpc:call(Node,erlang, process_info, [P,dictionary]) of
             {dictionary, Dict} when is_list(Dict) ->
                 case lists:keyfind('$initial_call', 1, Dict) of
                     {'$initial_call', IcMfa} -> [{ic, tuple_to_list(IcMfa)}];
@@ -391,7 +395,8 @@ pid_info({P}) ->
             _ -> []
         end,
     L3 =
-        case process_info(P, message_queue_len) of
+%        case process_info(P, message_queue_len) of
+    case rpc:call(Node,erlang, process_info, [P,message_queue_len]) of
             {message_queue_len, QLen} -> [{q, QLen}];
             _ -> []
         end,

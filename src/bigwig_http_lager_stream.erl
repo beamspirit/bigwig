@@ -18,6 +18,7 @@ terminate(_Reason, _Req, _State) ->
     exit(websockets_only).
 
 websocket_init(_TransportName, Req, _Opts) ->
+    io:format("lager_stream init ok~n"),
     bigwig_pubsubhub:register_client(self()),
     {ok, Req, undefined_state}.
 
@@ -27,6 +28,7 @@ websocket_handle({text, _Msg}, Req, State) ->
     {ok, Req, State}.
 websocket_info({bigwig, {bigwig_trace, Stats}}, Req, State) ->
      Reply = jsx:term_to_json([{lager, Stats}]),
+     io:format("Reply is ~p",[Reply]),
      {reply, {text, Reply}, Req, State};
 websocket_info({bigwig, _}, Req, State) ->
      {ok, Req, State};
