@@ -263,11 +263,6 @@ $("body").delegate("a.mfa", "click", function(e){
     RENDERER.show_mfa_dialog(x1[0],x2[0],parseInt(x2[1]));
     e.preventDefault();
 });
-$("body").delegate("a.tracer", "click", function(e){
-     var x1 = $(this).text();
-     sendTxt(x1);
-     e.preventDefault();
-});
 //    RENDERER.show_log_dialog(tracer);
 //    e.preventDefault();
 
