@@ -1,5 +1,5 @@
 $(document).ready(function(){
-    connect("/lager/stream");
+    
 }
 function connect(to)
 {
@@ -19,7 +19,7 @@ function onClose(evt) {
 };  
 
 function onMessage(evt) { 
-    $('#trace_log').prepend('<p>' + txt + '</p>');
+    $('#trace_log').prepend('<p>' + evt.data + '</p>');
 };  
 
 $("body").delegate("a.tracer", "click", function(e){
