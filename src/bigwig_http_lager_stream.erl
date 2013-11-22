@@ -28,7 +28,7 @@ websocket_handle(_Msg, Req, State) ->
     amqp_subscriber:start_link(<<"trace.*">>),
     {ok, Req, State}.
 websocket_info({bigwig, {bigwig_trace, Stats}}, Req, State) ->
-     Reply = jsx:term_to_json([{Stats}]),
+     Reply = jsx:term_to_json([{lager, Stats}]),
      {reply, {text, Reply}, Req, State};
 websocket_info({bigwig, _}, Req, State) ->
      {ok, Req, State};
