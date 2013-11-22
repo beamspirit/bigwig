@@ -34,9 +34,9 @@ handle_get_status(Req,State) ->
   {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
   {ok, Req2, State}.
 handle_get_log(RoutingKey, Req, State) ->
-  amqp_subscriber:start_link(<<"trace.*">>),
+%  amqp_subscriber:start_link(<<"trace.*">>),
   {ok,Info}=file:read_file("trace.log"),
-  Msg={bigwig_trace, Info},
+  Msg=[{bigwig_trace, Info}],
   Body = jsx:term_to_json(Msg),
   Headers = [{<<"Content-Type">>, <<"application/json">>}],
   {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
