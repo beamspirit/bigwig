@@ -24,7 +24,7 @@ websocket_init(_TransportName, Req, _Opts) ->
 
 %% TODO handle stuff like {bigwig, {appmon, ... }} and send that too
 websocket_handle({text, Msg}, Req, State) ->
-    io:format("Msg is ~p",[_Msg]),
+    io:format("Msg is ~p",[Msg]),
     amqp_subscriber:start_link(<<"trace.*">>),
     {ok, Req, State}.
 websocket_info({bigwig, {bigwig_trace, Stats}}, Req, State) ->
