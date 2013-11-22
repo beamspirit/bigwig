@@ -9,7 +9,7 @@ start() ->
     application:ensure_started(sasl),
     application:ensure_started(cowlib),
     application:ensure_started(cowboy),
-    application:ensure_started(lager),
+    %application:ensure_started(lager),
     application:start(bigwig).
 
 stop() ->
