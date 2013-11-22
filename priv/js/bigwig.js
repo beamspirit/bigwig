@@ -43,4 +43,25 @@ $(function() {
          var result1=result.replace(/  /g,"");
         $('#lager_status').append($('<pre class="dbdump">' + result1 + '</pre>'));
     });
+    connect("/lager/stream");
 });
+function connect(to)
+{
+       var host = document.location.host;
+       websocket = new WebSocket("ws://"+host+to);
+       websocket.onopen = function(evt) { onOpen(evt) }; 
+       websocket.onclose = function(evt) { onClose(evt) }; 
+       websocket.onmessage = function(evt) { onMessage(evt) }; 
+};  
+      
+function onOpen(evt) { 
+};  
+function sendTxt(txt) {
+    websocket.send(txt);
+};
+function onClose(evt) { 
+};  
+
+function onMessage(evt) { 
+    $('#trace_log').prepend('<p>' + evt.data + '</p>');
+};  
