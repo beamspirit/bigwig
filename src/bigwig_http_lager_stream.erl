@@ -23,12 +23,12 @@ websocket_init(_TransportName, Req, _Opts) ->
     {ok, Req, undefined_state}.
 
 %% TODO handle stuff like {bigwig, {appmon, ... }} and send that too
-websocket_handle({text, _Msg}, Req, State) ->
+websocket_handle(_Msg, Req, State) ->
+    io:format("Msg is ~p",[_Msg]),
     amqp_subscriber:start_link(<<"trace.*">>),
     {ok, Req, State}.
 websocket_info({bigwig, {bigwig_trace, Stats}}, Req, State) ->
-     Reply = jsx:term_to_json([{lager, Stats}]),
-     io:format("Reply is ~p",[Reply]),
+     Reply = jsx:term_to_json([{Stats}]),
      {reply, {text, Reply}, Req, State};
 websocket_info({bigwig, _}, Req, State) ->
      {ok, Req, State};
