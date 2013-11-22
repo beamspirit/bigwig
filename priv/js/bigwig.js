@@ -66,7 +66,8 @@ function onMessage(evt) {
     $('#trace_log').prepend('<p>' + evt.data + '</p>');
 };  
 $("body").delegate("a.tracer", "click", function(e){
-     var x1 = $(this).text();
-     sendTxt(x1);
+     var x1 = $(this).text().split("<<");
+     var x2 =x1[1].split(">>");
+     sendTxt(x2);
      e.preventDefault();
 });
