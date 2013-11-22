@@ -68,6 +68,7 @@ function onMessage(evt) {
 $("body").delegate("a.tracer", "click", function(e){
      var x1 = $(this).text().split("<<");
      var x2 =x1[1].split(">>");
-     sendTxt(x2);
+     var x3 = x2[0].replace(/\"/g, "");
+     sendTxt(x3);
      e.preventDefault();
 });
