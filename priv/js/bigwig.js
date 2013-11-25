@@ -43,6 +43,10 @@ $(function() {
          var result1=result.replace(/  /g,"");
         $('#lager_status').append($('<pre class="dbdump">' + result1 + '</pre>'));
     });
+    $('#start_trace').bind('click', function(event) {
+      var trace=$('#tracer').text();
+      alert(trace);
+    });
     connect("/lager/stream");
 });
 function connect(to)
