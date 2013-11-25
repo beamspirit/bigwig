@@ -44,8 +44,25 @@ $(function() {
         $('#lager_status').append($('<pre class="dbdump">' + result1 + '</pre>'));
     });
     $('#start_trace').bind('click', function(event) {
-      var trace=$('#tracer').text();
-      alert(trace);
+      var trace=$('#tracer').val();
+      var x = trace.split(":");
+      var tracer = '{';
+      for(var i=0; i< x.length; ++i)
+      {
+        tracer = tracer + x[i] + ',';
+      }
+      tracer = tracer.substring(0,tracer.length-1);
+      tracer = tracer + '}';
+
+      url = '/lager/tracer/'+tracer;
+
+      $.ajax({
+              url:url,
+              type:'PUT',
+              success: function(resp){
+                  alert('Add Tracer success');
+              }
+            })  
     });
     connect("/lager/stream");
 });

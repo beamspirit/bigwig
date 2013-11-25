@@ -20,7 +20,7 @@ handle_path(<<"GET">>, [<<"lager">>, <<"status">>], Req, State) ->
 handle_path(<<"GET">>, [<<"lager">>, <<"tracer">>, RoutingKey], Req, State) ->
     handle_get_log(RoutingKey, Req, State);
 handle_path(<<"PUT">>, [<<"lager">>, <<"tracer">>, Tracer], Req, State) ->
-    not_found(Req, State);
+    handle_add_tracer(Tracer, Req, State);
 handle_path(<<"DELETE">>, [<<"lager">>, <<"tracer">>, Tracer], Req, State) ->
     not_found(Req, State);
 handle_path(_, _, Req, State) ->
@@ -34,13 +34,23 @@ handle_get_status(Req,State) ->
   {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
   {ok, Req2, State}.
 handle_get_log(RoutingKey, Req, State) ->
-%  amqp_subscriber:start_link(<<"trace.*">>),
   {ok,Info}=file:read_file("trace.log"),
   Msg=[{bigwig_trace, Info}],
   Body = jsx:term_to_json(Msg),
   Headers = [{<<"Content-Type">>, <<"application/json">>}],
   {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
   {ok, Req2, State}.
+handle_add_tracer(Tracer, Req, State) ->
+io:format("tracer is ~p", [Tracer]),
+  case Tracer of
+     {distributed, RoutingKey, Filter, Level} ->
+          amqp_tracer:trace_amqp(distributed, RoutingKey, Filter, Level);
+     {RoutingKey, Filter} ->
+          amqp_tracer:trace_amqp(RoutingKey, Filter);
+     {RoutingKey, Filter, Level} ->
+          amqp_tracer:trace_amqp(RoutingKey, Filter, Level)
+  end,
+  {ok,Req,State}.
 not_found(Req, State) ->
     {ok, Req2} = cowboy_req:reply(404, [], <<"<h1>404</h1>">>, Req),
     {ok, Req2, State}.
