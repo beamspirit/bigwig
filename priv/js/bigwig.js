@@ -61,6 +61,7 @@ function sendTxt(txt) {
     $('<div id="trace_dialog" class="trace_dialog"></div>')
     .dialog({
       width: 550,
+      height: 800,
       title: 'routingkey(' + txt + ') &nbsp; ',
       buttons: {
         "Close": function() { $(this).dialog("close"); },
@@ -72,7 +73,7 @@ function onClose(evt) {
 };  
 
 function onMessage(evt) { 
-    $('#trace_dialog').prepend('<tr>' + evt.data + '</tr>');
+    $('#trace_dialog').prepend('<p>' + evt.data + '</p>');
 };  
 $("body").delegate("a.tracer", "click", function(e){
      var x1 = $(this).text().split("<<");
