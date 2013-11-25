@@ -42,13 +42,17 @@ handle_get_log(RoutingKey, Req, State) ->
   {ok, Req2, State}.
 handle_add_tracer(Tracer, Req, State) ->
 io:format("tracer is ~p", [Tracer]),
+amqp_tracer:start_link(),
   case Tracer of
      {distributed, RoutingKey, Filter, Level} ->
-          amqp_tracer:trace_amqp(distributed, RoutingKey, Filter, Level);
+          RoutingKey1=atom_to_binary(RoutingKey,utf8),
+          amqp_tracer:trace_amqp(distributed, RoutingKey1, Filter, Level);
      {RoutingKey, Filter} ->
-          amqp_tracer:trace_amqp(RoutingKey, Filter);
+          RoutingKey1=atom_to_binary(RoutingKey,utf8),
+          amqp_tracer:trace_amqp(RoutingKey1, Filter);
      {RoutingKey, Filter, Level} ->
-          amqp_tracer:trace_amqp(RoutingKey, Filter, Level)
+          RoutingKey1=atom_to_binary(RoutingKey,utf8),
+          amqp_tracer:trace_amqp(RoutingKey1, Filter, Level)
   end,
   {ok,Req,State}.
 not_found(Req, State) ->
