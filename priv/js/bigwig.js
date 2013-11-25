@@ -58,12 +58,21 @@ function onOpen(evt) {
 };  
 function sendTxt(txt) {
     websocket.send(txt);
+    $('<div id="trace_dialog" class="trace_dialog"></div>')
+    .dialog({
+      width: 550,
+      title: 'routingkey(' + txt + ') &nbsp; ',
+      buttons: {
+        "Close": function() { $(this).dialog("close"); },
+        "Stop Trace": function() {}
+      }
+      })
 };
 function onClose(evt) { 
 };  
 
 function onMessage(evt) { 
-    $('#trace_log').prepend('<p>' + evt.data + '</p>');
+    $('#trace_dialog').prepend('<tr>' + evt.data + '</tr>');
 };  
 $("body").delegate("a.tracer", "click", function(e){
      var x1 = $(this).text().split("<<");
