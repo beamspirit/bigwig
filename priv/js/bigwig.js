@@ -61,8 +61,11 @@ function sendTxt(txt) {
     $('<div id="trace_dialog" class="trace_dialog"></div>')
     .dialog({
       width: 550,
-      height: 800,
+      height: 650,
       title: 'routingkey(' + txt + ') &nbsp; ',
+      close: function(event, ui) {
+        window.location.reload();
+      },
       buttons: {
         "Close": function() { $(this).dialog("close"); },
         "Stop Trace": function() {}
