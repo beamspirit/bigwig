@@ -18,13 +18,11 @@ terminate(_Reason, _Req, _State) ->
     exit(websockets_only).
 
 websocket_init(_TransportName, Req, _Opts) ->
-    io:format("lager_stream init ok~n"),
     bigwig_pubsubhub:register_client(self()),
     {ok, Req, undefined_state}.
 
 %% TODO handle stuff like {bigwig, {appmon, ... }} and send that too
 websocket_handle({text, Msg}, Req, State) ->
-    io:format("Msg is ~p",[Msg]),
     amqp_subscriber:start_link(Msg),
     {ok, Req, State}.
 websocket_info({bigwig, {bigwig_trace, Stats}}, Req, State) ->
