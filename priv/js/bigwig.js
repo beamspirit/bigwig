@@ -81,8 +81,6 @@ function sendTxt(txt) {
     websocket.send(txt);
     $('<div id="trace_dialog" class="trace_dialog"></div>')
     .append(   $('<tr></tr>')
-                        .append('<td>'+"Date"+'</td>')
-                        .append('<td> </td>')
                         .append('<td>'+"Time"+'</td>')
                         .append('<td> </td>')
                         .append('<td>'+"Node"+'</td>')
@@ -90,7 +88,7 @@ function sendTxt(txt) {
                         .append('<td>'+"Level"+'</td>')
                         .append('<td> </td>')
                         .append('<td>'+"Message"+'</td>')
-                    );
+                    )
     .dialog({
       width: 550,
       height: 650,
@@ -115,8 +113,8 @@ function onMessage(evt) {
     {
        x2 = x2+ x1[i];
     }
-    $('#trace_dialog').prepend(   $('<tr></tr>')
-                        .append('<td>'+x1[0]+" "+x1[1]+'</td>')
+    $('#trace_dialog').append(   $('<tr></tr>')
+                        .append('<td>'+x1[0]+x1[1]+'</td>')
                         .append('<td> </td>')
                         .append('<td>'+x1[2]+'</td>')
                         .append('<td> </td>')
