@@ -21,7 +21,7 @@ handle_path(<<"GET">>, [<<"lager">>, <<"tracer">>, RoutingKey], Req, State) ->
     handle_get_log(RoutingKey, Req, State);
 handle_path(<<"PUT">>, [<<"lager">>, <<"tracer">>, Tracer], Req, State) ->
     handle_add_tracer(Tracer, Req, State);
-handle_path(<<"DELETE">>, [<<"lager">>, <<"tracer">>, Tracer], Req, State) ->
+handle_path(<<"DELETE">>, [<<"lager">>, <<"tracer">>, _Tracer], Req, State) ->
     not_found(Req, State);
 handle_path(_, _, Req, State) ->
     not_found(Req, State).
@@ -33,7 +33,7 @@ handle_get_status(Req,State) ->
   Headers = [{<<"Content-Type">>, <<"application/json">>}],
   {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
   {ok, Req2, State}.
-handle_get_log(RoutingKey, Req, State) ->
+handle_get_log(_RoutingKey, Req, State) ->
   {ok,Info}=file:read_file("trace.log"),
   Msg=[{bigwig_trace, Info}],
   Body = jsx:term_to_json(Msg),
@@ -41,20 +41,30 @@ handle_get_log(RoutingKey, Req, State) ->
   {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
   {ok, Req2, State}.
 handle_add_tracer(Tracer, Req, State) ->
-io:format("tracer is ~p", [Tracer]),
-amqp_tracer:start_link(),
-  case Tracer of
-     {distributed, RoutingKey, Filter, Level} ->
-          RoutingKey1=atom_to_binary(RoutingKey,utf8),
-          amqp_tracer:trace_amqp(distributed, RoutingKey1, Filter, Level);
-     {RoutingKey, Filter} ->
-          RoutingKey1=atom_to_binary(RoutingKey,utf8),
-          amqp_tracer:trace_amqp(RoutingKey1, Filter);
-     {RoutingKey, Filter, Level} ->
-          RoutingKey1=atom_to_binary(RoutingKey,utf8),
-          amqp_tracer:trace_amqp(RoutingKey1, Filter, Level)
-  end,
-  {ok,Req,State}.
+
+  io:format("tracer is ~p", [Tracer]),
+  All = binary:split(Tracer,[<<",">>],[global]),
+  
+  amqp_tracer:start_link(),
+    case length(All) of
+      5 ->
+            Attr1 = binary_to_atom(lists:nth(1, All), utf8),
+            RoutingKey = lists:nth(2, All),
+            Filter = [{binary_to_atom(lists:nth(3, All), utf8), binary_to_integer(lists:nth(4, All))}],
+            Level = binary_to_atom(lists:nth(5, All), utf8),
+            amqp_tracer:trace_amqp(Attr1, RoutingKey, Filter, Level);
+      3 ->
+            RoutingKey = lists:nth(1, All),
+            Filter = [{binary_to_atom(lists:nth(2, All), utf8), binary_to_integer(lists:nth(3, All))}],
+            amqp_tracer:trace_amqp(RoutingKey, Filter);
+      4 ->
+            RoutingKey = lists:nth(1, All),
+            Filter = [{binary_to_atom(lists:nth(2, All), utf8), binary_to_integer(lists:nth(3, All))}],
+            Level = binary_to_atom(lists:nth(4, All), utf8),
+            amqp_tracer:trace_amqp(RoutingKey, Filter, Level);
+      _ -> ok
+    end,
+    {ok,Req,State}.
 not_found(Req, State) ->
     {ok, Req2} = cowboy_req:reply(404, [], <<"<h1>404</h1>">>, Req),
     {ok, Req2, State}.
