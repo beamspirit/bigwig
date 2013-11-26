@@ -46,13 +46,11 @@ $(function() {
     $('#start_trace').bind('click', function(event) {
       var trace=$('#tracer').val();
       var x = trace.split(":");
-      var tracer = '{';
       for(var i=0; i< x.length; ++i)
       {
         tracer = tracer + x[i] + ',';
       }
       tracer = tracer.substring(0,tracer.length-1);
-      tracer = tracer + '}';
 
       url = '/lager/tracer/'+tracer;
 
