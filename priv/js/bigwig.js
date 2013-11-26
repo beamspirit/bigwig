@@ -65,7 +65,7 @@ $(function() {
             })  
     });
     $('#clear_all_traces').bind('click', function(event) {
-      url = '/lager/tracer/all',
+      url = '/lager/tracer/all';
       $.ajax({
               url:url,
               type:'DELETE',
