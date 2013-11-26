@@ -53,7 +53,7 @@ $(function() {
       }
       tracer = tracer.substring(0,tracer.length-1);
 
-      url = '/lager/tracer/'+tracer;
+      var url = '/lager/tracer/'+tracer;
 
       $.ajax({
               url:url,
@@ -65,9 +65,9 @@ $(function() {
             })  
     });
     $('#clear_all_traces').bind('click', function(event) {
-      url = '/lager/tracer/all';
+      var url1 = '/lager/tracer/all';
       $.ajax({
-              url:url,
+              url:url1,
               type:'DELETE',
               success: function(resp){
                   alert('Clear all traces success');
