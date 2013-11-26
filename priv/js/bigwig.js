@@ -80,6 +80,17 @@ function onOpen(evt) {
 function sendTxt(txt) {
     websocket.send(txt);
     $('<div id="trace_dialog" class="trace_dialog"></div>')
+    .append(   $('<tr></tr>')
+                        .append('<td>'+"Date"+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+"Time"+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+"Node"+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+"Level"+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+"Message"+'</td>')
+                    );
     .dialog({
       width: 550,
       height: 650,
@@ -97,7 +108,22 @@ function onClose(evt) {
 };  
 
 function onMessage(evt) { 
-    $('#trace_dialog').prepend('<p>' + evt.data + '</p>');
+    var x = (evt.data).split(":\"");
+    var x1 = x[1].split(" ");
+    var x2 = "";
+    for(var i=4; i < x1.length; ++i)
+    {
+       x2 = x2+ x1[i];
+    }
+    $('#trace_dialog').prepend(   $('<tr></tr>')
+                        .append('<td>'+x1[0]+" "+x1[1]+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+x1[2]+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+x1[3]+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+x2+'</td>')
+                        );                      
 };  
 $("body").delegate("a.tracer", "click", function(e){
      var x1 = $(this).text().split("<<");
