@@ -91,7 +91,7 @@ function onOpen(evt) {
 function sendTxt(txt) {
     websocket.send(txt);
     $('<div id="trace_dialog" class="trace_dialog"></div>')
-    .append(   $('<tr></tr>')
+    .append(   $('<tr style="#C8C8C8"></tr>')
                         .append('<td>'+"Time"+'</td>')
                         .append('<td> </td>')
                         .append('<td>'+"Node"+'</td>')
