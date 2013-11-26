@@ -59,7 +59,8 @@ $(function() {
               url:url,
               type:'PUT',
               success: function(resp){
-                  alert('Add Tracer success');
+                  alert('Add tracer success');
+                  window.location.reload();
               }
             })  
     });
