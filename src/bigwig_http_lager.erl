@@ -21,6 +21,8 @@ handle_path(<<"GET">>, [<<"lager">>, <<"tracer">>, RoutingKey], Req, State) ->
     handle_get_log(RoutingKey, Req, State);
 handle_path(<<"PUT">>, [<<"lager">>, <<"tracer">>, Tracer], Req, State) ->
     handle_add_tracer(Tracer, Req, State);
+handle_path(<<"DELETE">>, [<<"lager">>, <<"tracer">>, <<"all">>], Req, State) ->
+    handle_clear_traces(Req, State);
 handle_path(<<"DELETE">>, [<<"lager">>, <<"tracer">>, _Tracer], Req, State) ->
     not_found(Req, State);
 handle_path(_, _, Req, State) ->
@@ -65,6 +67,9 @@ handle_add_tracer(Tracer, Req, State) ->
       _ -> ok
     end,
     {ok,Req,State}.
+handle_clear_traces(Req, State) ->
+  lager:clear_all_traces(),
+  {ok,Req,State}.
 not_found(Req, State) ->
     {ok, Req2} = cowboy_req:reply(404, [], <<"<h1>404</h1>">>, Req),
     {ok, Req2, State}.

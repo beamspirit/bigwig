@@ -64,6 +64,17 @@ $(function() {
               }
             })  
     });
+    $('#clear_all_traces').bind('click', function(event) {
+      url = '/lager/tracer/all',
+      $.ajax({
+              url:url,
+              type:'DELETE',
+              success: function(resp){
+                  alert('Clear all traces success');
+                  window.location.reload();
+              }
+            })  
+    };
     connect("/lager/stream");
 });
 function connect(to)
