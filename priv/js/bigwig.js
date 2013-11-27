@@ -126,6 +126,7 @@ function sendTxt(txt) {
       title: 'routingkey(' + txt + ') &nbsp; ',
       close: function(event, ui) {
         closeSubscribe();
+        window.location.reload();
       },
       buttons: {
         "Close": function() { $(this).dialog("close"); },
@@ -134,7 +135,7 @@ function sendTxt(txt) {
       })
 };
 function closeSubscribe(){
-  websocket.send('kill');
+  websocket.send('unsubscribe');
 }
 $("body").delegate("a.tracer", "click", function(e){
      var x1 = $(this).text().split("<<");
