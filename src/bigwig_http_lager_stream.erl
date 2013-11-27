@@ -23,12 +23,14 @@ websocket_init(_TransportName, Req, _Opts) ->
 
 %% TODO handle stuff like {bigwig, {appmon, ... }} and send that too
 websocket_handle({text, Msg}, Req, State) ->
+    io:format("msg is ~p",[Msg]),
     case Msg of
         <<"kill">> ->
             Pid = State#state.pid,
             amqp_channel:close(Pid),
             {ok, Req, State};
         Msg ->
+          io:format("subscriber start ~p",[Msg]),
           {ok, Pid}=amqp_subscriber:start_link(Msg),
           {ok, Req, State#state{ pid = Pid }}
     end.
