@@ -36,12 +36,7 @@ handle_get_status(Req,State) ->
   {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
   {ok, Req2, State}.
 handle_get_log(_RoutingKey, Req, State) ->
-  {ok,Info}=file:read_file("trace.log"),
-  Msg=[{bigwig_trace, Info}],
-  Body = jsx:term_to_json(Msg),
-  Headers = [{<<"Content-Type">>, <<"application/json">>}],
-  {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
-  {ok, Req2, State}.
+  {ok, Req, State}.
 handle_add_tracer(Tracer, Req, State) ->
 
   io:format("tracer is ~p", [Tracer]),

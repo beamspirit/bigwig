@@ -88,34 +88,8 @@ function connect(to)
       
 function onOpen(evt) { 
 };  
-function sendTxt(txt) {
-    websocket.send(txt);
-    $('<div id="trace_dialog" class="trace_dialog"></div>')
-    .append(   $('<tr></tr>')
-                        .append('<td>'+"Time"+'</td>')
-                        .append('<td> </td>')
-                        .append('<td>'+"Node"+'</td>')
-                        .append('<td> </td>')
-                        .append('<td>'+"Level"+'</td>')
-                        .append('<td> </td>')
-                        .append('<td>'+"Message"+'</td>')
-                    )
-    .dialog({
-      width: 550,
-      height: 650,
-      title: 'routingkey(' + txt + ') &nbsp; ',
-      close: function(event, ui) {
-        window.location.reload();
-      },
-      buttons: {
-        "Close": function() { $(this).dialog("close"); },
-        "Stop Trace": function() {}
-      }
-      })
-};
 function onClose(evt) { 
 };  
-
 function onMessage(evt) { 
     var x = (evt.data).split(":\"");
     var x1 = x[1].split(" ");
@@ -133,7 +107,35 @@ function onMessage(evt) {
                         .append('<td> </td>')
                         .append('<td>'+x2+'</td>')
                         );                      
-};  
+};
+function sendTxt(txt) {
+    websocket.send(txt);
+    $('<div id="trace_dialog" class="trace_dialog"></div>')
+    .append(   $('<tr></tr>')
+                        .append('<td>'+"Time"+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+"Node"+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+"Level"+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+"Message"+'</td>')
+                    )
+    .dialog({
+      width: 550,
+      height: 650,
+      title: 'routingkey(' + txt + ') &nbsp; ',
+      close: function(event, ui) {
+        closeSubscribe();
+      },
+      buttons: {
+        "Close": function() { $(this).dialog("close"); },
+        "Stop Trace": function() {}
+      }
+      })
+};
+function closeSubscribe(){
+  websocket.send('kill');
+}
 $("body").delegate("a.tracer", "click", function(e){
      var x1 = $(this).text().split("<<");
      var x2 =x1[1].split(">>");
