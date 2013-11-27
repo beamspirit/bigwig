@@ -6,7 +6,6 @@
 -export([init/3, handle/2, terminate/3]).
 -export([websocket_init/3, websocket_handle/3,
 				 websocket_info/3, websocket_terminate/3]).
--record(state, {pid}).
 
 init({tcp, http}, _Req, _Opts) ->
     {upgrade, protocol, cowboy_websocket}.
@@ -22,18 +21,14 @@ websocket_init(_TransportName, Req, _Opts) ->
     {ok, Req, undefined_state}.
 
 %% TODO handle stuff like {bigwig, {appmon, ... }} and send that too
-websocket_handle({text, Msg}, Req, State) ->
-    io:format("msg is ~p",[Msg]),
-    case Msg of
-        <<"kill">> ->
-            Pid = State#state.pid,
-            amqp_channel:close(Pid),
-            {ok, Req, State};
-        Msg ->
-          io:format("subscriber start ~p",[Msg]),
-          {ok, Pid}=amqp_subscriber:start_link(Msg),
-          {ok, Req, State#state{ pid = Pid }}
-    end.
+websocket_handle({text, Msg}, Req, State) when Msg =:= <<"unsubscribe">> ->
+     io:format("msg is ~p",[Msg]),
+     amqp_subscriber:cast(unsubscribe),
+     {ok, Req, State};
+websocket_handle({text, Msg}, Req, State) when Msg =/= <<"unsubscribe">> ->
+     io:format("msg is ~p",[Msg]),
+     amqp_subscriber:start_link(Msg) of
+     {ok, Req, State}.
 websocket_info({bigwig, {bigwig_trace, Stats}}, Req, State) ->
      Reply = jsx:term_to_json([{lager, Stats}]),
      {reply, {text, Reply}, Req, State};
