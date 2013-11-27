@@ -23,11 +23,12 @@ websocket_init(_TransportName, Req, _Opts) ->
 %% TODO handle stuff like {bigwig, {appmon, ... }} and send that too
 websocket_handle({text, Msg}, Req, State) when Msg =:= <<"unsubscribe">> ->
      io:format("msg is ~p",[Msg]),
-     amqp_subscriber:cast(unsubscribe),
+     Msg1=binary_to_atom(Msg,utf8),
+     amqp_subscriber:cast(Msg1),
      {ok, Req, State};
 websocket_handle({text, Msg}, Req, State) when Msg =/= <<"unsubscribe">> ->
      io:format("msg is ~p",[Msg]),
-     amqp_subscriber:start_link(Msg) of
+     amqp_subscriber:start_link(Msg),
      {ok, Req, State}.
 websocket_info({bigwig, {bigwig_trace, Stats}}, Req, State) ->
      Reply = jsx:term_to_json([{lager, Stats}]),
