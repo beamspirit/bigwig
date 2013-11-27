@@ -28,7 +28,7 @@ websocket_handle({text, Msg}, Req, State) ->
             Pid = State#state.pid,
             amqp_channel:close(Pid),
             {ok, Req, State};
-        _ ->
+        Msg ->
           {ok, Pid}=amqp_subscriber:start_link(Msg),
           {ok, Req, State#state{ pid = Pid }}
     end.
