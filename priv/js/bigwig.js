@@ -121,8 +121,8 @@ function sendTxt(txt) {
                         .append('<td>'+"Message"+'</td>')
                     )
     .dialog({
-      width: 550,
-      height: 650,
+      width: 750,
+      height: 500,
       title: 'routingkey(' + txt + ') &nbsp; ',
       close: function(event, ui) {
         closeSubscribe();

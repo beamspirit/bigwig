@@ -25,10 +25,17 @@ websocket_handle({text, Msg}, Req, State) when Msg =:= <<"unsubscribe">> ->
      io:format("msg is ~p",[Msg]),
      Msg1=binary_to_atom(Msg,utf8),
      amqp_subscriber:cast(Msg1),
+ %%    Pid = State,
+ %%    erlang:exit(Pid,kill),
      {ok, Req, State};
 websocket_handle({text, Msg}, Req, State) when Msg =/= <<"unsubscribe">> ->
      io:format("msg is ~p",[Msg]),
      amqp_subscriber:start_link(Msg),
+%%       {ok,Pid} ->
+%%          io:format("amqp_subscriber is ~p",[Pid]);
+%%      {error,_} ->
+%%         Pid = State
+%%     end,
      {ok, Req, State}.
 websocket_info({bigwig, {bigwig_trace, Stats}}, Req, State) ->
      Reply = jsx:term_to_json([{lager, Stats}]),
