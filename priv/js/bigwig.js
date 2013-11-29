@@ -32,17 +32,7 @@ $(function() {
         $('#dashboard').append($('<h1>Dashboard dump</h1>'));
         $('#dashboard').append($('<pre class="dbdump">' + JSON.stringify(json, null, 4) + '</pre>'));
     });
-    $.getJSON('/lager/status', function(json) {
-        $('#lager_status').append($('<h2>Lager Status</h2>'));
-        for(var i=0; i<json.ActiveTraces.length; ++i)
-         {
-          json.ActiveTraces[i]=($('<a class="tracer" href="#">' + json.ActiveTraces[i] + '</a>'))[0].outerHTML;
-         }
-         var jsonText=JSON.stringify(json, null, 4);
-         var result=jsonText.replace(/\\"/g,"\"");
-         var result1=result.replace(/  /g,"");
-        $('#lager_status').append($('<pre class="dbdump">' + result1 + '</pre>'));
-    });
+    uStatus();
     $('#start_trace').bind('click', function(event) {
       var trace=$('#tracer').val();
       var x = trace.split(":");
@@ -60,7 +50,7 @@ $(function() {
               type:'PUT',
               success: function(resp){
                   alert('Add tracer success');
-                  window.location.reload();
+                  uStatus();
               }
             })  
     });
@@ -71,12 +61,26 @@ $(function() {
               type:'DELETE',
               success: function(resp){
                   alert('Clear all traces success');
-                  window.location.reload();
+                  uStatus();
               }
             })  
     });
     connect("/lager/stream");
 });
+function uStatus()
+{
+      $.getJSON('/lager/status', function(json) {
+        $('#lager_status').html($('<h2>Lager Status</h2>'));
+        for(var i=0; i<json.ActiveTraces.length; ++i)
+         {
+          json.ActiveTraces[i]=($('<a class="tracer" href="#">' + json.ActiveTraces[i] + '</a>'))[0].outerHTML;
+         }
+         var jsonText=JSON.stringify(json, null, 4);
+         var result=jsonText.replace(/\\"/g,"\"");
+         var result1=result.replace(/  /g,"");
+        $('#lager_status').append($('<pre class="dbdump">' + result1 + '</pre>'));
+    });
+};
 function connect(to)
 {
        var host = document.location.host;
