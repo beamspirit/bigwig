@@ -65,40 +65,6 @@ $(function() {
               }
             })  
     });
-    var $dialog= $('<div id="trace_dialog" class="trace_dialog"></div>')
-    .dialog({
-      autoOpen: false,
-      width: 750,
-      height: 500,
-      title: 'routingkey(' + txt + ') &nbsp; ',
-      close: function(event, ui) {
-        closeSubscribe();
-        uStatus();
-      },
-      buttons: {
-        "Close": function() { $(this).dialog("close"); },
-        "Stop Trace": function() {}
-      },
-      open: function() {
-            $('#trace_dialog').append(   $('<tr></tr>')
-                        .append('<td>'+"Time"+'</td>')
-                        .append('<td> </td>')
-                        .append('<td>'+"Node"+'</td>')
-                        .append('<td> </td>')
-                        .append('<td>'+"Level"+'</td>')
-                        .append('<td> </td>')
-                        .append('<td>'+"Message"+'</td>')
-                    )
-      }
-      });
-    $('#a.tracer').click(function() {
-     var x1 = $(this).text().split("<<");
-     var x2 =x1[1].split(">>");
-     var x3 = x2[0].replace(/\"/g, "");
-     websocket.send(x3);
-     $dialog.dialog('open');
-     e.preventDefault();
-    });
     connect("/lager/stream");
 });
 function uStatus()
@@ -146,6 +112,42 @@ function onMessage(evt) {
                         .append('<td>'+x2+'</td>')
                         );                      
 };
+function sendTxt(txt) {
+    websocket.send(txt);
+    $('<div id="trace_dialog" class="trace_dialog"></div>')
+    .dialog({
+      width: 750,
+      height: 500,
+      title: 'routingkey(' + txt + ') &nbsp; ',
+      close: function(event, ui) {
+        closeSubscribe();
+        uStatus();
+        window.location.reload();
+      },
+      buttons: {
+        "Close": function() { $(this).dialog("close"); },
+        "Stop Trace": function() {}
+      },
+      open: function() {
+            $('#trace_dialog').append(   $('<tr></tr>')
+                        .append('<td>'+"Time"+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+"Node"+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+"Level"+'</td>')
+                        .append('<td> </td>')
+                        .append('<td>'+"Message"+'</td>')
+                    )
+      }
+      })
+};
 function closeSubscribe(){
   websocket.send('unsubscribe');
 };
+$("body").delegate("a.tracer", "click", function(e){
+     var x1 = $(this).text().split("<<");
+     var x2 =x1[1].split(">>");
+     var x3 = x2[0].replace(/\"/g, "");
+     sendTxt(x3);
+     e.preventDefault();
+});
