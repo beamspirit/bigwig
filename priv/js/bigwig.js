@@ -130,7 +130,7 @@ function sendTxt(txt) {
       title: 'routingkey(' + txt + ') &nbsp; ',
       close: function(event, ui) {
         closeSubscribe();
-        window.location.reload();
+        uStatus();
       },
       buttons: {
         "Close": function() { $(this).dialog("close"); },
