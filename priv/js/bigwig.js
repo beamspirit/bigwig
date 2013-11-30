@@ -115,21 +115,7 @@ function onMessage(evt) {
 function sendTxt(txt) {
     websocket.send(txt);
     $('<div id="trace_dialog" class="trace_dialog"></div>')
-    .dialog({
-      width: 750,
-      height: 500,
-      title: 'routingkey(' + txt + ') &nbsp; ',
-      close: function(event, ui) {
-        closeSubscribe();
-        uStatus();
-        window.location.reload();
-      },
-      buttons: {
-        "Close": function() { $(this).dialog("close"); },
-        "Stop Trace": function() {}
-      },
-      open: function() {
-            $('#trace_dialog').append(   $('<tr></tr>')
+    .append(   $('<tr></tr>')
                         .append('<td>'+"Time"+'</td>')
                         .append('<td> </td>')
                         .append('<td>'+"Node"+'</td>')
@@ -137,8 +123,19 @@ function sendTxt(txt) {
                         .append('<td>'+"Level"+'</td>')
                         .append('<td> </td>')
                         .append('<td>'+"Message"+'</td>')
-                    )
-      }
+                        )
+    .dialog({
+      width: 750,
+      height: 500,
+      title: 'routingkey(' + txt + ') &nbsp; ',
+      close: function(event, ui) {
+        closeSubscribe();
+        $(this).remove(); 
+      },
+      buttons: {
+        "Close": function() { $(this).dialog("close"); },
+        "Stop Trace": function() {}
+      },
       })
 };
 function closeSubscribe(){
