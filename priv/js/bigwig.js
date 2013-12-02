@@ -54,6 +54,27 @@ $(function() {
               }
             })  
     });
+    $('#del_trace').bind('click', function(event) {
+      var trace=$('#tracer').val();
+      var x = trace.split(":");
+      var tracer = '';
+      for(var i=0; i< x.length; ++i)
+      {
+        tracer = tracer + x[i] + ',';
+      }
+      tracer = tracer.substring(0,tracer.length-1);
+
+      var url = '/lager/tracer/'+tracer;
+
+      $.ajax({
+              url:url,
+              type:'DELETE',
+              success: function(resp){
+                  alert('Stop tracer success');
+                  uStatus();
+              }
+            })  
+    });
     $('#clear_all_traces').bind('click', function(event) {
       var url = '/lager/tracer/all';
       $.ajax({
@@ -103,7 +124,7 @@ function onMessage(evt) {
        x2 = x2+ x1[i];
     }
     $('#trace_dialog').append(   $('<tr></tr>')
-                        .append('<td>'+x1[0]+x1[1]+'</td>')
+                        .append('<td>'+x1[0]+','+x1[1]+'</td>')
                         .append('<td> </td>')
                         .append('<td>'+x1[2]+'</td>')
                         .append('<td> </td>')

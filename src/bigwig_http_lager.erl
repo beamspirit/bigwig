@@ -23,8 +23,8 @@ handle_path(<<"PUT">>, [<<"lager">>, <<"tracer">>, Tracer], Req, State) ->
     handle_add_tracer(Tracer, Req, State);
 handle_path(<<"DELETE">>, [<<"lager">>, <<"tracer">>, <<"all">>], Req, State) ->
     handle_clear_traces(Req, State);
-handle_path(<<"DELETE">>, [<<"lager">>, <<"tracer">>, _Tracer], Req, State) ->
-    not_found(Req, State);
+handle_path(<<"DELETE">>, [<<"lager">>, <<"tracer">>, Tracer], Req, State) ->
+    handle_del_trace(Tracer, Req, State);
 handle_path(_, _, Req, State) ->
     not_found(Req, State).
 
@@ -62,6 +62,38 @@ handle_add_tracer(Tracer, Req, State) ->
       _ -> ok
     end,
     {ok,Req,State}.
+handle_del_trace(Tracer, Req, State) ->
+  io:format("tracer is ~p", [Tracer]),
+  All = binary:split(Tracer,[<<",">>],[global]),
+  
+  amqp_tracer:start_link(),
+    case length(All) of
+      5 ->
+            Attr1 = binary_to_atom(lists:nth(1, All), utf8),
+            RoutingKey = lists:nth(2, All),
+            Filter = [{binary_to_atom(lists:nth(3, All), utf8), binary_to_integer(lists:nth(4, All))}],
+            Level = binary_to_atom(lists:nth(5, All), utf8),
+            Trace0 = { Filter, Level, {lager_amqp_backend, RoutingKey} },
+            case lager_util:validate_trace(Trace0) of
+              {ok, Trace} ->
+                   amqp_tracer:stop_trace(Attr1, Trace);
+              Error ->
+                  Error
+            end;
+      4 ->
+            RoutingKey = lists:nth(1, All),
+            Filter = [{binary_to_atom(lists:nth(2, All), utf8), binary_to_integer(lists:nth(3, All))}],
+            Level = binary_to_atom(lists:nth(4, All), utf8),
+            Trace0 = { Filter, Level, {lager_amqp_backend, RoutingKey} },
+            case lager_util:validate_trace(Trace0) of
+              {ok, Trace} ->
+                  amqp_tracer:stop_trace(Trace);
+              Error ->
+                  Error
+            end;
+      _ -> ok
+    end,
+    {ok,Req,State}.  
 handle_clear_traces(Req, State) ->
   lager:clear_all_traces(),
   {ok,Req,State}.
