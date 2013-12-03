@@ -112,6 +112,16 @@
 
       <div id="etop" class="tool">
         <div>
+          <select id="warn_item">
+            <option>reds</option>
+            <option>mem</option>
+          </select>
+          <select id="warn_condition">
+            <option>>=</option>
+            <option><=</option>            
+          </select>
+          <input type="text" id="warn_value"></input>
+          <button id="set_warn">Set Warn</button>
           <form method="POST">
             <input type="checkbox" name="accumulate" id="accumulate">Accumulate</input>
             <input type="checkbox" name="pause" id="pause">Pause</input>
@@ -133,7 +143,6 @@
           </tbody>
         </table>
       </div>
-
       <div id="lager" class="tool">
         <div>
             Tracer: <input type="text" name="tracer" id="tracer" size="80"></input>
