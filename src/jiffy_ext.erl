@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 18 Nov 2013 by Jack Tang <jack@taodinet.com>
 %%%-------------------------------------------------------------------
--module(jsx_ext).
+-module(jiffy_ext).
 
 %% API
 -export([]).
