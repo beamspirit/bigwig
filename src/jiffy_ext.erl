@@ -16,10 +16,25 @@
 %%% API
 %%%===================================================================
 encode(Data) ->
+    encode(Data, []).
 
-    Jiffy=to_jiffy(Data),
-    io:format("Jiffy is ~p",[Jiffy]),
-    jiffy:encode(Jiffy).
+
+encode(Data, Options) ->
+    ForceUTF8 = lists:member(force_utf8, Options),
+    case nif_encode(Data, Options) of
+        {error, invalid_string} when ForceUTF8 == true ->
+            FixedData = fix(Data),
+            encode(FixedData, Options -- [force_utf8]);
+        {error, invalid_object_pair} ->
+            fix(Data);
+        {error, _} = Error ->
+            throw(Error);
+        {partial, IOData} ->
+            jiffy:finish_encode(IOData, []);
+        IOData ->
+            IOData
+    end.
+
 %%--------------------------------------------------------------------
 %% @doc
 %% @spec
@@ -28,37 +43,25 @@ encode(Data) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-to_jiffy([First|_]=List) when is_tuple(First), size(First) =:= 2 ->
-    to_jiffy_props(List,[]); 
-to_jiffy(Tuple) when is_tuple(Tuple) ->
+fix(Values) when is_list(Values) ->
+    fix_array(Values, []);
+
+fix({K, V}) ->
+    {fix(K), fix(V)};
+fix(Tuple) when is_tuple(Tuple) ->
     to_jiffy_list(tuple_to_list(Tuple),[]);
-to_jiffy(Port) when is_port(Port) ->
+fix(Port) when is_port(Port) ->
     list_to_binary(erlang:port_to_list(Port));
-to_jiffy(Ref) when is_reference(Ref) ->
+fix(Ref) when is_reference(Ref) ->
     list_to_binary(erlang:ref_to_list(Ref));            
-to_jiffy(Pid) when is_pid(Pid) ->
+fix(Pid) when is_pid(Pid) ->
     list_to_binary(erlang:pid_to_list(Pid));
-to_jiffy(Values) when is_list(Values) ->
-    to_jiffy_list(Values, []);
-to_jiffy(Val) ->
-    Val.
-
-to_jiffy_props([{Key, Value}|Rest], Acc) ->
-    K = to_jiffy(Key),
-    V = to_jiffy(Value),
-    to_jiffy_props(Rest, [{K, V} | Acc]);
-
-to_jiffy_props([Other|Rest], Acc) ->
-    
-    to_jiffy_props(Rest,[to_jiffy(Other)|Acc]);
-
-to_jiffy_props([], Acc) ->
-    {lists:reverse(Acc)}.
+fix(Other) ->
+    jiffy_utf8:fix(Other).
 
 
-
-to_jiffy_list([], Acc) ->
+fix_array([], Acc) ->
     lists:reverse(Acc);
-to_jiffy_list([Val | Rest], Acc0) ->
-    Acc = [to_jiffy(Val) | Acc0],
-    to_jiffy_list(Rest, Acc).
+fix_array([Val | Rest], Acc0) ->
+    Acc = [fix(Val) | Acc0],
+    fix_array(Rest, Acc).
