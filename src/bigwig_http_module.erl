@@ -97,7 +97,7 @@ to_module_info(Bin) ->
 
 
 json_response(Info, Req, State) ->
-    Body = jsx:term_to_json(Info),
+    Body = jiffy_ext:encode(Info),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
     {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
     {ok, Req2, State}.
