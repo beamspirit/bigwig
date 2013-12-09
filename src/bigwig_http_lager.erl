@@ -47,16 +47,16 @@ handle_add_tracer(Tracer, Req, State) ->
       5 ->
             Attr1 = binary_to_atom(lists:nth(1, All), utf8),
             RoutingKey = lists:nth(2, All),
-            Filter = [{binary_to_atom(lists:nth(3, All), utf8), binary_to_integer(lists:nth(4, All))}],
+            Filter = [{binary_to_atom(lists:nth(3, All), utf8), list_to_integer(binary_to_list(lists:nth(4, All)))}],
             Level = binary_to_atom(lists:nth(5, All), utf8),
             amqp_tracer:trace_amqp(Attr1, RoutingKey, Filter, Level);
       3 ->
             RoutingKey = lists:nth(1, All),
-            Filter = [{binary_to_atom(lists:nth(2, All), utf8), binary_to_integer(lists:nth(3, All))}],
+            Filter = [{binary_to_atom(lists:nth(2, All), utf8), list_to_integer(binary_to_list(lists:nth(3, All)))}],
             amqp_tracer:trace_amqp(RoutingKey, Filter);
       4 ->
             RoutingKey = lists:nth(1, All),
-            Filter = [{binary_to_atom(lists:nth(2, All), utf8), binary_to_integer(lists:nth(3, All))}],
+            Filter = [{binary_to_atom(lists:nth(2, All), utf8), list_to_integer(binary_to_list(lists:nth(3, All)))}],
             Level = binary_to_atom(lists:nth(4, All), utf8),
             amqp_tracer:trace_amqp(RoutingKey, Filter, Level);
       _ -> ok
@@ -71,7 +71,7 @@ handle_del_trace(Tracer, Req, State) ->
       5 ->
             Attr1 = binary_to_atom(lists:nth(1, All), utf8),
             RoutingKey = lists:nth(2, All),
-            Filter = [{binary_to_atom(lists:nth(3, All), utf8), binary_to_integer(lists:nth(4, All))}],
+            Filter = [{binary_to_atom(lists:nth(3, All), utf8), list_to_integer(binary_to_list(lists:nth(4, All)))}],
             Level = binary_to_atom(lists:nth(5, All), utf8),
             Trace0 = { Filter, Level, {lager_amqp_backend, RoutingKey} },
             case lager_util:validate_trace(Trace0) of
@@ -82,7 +82,7 @@ handle_del_trace(Tracer, Req, State) ->
             end;
       4 ->
             RoutingKey = lists:nth(1, All),
-            Filter = [{binary_to_atom(lists:nth(2, All), utf8), binary_to_integer(lists:nth(3, All))}],
+            Filter = [{binary_to_atom(lists:nth(2, All), utf8), list_to_integer(binary_to_list(lists:nth(3, All)))}],
             Level = binary_to_atom(lists:nth(4, All), utf8),
             Trace0 = { Filter, Level, {lager_amqp_backend, RoutingKey} },
             case lager_util:validate_trace(Trace0) of

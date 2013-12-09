@@ -56,9 +56,9 @@ to_module_info(Bin) ->
                      T when is_tuple(T) ->
                        {Year,Month,Day,Hour,Minute,Sec}=T,
                         proplists:delete(compile, L) ++
-                        [ {compile, [ {time, [{'_type',<<"date">>},{data,[integer_to_binary(Year)
-                            ,integer_to_binary(Month),integer_to_binary(Day),integer_to_binary(Hour),
-                            integer_to_binary(Minute),integer_to_binary(Sec)]}]}]} 
+                        [ {compile, [ {time, [{'_type',<<"date">>},{data,[list_to_binary(integer_to_list(Year))
+                            ,list_to_binary(integer_to_list(Month)),list_to_binary(integer_to_list(Day)),list_to_binary(integer_to_list(Hour)),
+                            list_to_binary(integer_to_list(Minute)),list_to_binary(integer_to_list(Sec))]}]}]} 
                                     | proplists:delete(time, L) ];
                     _ ->
                         ModInfo2
@@ -97,7 +97,7 @@ to_module_info(Bin) ->
 
 
 json_response(Info, Req, State) ->
-    Body = jiffy_ext:encode(Info),
+    Body = jsx:term_to_json(Info),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
     {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
     {ok, Req2, State}.
