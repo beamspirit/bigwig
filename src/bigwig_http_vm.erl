@@ -13,7 +13,7 @@ init({tcp, http}, Req, _Opts) ->
 
 handle(Req, State) ->
     io:format("===> vm ~p", [all()]),
-    Body = jiffy_ext:encode(all()),
+    Body = jsx:term_to_json(all()),
     
     io:format("===> vm ~p", [Body]),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],

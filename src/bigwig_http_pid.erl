@@ -91,7 +91,7 @@ pid_response(Pid, Req, State) ->
         Info ->
  %           Info1=lists:map(fun(T) -> to_json(T) end,Info),
  %           Info2=lists:keydelete(dictionary,1,lists:keydelete(links,1,Info1)),
-            Body = jiffy_ext:encode(Info),
+            Body = jsx:term_to_json(Info),
             Headers = [{<<"Content-Type">>, <<"application/json">>}],
             {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
             {ok, Req2, State}
