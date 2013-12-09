@@ -15,8 +15,8 @@
 %%%===================================================================
 %%% API
 %%%===================================================================
-encode([First|_]=List) when is_tuple(First),size(First)=:=2 ->
-    jiffy:encode({List});
+%encode([First|_]=List) when is_tuple(First),size(First)=:=2 ->
+%    jiffy:encode({List});
 encode(Data) ->
     jiffy:encode(Data).
 
