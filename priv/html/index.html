@@ -18,6 +18,8 @@
         <li><a class="tool" href="etop">Processes</a></li>
         <li><a class="tool" href="appmon">Applications</a></li>
         <li><a class="tool" href="lager">Lager Logging</a></li>
+        <li><a class="tool" href="entop">Entop</a></li>
+        <li>
       </ul>
 
       <div id="nodestats">
@@ -112,16 +114,6 @@
 
       <div id="etop" class="tool">
         <div>
-          <select id="warn_item">
-            <option>reds</option>
-            <option>mem</option>
-          </select>
-          <select id="warn_condition">
-            <option>>=</option>
-            <option><=</option>            
-          </select>
-          <input type="text" id="warn_value"></input>
-          <button id="set_warn">Set Warn</button>
           <form method="POST">
             <input type="checkbox" name="accumulate" id="accumulate">Accumulate</input>
             <input type="checkbox" name="pause" id="pause">Pause</input>
@@ -143,6 +135,35 @@
           </tbody>
         </table>
       </div>
+      <div id="entop" class="tool">
+        <div>
+          <select id="warn_item">
+            <option>reds</option>
+            <option>mem</option>
+          </select>
+          <select id="warn_condition">
+            <option>>=</option>
+            <option><=</option>            
+          </select>
+          <input type="text" id="warn_value"></input>
+          <button id="set_warn">Set Warn</button>
+        </div>
+        <table class="display" id="entop_table">
+          <thead>
+            <tr>
+              <th>Pid</th>
+              <th>Registered Name</th>
+              <th>Reductions</th>
+              <th>MQueue</th>
+              <th>HSize</th>
+              <th>SSize</th>
+              <th>HTot</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
       <div id="lager" class="tool">
         <div>
             Tracer: <input type="text" name="tracer" id="tracer" size="80"></input>
@@ -155,7 +176,7 @@
           <div id ="trace_log"></div>
           <thead>
             <tr>
-              <th >trace</th>
+              <th>trace</th>
             </tr>
           </thead>
           <tbody>

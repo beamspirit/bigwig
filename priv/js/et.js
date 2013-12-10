@@ -57,3 +57,29 @@ $(document).ready(function() {
     }
   });
 });
+
+$(document).ready(function() {
+  var oTable = $('#entop_table').dataTable({
+    "bProcessing": false,
+    "iDisplayLength": 25,
+    "sAjaxSource": '/entop',
+    "aaSorting": [[5, "desc"]],
+    // Get data piggy-backed on the main table and update the page
+    "fnServerData": function(sSource, aaData, fnCallback) {
+                      $.getJSON( sSource, aaData, function(json) {
+                        // Use our RENDERER to format everything
+                        for(var i=0; i<json.aaData.length; ++i)
+                        {
+                            //json.aaData[i][0] = RENDERER.render_json_val(json.aaData[i][0])[0].outerHTML;
+                            //var Pid = (json.aaData[i][0]).data.replace(/[<>]/g, '');
+                            //json.aaData[i][0] = ($('<a class="_pid" href="#">&lt;'+Pid+'&gt;</a>'))[0].outerHTML;
+                            var Pid = json.aaData[i][0];
+                            json.aaData[i][0]= ($('<a class="_pid" href="#">'+Pid+'</a>'))[0].outerHTML;
+                            json.aaData[i][1] = RENDERER.render_json_val(json.aaData[i][1])[0].outerHTML;
+                        }
+                        fnCallback(json);
+                      });
+                    }
+  });
+  $(document).everyTime(5000, "poll_etop", function() {oTable.fnReloadAjax();});
+});

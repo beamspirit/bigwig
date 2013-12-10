@@ -22,6 +22,7 @@ start(_StartType, _StartArgs) ->
                {"/rb/[...]",        bigwig_http_rb, []},
                {"/pid/[...]",        bigwig_http_pid, []},
                {"/top/[...]",             bigwig_http_etop2,    []},
+               {"/entop/[...]",             bigwig_http_entop,    []},
                {"/appmon/[...]",          bigwig_http_appmon,   []},
                {"/module/[...]",    bigwig_http_module,   []},
                {"/stats-stream",    bigwig_http_stats_stream, []},
