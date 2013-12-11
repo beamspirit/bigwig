@@ -34,8 +34,8 @@ handle_get(Req, State) ->
     {ok, Req2, State}.
 
 update() ->
-    %%PidList=erlang:processes(),
-    PidList = rpc:call('strategy_agent@strategy.lk.com', erlang, processes, []),
+    PidList=erlang:processes(),
+    %%PidList = rpc:call('strategy_agent@strategy.lk.com', erlang, processes, []),
     Ps = [entop_proc_info_to_json(P) || P <- PidList],
     NumPs = length(Ps),
     [{<<"iTotalRecords">>, NumPs},
@@ -43,18 +43,18 @@ update() ->
      {<<"sColumns">>, <<"pid,name,reds,mq,hsize,ssize,htot">>},
      {<<"aaData">>, Ps}].
 entop_proc_info_to_json(P) ->
-    %%ProcInfo = erlang:process_info(P, [registered_name,
-    %%                        reductions,
-    %%                        message_queue_len,
-    %%                        heap_size,
-    %%                        stack_size,
-    %%                        total_heap_size]),
-    ProcInfo = rpc:call('strategy_agent@strategy.lk.com', erlang, process_info, [P, [registered_name,
+    ProcInfo = erlang:process_info(P, [registered_name,
                             reductions,
                             message_queue_len,
                             heap_size,
                             stack_size,
-                            total_heap_size]]),
+                            total_heap_size]),
+    %ProcInfo = rpc:call('strategy_agent@strategy.lk.com', erlang, process_info, [P, [registered_name,
+    %                        reductions,
+    %                        message_queue_len,
+    %                        heap_size,
+    %                        stack_size,
+    %                        total_heap_size]]),
     case ProcInfo of
         undefined -> [];
         _ ->
