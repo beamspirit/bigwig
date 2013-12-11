@@ -74,12 +74,14 @@ $(document).ready(function() {
                             //var Pid = (json.aaData[i][0]).data.replace(/[<>]/g, '');
                             //json.aaData[i][0] = ($('<a class="_pid" href="#">&lt;'+Pid+'&gt;</a>'))[0].outerHTML;
                             var Pid = json.aaData[i][0];
-                            json.aaData[i][0]= ($('<a class="_pid" href="#">'+Pid+'</a>'))[0].outerHTML;
+                            json.aaData[i][0]= RENDERER.render_json_val(json.aaData[i][0])[0].outerHTML;
                             json.aaData[i][1] = RENDERER.render_json_val(json.aaData[i][1])[0].outerHTML;
                         }
                         fnCallback(json);
                       });
                     }
   });
-  $(document).everyTime(5000, "poll_etop", function() {oTable.fnReloadAjax();});
+  $(document).everyTime(2000, "poll_etop", function() {oTable.fnReloadAjax();});
+  $('#start_node').bind('click', function() {
+  });
 });

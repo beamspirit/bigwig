@@ -153,6 +153,7 @@ function sendTxt(txt) {
         closeSubscribe();
         $(this).remove();
         window.location.reload();
+       // window.location.href="lager";
       },
       buttons: {
         "Close": function() { $(this).dialog("close"); },

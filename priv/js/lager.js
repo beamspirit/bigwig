@@ -1,6 +1,7 @@
 $(document).ready(function(){
     
-}
+});
+
 function connect(to)
 {
        var host = document.location.host;

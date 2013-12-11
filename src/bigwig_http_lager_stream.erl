@@ -24,8 +24,6 @@ websocket_init(_TransportName, Req, _Opts) ->
 websocket_handle({text, Msg}, Req, State) when Msg =:= <<"unsubscribe">> ->
      io:format("msg is ~p",[Msg]),
      amqp_subscriber:cast(unsubscribe),
- %%    Pid = State,
- %%    erlang:exit(Pid,kill),
      {ok, Req, State};
 websocket_handle({text, Msg}, Req, State) when Msg =/= <<"unsubscribe">> ->
      io:format("msg is ~p",[Msg]),
