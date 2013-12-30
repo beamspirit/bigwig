@@ -24,7 +24,7 @@ websocket_init(_TransportName, Req, _Opts) ->
 
 websocket_info({bigwig, {market_dispather, {NodeSubCount, _NodeSubDetail}}}, Req, State) ->
     NodeSubCountList = dict:to_list(NodeSubCount),
-    io:format("NodeSubCount is ~p ~n", [NodeSubCountList]),
+    io:format("NodeSubCount is ~p~n", [NodeSubCountList]),
     Reply = jsx:term_to_json([{market, NodeSubCountList}]),
     {reply, {text, Reply}, Req, State};
 

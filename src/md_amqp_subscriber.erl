@@ -100,7 +100,7 @@ init([RoutingKey, Params]) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call(_Request, _From, State) ->
-    lager:warning("Can't handle request: ~p", [_Request]),
+    lager:warning("Can't handle request: ~p~n", [_Request]),
     {reply, {error, invalid_req}, State}.
 
 %%--------------------------------------------------------------------
@@ -114,7 +114,7 @@ handle_call(_Request, _From, State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_cast(_Msg, State) ->
-    lager:warning("Can't handle msg: ~p", [_Msg]),
+    lager:warning("Can't handle msg: ~p~n", [_Msg]),
     {noreply, State}.
 
 %%--------------------------------------------------------------------
@@ -177,7 +177,7 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag}, {_, _, Message} = _Content},
                           node_sub_detail = NodeSubDetail0}};
 
 handle_info(_Info, State) ->
-    lager:warning("Can't handle info: ~p", [_Info]),
+    lager:warning("Can't handle info: ~p~n", [_Info]),
     {noreply, State}.
 
 %%--------------------------------------------------------------------
