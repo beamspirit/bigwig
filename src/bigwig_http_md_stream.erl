@@ -1,4 +1,4 @@
-%% Websocket connection that sends log of trace
+%% Websocket connection that sends node_sub_count and node_sub_detail of market_dispatcher node
 %%
 -module(bigwig_http_md_stream).
 -behaviour(cowboy_websocket_handler).
