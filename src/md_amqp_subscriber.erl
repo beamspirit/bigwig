@@ -171,7 +171,7 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag}, {_, _, Message} = _Content},
             end,
             {NodeSubCount1, NodeSubDetail1}
     end,      
-    Msg={market_dispather, {NodeSubCount0, NodeSubDetail0}},
+    Msg={market_dispatcher, {NodeSubCount0, NodeSubDetail0}},
     bigwig_pubsubhub:notify(Msg),
     {noreply, State#state{node_sub_count  = NodeSubCount0,
                           node_sub_detail = NodeSubDetail0}};
