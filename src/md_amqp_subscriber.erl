@@ -84,7 +84,7 @@ init([RoutingKey, Params]) ->
     #'basic.consume_ok'{} = amqp_channel:subscribe(Channel, Sub, Consumer),
 
     {ok, #state{node_sub_count  = orddict:new(), %orddict {key:Node, value:Count}
-                node_sub_detail = orddict:new()}}.
+                node_sub_detail = orddict:new()}}. %orddict{key:Uid, value:{Node, Time}}
 
 %%--------------------------------------------------------------------
 %% @private
@@ -139,24 +139,24 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
            node_sub_detail = NodeSubDetail} = State,
     lager:debug("Message is ~p~n", [Message]),
     NodeSubCount1 = 
-        case dict:find(Node, NodeSubCount) of
+        case orddict:find(Node, NodeSubCount) of
             false -> 
-                dict:store(Node, 1, NodeSubCount);
+                orddict:store(Node, 1, NodeSubCount);
             {ok, Value}  -> 
-                dict:store(Node, Value + 1, NodeSubCount)
+                orddict:store(Node, Value + 1, NodeSubCount)
         end,
     NodeSubDetail1 = 
-        case dict:find(Login, NodeSubDetail) of
+        case orddict:find(Login, NodeSubDetail) of
             false ->
-                dict:store(Login, {Node, Time}, NodeSubDetail);
+                orddict:store(Login, {Node, Time}, NodeSubDetail);
             {ok, _Value1}  ->
-                dict:store(Login, {Node, Time}, NodeSubDetail)
+                orddict:store(Login, {Node, Time}, NodeSubDetail)
         end,
-    Msg={market_dispatcher, {dict:to_list(NodeSubCount1), dict:to_list(NodeSubDetail1)}},
+    Msg={market_dispatcher, {orddict:to_list(NodeSubCount1), orddict:to_list(NodeSubDetail1)}},
     bigwig_pubsubhub:notify(Msg),
     {noreply, State#state{node_sub_count  = NodeSubCount1,
                           node_sub_detail = NodeSubDetail1}};
-                          
+
 
 handle_info({#'basic.deliver'{delivery_tag = _Tag}, 
     {_, _, {disconnected, Login, Node, Time} = Message} = _Content}, #state{} = State) ->
@@ -164,20 +164,20 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
            node_sub_detail = NodeSubDetail} = State,
     lager:debug("Message is ~p~n", [Message]),
     NodeSubCount1 =
-        case dict:find(Node, NodeSubCount) of
+        case orddict:find(Node, NodeSubCount) of
             false -> 
-                dict:store(Node, 0, NodeSubCount);
+                orddict:store(Node, 0, NodeSubCount);
             {ok, Value}  -> 
-                dict:store(Node, Value - 1, NodeSubCount)
+                orddict:store(Node, Value - 1, NodeSubCount)
         end,
     NodeSubDetail1 =
-        case dict:find(Login, NodeSubDetail) of
+        case orddict:find(Login, NodeSubDetail) of
             false ->
                 ok;
             {ok, _Value1}  ->
-                dict:erase(Login, NodeSubDetail)
+                orddict:erase(Login, NodeSubDetail)
         end,
-    Msg={market_dispatcher, {dict:to_list(NodeSubCount1), dict:to_list(NodeSubDetail1)}},
+    Msg={market_dispatcher, {orddict:to_list(NodeSubCount1), orddict:to_list(NodeSubDetail1)}},
     bigwig_pubsubhub:notify(Msg),
     {noreply, State#state{node_sub_count  = NodeSubCount1,
                           node_sub_detail = NodeSubDetail1}};
