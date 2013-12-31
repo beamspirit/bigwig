@@ -11,7 +11,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/2]).
+-export([start_link/1]).
 
 %% gen_server callbacks
 -export([init/1, 
@@ -39,11 +39,9 @@
 %% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-start_link(RoutingKey, Params) when is_binary(RoutingKey) ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [RoutingKey, Params], []);
+start_link(Params) ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [Params], []).
 
-start_link(_RoutingKey, _Params) ->
-    io:format("RoutingKey should be binary type").
 %%%===================================================================
 %%% gen_server callbacks
 %%%===================================================================
@@ -59,7 +57,7 @@ start_link(_RoutingKey, _Params) ->
 %%                     {stop, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init([RoutingKey, Params]) ->
+init([Params]) ->
     Exchange = config_val(exchange, Params, list_to_binary(atom_to_list(?MODULE))),
     AmqpParams = #amqp_params_network {
       username       = config_val(amqp_user, Params, <<"guest">>),
@@ -76,7 +74,7 @@ init([RoutingKey, Params]) ->
 
     %% Declare a queue
     #'queue.declare_ok'{queue = Q} = amqp_channel:call(Channel, #'queue.declare'{}),
-    Binding = #'queue.bind'{queue = Q, exchange = Exchange, routing_key = RoutingKey},
+    Binding = #'queue.bind'{queue = Q, exchange = Exchange, routing_key = <<"mdstatistic">>},
      #'queue.bind_ok'{} = amqp_channel:call(Channel, Binding),
     Sub = #'basic.consume'{queue = Q},
     % Subscribe the channel and consume the message
@@ -159,7 +157,7 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
 
 
 handle_info({#'basic.deliver'{delivery_tag = _Tag}, 
-    {_, _, {disconnected, Login, Node, Time} = Message} = _Content}, #state{} = State) ->
+    {_, _, {disconnected, Login, Node, _Time} = Message} = _Content}, #state{} = State) ->
     #state{node_sub_count  = NodeSubCount,
            node_sub_detail = NodeSubDetail} = State,
     lager:debug("Message is ~p~n", [Message]),
