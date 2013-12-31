@@ -23,8 +23,8 @@ websocket_init(_TransportName, Req, _Opts) ->
 %% TODO handle stuff like {bigwig, {appmon, ... }} and send that too
 
 websocket_info({bigwig, {market_dispatcher, {NodeSubCount, NodeSubDetail}}}, Req, State) ->
-    io:format("NodeSubCount is ~p~n", [NodeSubCount]),
-    io:format("NodeSubDetail is ~p~n", [NodeSubDetail]),
+    lager:debug("NodeSubCount is ~p~n", [NodeSubCount]),
+    lager:debug("NodeSubDetail is ~p~n", [NodeSubDetail]),
     Reply = jsx:term_to_json([{market, NodeSubCount, NodeSubDetail}]),
     {reply, {text, Reply}, Req, State};
 
@@ -33,7 +33,7 @@ websocket_info({bigwig, _}, Req, State) ->
     {ok, Req, State};
 
 websocket_info(Info, Req, State) ->
-    io:format("Unhandled msg to ~p ~p\n", [?MODULE, Info]),
+    lager:debug("Unhandled msg to ~p ~p\n", [?MODULE, Info]),
     {ok, Req, State}.
 
 websocket_terminate(_Reason, _Req, _State) -> ok.

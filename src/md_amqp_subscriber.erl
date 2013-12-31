@@ -25,8 +25,8 @@
 -include_lib("amqp_client/include/amqp_client.hrl").
 
 
--record(state, {node_sub_count  = dict:new(), %{key:Node, value:Count}
-                node_sub_detail = dict:new()}). %{key:InvestorId, value:{Node, Time}}
+-record(state, {node_sub_count, %orddict {key:Node, value:Count}
+                node_sub_detail}). %orddict {key:InvestorId, value:{Node, Time}}
 
 %%%===================================================================
 %%% API
@@ -83,7 +83,8 @@ init([RoutingKey, Params]) ->
     Consumer = self(),
     #'basic.consume_ok'{} = amqp_channel:subscribe(Channel, Sub, Consumer),
 
-    {ok, #state{}}.
+    {ok, #state{node_sub_count  = orddict:new(), %orddict {key:Node, value:Count}
+                node_sub_detail = orddict:new()}}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -132,50 +133,54 @@ handle_info(#'basic.consume_ok'{}, State) ->
 handle_info(#'basic.cancel_ok'{}, State) ->
     {noreply, State};
 
-handle_info({#'basic.deliver'{delivery_tag = _Tag}, {_, _, Message} = _Content}, #state{} = State) ->
+handle_info({#'basic.deliver'{delivery_tag = _Tag}, 
+    {_, _, {connected, Login, Node, Time} = Message} = _Content}, #state{} = State) ->
     #state{node_sub_count  = NodeSubCount,
            node_sub_detail = NodeSubDetail} = State,
-    io:format("Message is ~p~n", [Message]),
-    {NodeSubCount0, NodeSubDetail0} = 
-    case Message of
-        {connected, Login, Node, Time} ->
-            NodeSubCount1 = 
-            case dict:find(Node, NodeSubCount) of
-                false -> 
-                    dict:store(Node, 1, NodeSubCount);
-                {ok, Value}  -> 
-                    dict:store(Node, Value + 1, NodeSubCount)
-            end,
-            NodeSubDetail1 = 
-            case dict:find(Login, NodeSubDetail) of
-                false ->
-                    dict:store(Login, {Node, Time}, NodeSubDetail);
-                {ok, _Value1}  ->
-                    dict:store(Login, {Node, Time}, NodeSubDetail)
-            end,
-            {NodeSubCount1, NodeSubDetail1};
-        {disconnected, Login, Node, _Time} ->
-            NodeSubCount1 =
-            case dict:find(Node, NodeSubCount) of
-                false -> 
-                    dict:store(Node, 0, NodeSubCount);
-                {ok, Value}  -> 
-                    dict:store(Node, Value - 1, NodeSubCount)
-            end,
-            NodeSubDetail1 =
-            case dict:find(Login, NodeSubDetail) of
-                false ->
-                    ok;
-                {ok, _Value1}  ->
-                    dict:erase(Login, NodeSubDetail)
-            end,
-            {NodeSubCount1, NodeSubDetail1}
-    end,      
-    Msg={market_dispatcher, {dict:to_list(NodeSubCount0), dict:to_list(NodeSubDetail0)}},
+    lager:debug("Message is ~p~n", [Message]),
+    NodeSubCount1 = 
+        case dict:find(Node, NodeSubCount) of
+            false -> 
+                dict:store(Node, 1, NodeSubCount);
+            {ok, Value}  -> 
+                dict:store(Node, Value + 1, NodeSubCount)
+        end,
+    NodeSubDetail1 = 
+        case dict:find(Login, NodeSubDetail) of
+            false ->
+                dict:store(Login, {Node, Time}, NodeSubDetail);
+            {ok, _Value1}  ->
+                dict:store(Login, {Node, Time}, NodeSubDetail)
+        end,
+    Msg={market_dispatcher, {dict:to_list(NodeSubCount1), dict:to_list(NodeSubDetail1)}},
     bigwig_pubsubhub:notify(Msg),
-    {noreply, State#state{node_sub_count  = NodeSubCount0,
-                          node_sub_detail = NodeSubDetail0}};
+    {noreply, State#state{node_sub_count  = NodeSubCount1,
+                          node_sub_detail = NodeSubDetail1}};
+                          
 
+handle_info({#'basic.deliver'{delivery_tag = _Tag}, 
+    {_, _, {disconnected, Login, Node, Time} = Message} = _Content}, #state{} = State) ->
+    #state{node_sub_count  = NodeSubCount,
+           node_sub_detail = NodeSubDetail} = State,
+    lager:debug("Message is ~p~n", [Message]),
+    NodeSubCount1 =
+        case dict:find(Node, NodeSubCount) of
+            false -> 
+                dict:store(Node, 0, NodeSubCount);
+            {ok, Value}  -> 
+                dict:store(Node, Value - 1, NodeSubCount)
+        end,
+    NodeSubDetail1 =
+        case dict:find(Login, NodeSubDetail) of
+            false ->
+                ok;
+            {ok, _Value1}  ->
+                dict:erase(Login, NodeSubDetail)
+        end,
+    Msg={market_dispatcher, {dict:to_list(NodeSubCount1), dict:to_list(NodeSubDetail1)}},
+    bigwig_pubsubhub:notify(Msg),
+    {noreply, State#state{node_sub_count  = NodeSubCount1,
+                          node_sub_detail = NodeSubDetail1}};
 handle_info(_Info, State) ->
     lager:warning("Can't handle info: ~p~n", [_Info]),
     {noreply, State}.
