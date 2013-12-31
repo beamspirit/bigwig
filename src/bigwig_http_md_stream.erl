@@ -22,10 +22,10 @@ websocket_init(_TransportName, Req, _Opts) ->
 
 %% TODO handle stuff like {bigwig, {appmon, ... }} and send that too
 
-websocket_info({bigwig, {market_dispatcher, {NodeSubCount, _NodeSubDetail}}}, Req, State) ->
-    NodeSubCountList = dict:to_list(NodeSubCount),
-    io:format("NodeSubCount is ~p~n", [NodeSubCountList]),
-    Reply = jsx:term_to_json([{market, NodeSubCountList}]),
+websocket_info({bigwig, {market_dispatcher, {NodeSubCount, NodeSubDetail}}}, Req, State) ->
+    io:format("NodeSubCount is ~p~n", [NodeSubCount]),
+    io:format("NodeSubDetail is ~p~n", [NodeSubDetail]),
+    Reply = jsx:term_to_json([{market, NodeSubCount, NodeSubDetail}]),
     {reply, {text, Reply}, Req, State};
 
 
