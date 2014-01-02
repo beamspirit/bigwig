@@ -19,11 +19,12 @@ function onClose(evt) {
 
 function onMessage(evt) {
     document.getElementById("md_statistic").innerHTML="";
-    alert(evt.data);
-    for(var key in evt.data)
+    var obj = evt.data;
+    for(var node in obj)
 	{
-    	$('#md_statistic').append('<p>' + "MDNode: " + key + '</p>');
-    	$('#md_statistic').append('<p>' + "Count: " + evt.data(key) + '</p>');
+		console.log(obj);
+    	$('#md_statistic').append('<p>' + "MDNode: " + node + '</p>');
+    	$('#md_statistic').append('<p>' + "Count: " + obj[node] + '</p>');
 	}
     
 
