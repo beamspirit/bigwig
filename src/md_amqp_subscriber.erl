@@ -170,7 +170,7 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
                 NodeSubDetail1 =
                     case orddict:find(Login, NodeSubDetail) of
                         error ->
-                            ok;
+                            NodeSubDetail;
                         {ok, _Value1}  ->
                             orddict:erase(Login, NodeSubDetail)
                     end,

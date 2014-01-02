@@ -19,7 +19,7 @@ function onClose(evt) {
 
 function onMessage(evt) {
     document.getElementById("md_statistic").innerHTML="";
-
+    alert(evt.data);
     for(var key in evt.data)
 	{
     	$('#md_statistic').append('<p>' + "MDNode: " + key + '</p>');
