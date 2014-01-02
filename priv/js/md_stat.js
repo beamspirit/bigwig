@@ -19,6 +19,12 @@ function onClose(evt) {
 
 function onMessage(evt) {
     document.getElementById("md_statistic").innerHTML="";
-    $('#md_statistic').prepend('<p>' + evt.data + '</p>');
+    var x  = (evt.data).split("\"");
+    var x1 = x[1].split("\":");
+    var x2 = x1[1].split("}");
+
+    $('#md_statistic').append('<p>' + "MDNode:" + x1[0] + '</p>');
+    $('#md_statistic').append('<p>' + "Count:"  + x2[0] + '</p>');
+
 };  
 
