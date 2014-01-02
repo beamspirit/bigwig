@@ -74,7 +74,7 @@ init([Params]) ->
 
     %% Declare a queue
     #'queue.declare_ok'{queue = Q} = amqp_channel:call(Channel, #'queue.declare'{}),
-    Binding = #'queue.bind'{queue = Q, exchange = Exchange, routing_key = <<"mdstatistic">>},
+    Binding = #'queue.bind'{queue = Q, exchange = Exchange, routing_key = <<"md_stat">>},
      #'queue.bind_ok'{} = amqp_channel:call(Channel, Binding),
     Sub = #'basic.consume'{queue = Q},
     % Subscribe the channel and consume the message
