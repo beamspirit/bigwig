@@ -132,28 +132,28 @@ handle_info(#'basic.cancel_ok'{}, State) ->
     {noreply, State};
 
 handle_info({#'basic.deliver'{delivery_tag = _Tag}, 
-    {_, _, {connected, Login, Node, Time} = Message} = _Content}, #state{} = State) ->
+    {_, _, Message} = _Content}, #state{} = State) ->
     #state{node_sub_count  = NodeSubCount,
            node_sub_detail = NodeSubDetail} = State,
     lager:debug("Message is ~p~n", [Message]),
-    NodeSubCount1 = 
-        case orddict:find(Node, NodeSubCount) of
-            false -> 
-                orddict:store(Node, 1, NodeSubCount);
-            {ok, Value}  -> 
-                orddict:store(Node, Value + 1, NodeSubCount)
-        end,
-    NodeSubDetail1 = 
-        case orddict:find(Login, NodeSubDetail) of
-            false ->
-                orddict:store(Login, {Node, Time}, NodeSubDetail);
-            {ok, _Value1}  ->
-                orddict:store(Login, {Node, Time}, NodeSubDetail)
-        end,
-    Msg={market_dispatcher, {orddict:to_list(NodeSubCount1), orddict:to_list(NodeSubDetail1)}},
-    bigwig_pubsubhub:notify(Msg),
-    {noreply, State#state{node_sub_count  = NodeSubCount1,
-                          node_sub_detail = NodeSubDetail1}};
+%    NodeSubCount1 = 
+%        case orddict:find(Node, NodeSubCount) of
+%            false -> 
+%                orddict:store(Node, 1, NodeSubCount);
+%            {ok, Value}  -> 
+%                orddict:store(Node, Value + 1, NodeSubCount)
+%        end,
+%    NodeSubDetail1 = 
+%        case orddict:find(Login, NodeSubDetail) of
+%            false ->
+%                orddict:store(Login, {Node, Time}, NodeSubDetail);
+%            {ok, _Value1}  ->
+%                orddict:store(Login, {Node, Time}, NodeSubDetail)
+%        end,
+%    Msg={market_dispatcher, {orddict:to_list(NodeSubCount1), orddict:to_list(NodeSubDetail1)}},
+%    bigwig_pubsubhub:notify(Msg),
+    {noreply, State#state{node_sub_count  = NodeSubCount,
+                          node_sub_detail = NodeSubDetail}};
 
 
 handle_info({#'basic.deliver'{delivery_tag = _Tag}, 
