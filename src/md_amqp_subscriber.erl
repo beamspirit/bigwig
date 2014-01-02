@@ -58,7 +58,7 @@ start_link(Params) ->
 %% @end
 %%--------------------------------------------------------------------
 init([Params]) ->
-    Exchange = config_val(exchange, Params, list_to_binary(atom_to_list(?MODULE))),
+    Exchange = config_val(exchange, Params, <<"market_subscriber_statistic">>),
     AmqpParams = #amqp_params_network {
       username       = config_val(amqp_user, Params, <<"guest">>),
       password       = config_val(amqp_pass, Params, <<"guest">>),
@@ -136,49 +136,51 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
     #state{node_sub_count  = NodeSubCount,
            node_sub_detail = NodeSubDetail} = State,
     lager:debug("Message is ~p~n", [Message]),
-%    NodeSubCount1 = 
-%        case orddict:find(Node, NodeSubCount) of
-%            false -> 
-%                orddict:store(Node, 1, NodeSubCount);
-%            {ok, Value}  -> 
-%                orddict:store(Node, Value + 1, NodeSubCount)
-%        end,
-%    NodeSubDetail1 = 
-%        case orddict:find(Login, NodeSubDetail) of
-%            false ->
-%                orddict:store(Login, {Node, Time}, NodeSubDetail);
-%            {ok, _Value1}  ->
-%                orddict:store(Login, {Node, Time}, NodeSubDetail)
-%        end,
-%    Msg={market_dispatcher, {orddict:to_list(NodeSubCount1), orddict:to_list(NodeSubDetail1)}},
-%    bigwig_pubsubhub:notify(Msg),
-    {noreply, State#state{node_sub_count  = NodeSubCount,
-                          node_sub_detail = NodeSubDetail}};
-
-
-handle_info({#'basic.deliver'{delivery_tag = _Tag}, 
-    {_, _, {disconnected, Login, Node, _Time} = Message} = _Content}, #state{} = State) ->
-    #state{node_sub_count  = NodeSubCount,
-           node_sub_detail = NodeSubDetail} = State,
-    lager:debug("Message is ~p~n", [Message]),
-    NodeSubCount1 =
-        case orddict:find(Node, NodeSubCount) of
-            false -> 
-                orddict:store(Node, 0, NodeSubCount);
-            {ok, Value}  -> 
-                orddict:store(Node, Value - 1, NodeSubCount)
+    [Conn0, Login0, Node0, Time0] = binary:split(Message, <<" ">>, [global]),
+    Conn  = binary_to_atom(Conn0, utf8),
+    Login = list_to_integer(binary_to_list(Login0)),
+    Node  = binary_to_atom(Node0, utf8),
+    Time = binary_to_atom(Time0, utf8),
+    {NodeSubCount0, NodeSubDetail0} = 
+        case Conn of
+            connected ->
+                NodeSubCount1 = 
+                    case orddict:find(Node, NodeSubCount) of
+                        false -> 
+                            orddict:store(Node, 1, NodeSubCount);
+                        {ok, Value}  -> 
+                            orddict:store(Node, Value + 1, NodeSubCount)
+                    end,
+                NodeSubDetail1 = 
+                    case orddict:find(Login, NodeSubDetail) of
+                        false ->
+                            orddict:store(Login, {Node, Time}, NodeSubDetail);
+                        {ok, _Value1}  ->
+                            orddict:store(Login, {Node, Time}, NodeSubDetail)
+                    end,
+                {NodeSubCount1, NodeSubDetail1};
+            disconnected ->
+                NodeSubCount1 =
+                    case orddict:find(Node, NodeSubCount) of
+                        false -> 
+                            orddict:store(Node, 0, NodeSubCount);
+                        {ok, Value}  -> 
+                            orddict:store(Node, Value - 1, NodeSubCount)
+                    end,
+                NodeSubDetail1 =
+                    case orddict:find(Login, NodeSubDetail) of
+                        false ->
+                            ok;
+                        {ok, _Value1}  ->
+                            orddict:erase(Login, NodeSubDetail)
+                    end,
+                {NodeSubCount1, NodeSubDetail1}
         end,
-    NodeSubDetail1 =
-        case orddict:find(Login, NodeSubDetail) of
-            false ->
-                ok;
-            {ok, _Value1}  ->
-                orddict:erase(Login, NodeSubDetail)
-        end,
-    Msg={market_dispatcher, {orddict:to_list(NodeSubCount1), orddict:to_list(NodeSubDetail1)}},
+    Msg={market_dispatcher, {orddict:to_list(NodeSubCount0), orddict:to_list(NodeSubDetail0)}},
     bigwig_pubsubhub:notify(Msg),
-    {noreply, State#state{node_sub_count  = NodeSubCount1,
-                          node_sub_detail = NodeSubDetail1}};
+    {noreply, State#state{node_sub_count  = NodeSubCount0,
+                          node_sub_detail = NodeSubDetail0}};
+
 handle_info(_Info, State) ->
     lager:warning("Can't handle info: ~p~n", [_Info]),
     {noreply, State}.

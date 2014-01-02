@@ -25,7 +25,7 @@ websocket_init(_TransportName, Req, _Opts) ->
 websocket_info({bigwig, {market_dispatcher, {NodeSubCount, NodeSubDetail}}}, Req, State) ->
     lager:debug("NodeSubCount is ~p~n", [NodeSubCount]),
     lager:debug("NodeSubDetail is ~p~n", [NodeSubDetail]),
-    Reply = jsx:term_to_json([{market, NodeSubCount, NodeSubDetail}]),
+    Reply = jsx:term_to_json([{market, NodeSubCount}]),
     {reply, {text, Reply}, Req, State};
 
 
