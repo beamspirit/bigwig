@@ -146,14 +146,14 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
             connected ->
                 NodeSubCount1 = 
                     case orddict:find(Node, NodeSubCount) of
-                        false -> 
+                        error -> 
                             orddict:store(Node, 1, NodeSubCount);
                         {ok, Value}  -> 
                             orddict:store(Node, Value + 1, NodeSubCount)
                     end,
                 NodeSubDetail1 = 
                     case orddict:find(Login, NodeSubDetail) of
-                        false ->
+                        error ->
                             orddict:store(Login, {Node, Time}, NodeSubDetail);
                         {ok, _Value1}  ->
                             orddict:store(Login, {Node, Time}, NodeSubDetail)
@@ -162,14 +162,14 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
             disconnected ->
                 NodeSubCount1 =
                     case orddict:find(Node, NodeSubCount) of
-                        false -> 
+                        error -> 
                             orddict:store(Node, 0, NodeSubCount);
                         {ok, Value}  -> 
                             orddict:store(Node, Value - 1, NodeSubCount)
                     end,
                 NodeSubDetail1 =
                     case orddict:find(Login, NodeSubDetail) of
-                        false ->
+                        error ->
                             ok;
                         {ok, _Value1}  ->
                             orddict:erase(Login, NodeSubDetail)
