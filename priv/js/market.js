@@ -1,5 +1,5 @@
 $(document).ready(function(){
-    connect("/market/stream");
+    connect("/md/stream");
 });
 
 function connect(to)
@@ -17,7 +17,8 @@ function onOpen(evt) {
 function onClose(evt) { 
 };  
 
-function onMessage(evt) { 
-    $('#market_statistic').prepend('<p>' + evt.data + '</p>');
+function onMessage(evt) {
+    document.getElementById("md_statistic").innerHTML="";
+    $('#md_statistic').prepend('<p>' + evt.data + '</p>');
 };  
 
