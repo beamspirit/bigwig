@@ -135,7 +135,6 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
     {_, _, Message} = _Content}, #state{} = State) ->
     #state{node_sub_count  = NodeSubCount,
            node_sub_detail = NodeSubDetail} = State,
-    lager:debug("Message is ~p~n", [Message]),
     [Conn0, Login0, Node0, Time0] = binary:split(Message, <<" ">>, [global]),
     Conn  = binary_to_atom(Conn0, utf8),
     Login = list_to_integer(binary_to_list(Login0)),

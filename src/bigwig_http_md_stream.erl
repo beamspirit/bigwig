@@ -23,8 +23,6 @@ websocket_init(_TransportName, Req, _Opts) ->
 %% TODO handle stuff like {bigwig, {appmon, ... }} and send that too
 
 websocket_info({bigwig, {market_dispatcher, {NodeSubCount, NodeSubDetail}}}, Req, State) ->
-    lager:debug("NodeSubCount is ~p~n", [NodeSubCount]),
-    lager:debug("NodeSubDetail is ~p~n", [NodeSubDetail]),
     Reply = jsx:term_to_json(NodeSubCount),
     {reply, {text, Reply}, Req, State};
 
