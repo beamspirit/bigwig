@@ -40,7 +40,7 @@ function onMessage(evt) {
     var msg = JSON.parse(evt.data);
     for(var node in msg)
 	  {
-    	$('#md_statistic').append('<p>' + "MDNode: " + node + '</p>');
+    	$('#md_statistic').append('<p>' + node + '</p>');
     	$("#counter").flipCounter("setNumber", msg[node]);
 	  }
     
