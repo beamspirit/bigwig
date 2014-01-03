@@ -70,10 +70,10 @@ init([Params]) ->
     {ok, Channel} = amqp_channel(AmqpParams),
 
     #'exchange.declare_ok'{} = amqp_channel:call(Channel, #'exchange.declare'{ exchange = Exchange, 
-                                                                               type = <<"topic">> }),
+                                                                               type = <<"topic">>, durable = true }),
 
     %% Declare a queue
-    #'queue.declare_ok'{queue = Q} = amqp_channel:call(Channel, #'queue.declare'{}),
+    #'queue.declare_ok'{queue = Q} = amqp_channel:call(Channel, #'queue.declare'{queue = <<"md_stat">>, durable = true}),
     Binding = #'queue.bind'{queue = Q, exchange = Exchange, routing_key = <<"md_stat">>},
      #'queue.bind_ok'{} = amqp_channel:call(Channel, Binding),
     Sub = #'basic.consume'{queue = Q},
