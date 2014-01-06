@@ -16,6 +16,42 @@ $(document).ready(function(){
         onAnimationPaused:false, // call back for animation upon pausing
         onAnimationResumed:false // call back for animation upon resuming from pause
     });
+    $('#container').highcharts({
+                title: {
+                    text: 'Monthly Average Temperature',
+                    x: -20 //center
+                },
+                xAxis: {
+                    categories: [0, 1, 2, 3, 4, 5,
+                        6, 7, 8, 9, 10, 11, 12, 13, 
+                        14, 15, 16, 17, 18, 19, 20,
+                        21, 22, 23]
+                },
+                yAxis: {
+                    title: {
+                        text: 'Count'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    valueSuffix: '°C'
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'middle',
+                    borderWidth: 0
+                },
+                series: [{
+                    name: 'market_dispatch@dispatch.lk.com',
+                    data: [5, 20, 15, 30, 0, 11, 16, 25, 35, 80, 67, 38]
+                }]
+            });
+        });
 
     connect("/md/stream");
 });
