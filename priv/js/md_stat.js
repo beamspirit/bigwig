@@ -16,9 +16,9 @@ $(document).ready(function(){
         onAnimationPaused:false, // call back for animation upon pausing
         onAnimationResumed:false // call back for animation upon resuming from pause
     });
-    $('#container').highcharts({
+    $('#charts').highcharts({
                 title: {
-                    text: 'Monthly Average Temperature',
+                    text: 'MD Statistic Per Hour',
                     x: -20 //center
                 },
                 xAxis: {
@@ -37,9 +37,6 @@ $(document).ready(function(){
                         color: '#808080'
                     }]
                 },
-                tooltip: {
-                    valueSuffix: '°C'
-                },
                 legend: {
                     layout: 'vertical',
                     align: 'right',
@@ -48,11 +45,9 @@ $(document).ready(function(){
                 },
                 series: [{
                     name: 'market_dispatch@dispatch.lk.com',
-                    data: [5, 20, 15, 30, 0, 11, 16, 25, 35, 80, 67, 38]
+                    data: [5, 20, 15, 30, 0, 11, 16, 25, 35, 80, 67, 38, 40, 66, 88]
                 }]
             });
-        });
-
     connect("/md/stream");
 });
 
