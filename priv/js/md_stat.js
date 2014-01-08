@@ -16,38 +16,67 @@ $(document).ready(function(){
         onAnimationPaused:false, // call back for animation upon pausing
         onAnimationResumed:false // call back for animation upon resuming from pause
     });
-    $('#charts').highcharts({
+       $('#charts').highcharts({
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'MD Statistic'
+            },
+            xAxis: {
+                categories: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+            },
+            yAxis: {
+                min: 0,
                 title: {
-                    text: 'MD Statistic Per Hour',
-                    x: -20 //center
+                    text: 'Total Count On Every MD Node'
                 },
-                xAxis: {
-                    categories: [0, 1, 2, 3, 4, 5,
-                        6, 7, 8, 9, 10, 11, 12, 13, 
-                        14, 15, 16, 17, 18, 19, 20,
-                        21, 22, 23]
-                },
-                yAxis: {
-                    title: {
-                        text: 'Count'
-                    },
-                    plotLines: [{
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }]
-                },
-                legend: {
-                    layout: 'vertical',
-                    align: 'right',
-                    verticalAlign: 'middle',
-                    borderWidth: 0
-                },
-                series: [{
-                    name: 'market_dispatch@dispatch.lk.com',
-                    data: [5, 20, 15, 30, 0, 11, 16, 25, 35, 80, 67, 38, 40, 66, 88]
-                }]
-            });
+                stackLabels: {
+                    enabled: true,
+                    style: {
+                        fontWeight: 'bold',
+                        color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                    }
+                }
+            },
+            legend: {
+                align: 'right',
+                x: -70,
+                verticalAlign: 'top',
+                y: 20,
+                floating: true,
+                backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColorSolid) || 'white',
+                borderColor: '#CCC',
+                borderWidth: 1,
+                shadow: false
+            },
+            tooltip: {
+                formatter: function() {
+                    return '<b>'+ this.x +'</b><br/>'+
+                        this.series.name +': '+ this.y +'<br/>'+
+                        'Total: '+ this.point.stackTotal;
+                }
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal',
+                    dataLabels: {
+                        enabled: true,
+                        color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
+                    }
+                }
+            },
+            series: [{
+                name: 'market_dispatch@dispatch.lk.com',
+                data: [5, 3, 4, 7, 2]
+            }, {
+                name: 'market_dispatch1@dispatch.lk.com',
+                data: [2, 2, 3, 2, 1]
+            }, {
+                name: 'market_dispatch2@dispatch.lk.com',
+                data: [3, 4, 4, 2, 5]
+            }]
+        });
     connect("/md/stream");
 });
 
