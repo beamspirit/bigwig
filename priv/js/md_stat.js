@@ -1,6 +1,4 @@
 var chart;
-var num = 1;
-
 $(document).ready(function(){
     $('#md_title').html($('<h2>MD Statistic</h2>'));
     $("#counter").flipCounter({
@@ -21,9 +19,19 @@ $(document).ready(function(){
     });
     chart = new Highcharts.Chart({
             chart: {
+                renderTo: 'charts',
                 type: 'column',
-                defaultSeriesType: 'spline',
-                renderTo: 'charts'
+                events :{
+                    load: function() {      
+                  // set up the updating of the chart each second  
+                    var series = this.series[2];  
+                    setInterval(function() {  
+                        var data = [];  
+                        data.push([2, Math.random()]);  
+                        series.setData(data);  
+                    }, 1000);  
+                }}
+            
             },
             title: {
                 text: 'MD Statistic'
@@ -72,17 +80,14 @@ $(document).ready(function(){
                 }
             },
             series: [{
-                name: 'John',
-                data: [5, 3, 4, 7, 2]
-            }, {
-                name: 'Jane',
-                data: [2, 2, 3, 2, 1]
-            }, {
-                name: 'Joe',
-                data: [3, 4, 4, 2, 5]
-            }{
                 name: 'market_dispatch@dispatch.lk.com',
-                data: []
+                data: [5, 3, 4]
+            }, {
+                name: 'market_dispatch1@dispatch.lk.com',
+                data: [2, 2, 3]
+            }, {
+                name: 'market_dispatch2@dispatch.lk.com',
+                data: [3, 4, 4]
             }]
         });
     connect("/md/stream");
@@ -111,10 +116,7 @@ function onMessage(evt) {
     	$('#md_statistic').append('<p>' + node + '</p>');
     	$("#counter").flipCounter("setNumber", msg[node]);
 	  }
-};  
+    
 
-function getForm () {
-    chart.series[2].addPoint([0, num], true, false);
-    num++;
-}
+};  
 
