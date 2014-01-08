@@ -1,3 +1,5 @@
+var chart;
+
 $(document).ready(function(){
     $('#md_title').html($('<h2>MD Statistic</h2>'));
     $("#counter").flipCounter({
@@ -16,9 +18,10 @@ $(document).ready(function(){
         onAnimationPaused:false, // call back for animation upon pausing
         onAnimationResumed:false // call back for animation upon resuming from pause
     });
-       $('#charts').highcharts({
+    chart = new Highcharts.Chart({
             chart: {
-                type: 'column'
+                type: 'column',
+                renderTo: 'charts'
             },
             title: {
                 text: 'MD Statistic'
@@ -68,13 +71,7 @@ $(document).ready(function(){
             },
             series: [{
                 name: 'market_dispatch@dispatch.lk.com',
-                data: [5, 3, 4, 7, 2]
-            }, {
-                name: 'market_dispatch1@dispatch.lk.com',
-                data: [2, 2, 3, 2, 1]
-            }, {
-                name: 'market_dispatch2@dispatch.lk.com',
-                data: [3, 4, 4, 2, 5]
+                data: []
             }]
         });
     connect("/md/stream");
@@ -102,8 +99,8 @@ function onMessage(evt) {
 	  {
     	$('#md_statistic').append('<p>' + node + '</p>');
     	$("#counter").flipCounter("setNumber", msg[node]);
+        chart.series[0].addPoint([0, msg[node]], true, false);
 	  }
-    
-
 };  
+
 
