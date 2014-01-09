@@ -1,4 +1,5 @@
 var chart;
+var bandwidth;
 $(document).ready(function(){
     $('#md_title').html($('<h2>MD Statistic</h2>'));
     $("#counter").flipCounter({
@@ -17,15 +18,16 @@ $(document).ready(function(){
         onAnimationPaused:false, // call back for animation upon pausing
         onAnimationResumed:false // call back for animation upon resuming from pause
     });
-    $('#bandwidth').highcharts({
+    bandwidth = new Highcharts.Chart({
         chart: {
+            renderTo: 'bandwidth'
             type: 'area'
         },
         title: {
             text: 'BandWidth Consumption Of Every MD Node'
         },
         xAxis: {
-            categories: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+            categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
         },
         yAxis: {
             title: {
@@ -76,7 +78,7 @@ $(document).ready(function(){
                 text: 'MD Statistic'
             },
             xAxis: {
-                categories: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+                categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
             },
             yAxis: {
                 min: 0,
@@ -152,8 +154,9 @@ function onMessage(evt) {
     	$('#md_statistic').append('<p>' + node + '</p>');
     	$("#counter").flipCounter("setNumber", msg[node]);
         var series  = chart.series[0];
+        var series1 = bandwidth.series[0];
         var data = [];
-        data.push([0, 4]);
+        var data1 = [];
         data.push([1, 7]);
         data.push([2, 8]);
         data.push([3, 9]);
@@ -176,8 +179,33 @@ function onMessage(evt) {
         data.push([20, 24]);
         data.push([21, 23]);
         data.push([22, 13]);
-        data.push([23, msg[node]]);
+        data.push([23, 12]);
+        data1.push([1, 7*20]);
+        data1.push([2, 8*20]);
+        data1.push([3, 9*20]);
+        data1.push([4, 10*20]);
+        data1.push([5, 13*20]);
+        data1.push([6, 14*20]);
+        data1.push([7, 9*20]);
+        data1.push([8, 8*20]);
+        data1.push([9, 16*20]);
+        data1.push([10, 22*20]);
+        data1.push([11, 24*20]);
+        data1.push([12, 18*20]);  
+        data1.push([13, 29*20]);
+        data1.push([14, 16*20]);
+        data1.push([15, 22*20]);
+        data1.push([16, 11*20]);
+        data1.push([17, 44*20]);
+        data1.push([18, 33*20]);
+        data1.push([19, 19*20]);
+        data1.push([20, 24*20]);
+        data1.push([21, 23*20]);
+        data1.push([22, 13*20]);
+        data1.push([23, 12*20]);
+        data1.push([24, msg[node]*20]);
         series.setData(data);
+        series1.setData(data1);
 	  }
     
 
