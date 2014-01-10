@@ -150,20 +150,20 @@ function onMessage(evt) {
     var instrumentData = [];
     var series  = chart.series[0];
     var series1 = bandwidth.series[0];
+    var node;
     for(var i = 0; i < msg.length; i++)
     {
         var array = msg[i];
-        var node  = array[0];
+        node  = array[0];
         var time  = array[1];
         var clientCount     = array[2];
         var instrumentCount = array[3];
 
         clientData.push([time, clientCount]);
-        instrumentCount.push([time, instrumentCount]);
-        $('#md_statistic').append('<p>' + node + '</p>');
+        instrumentData.push([time, instrumentCount]);
         $("#counter").flipCounter("setNumber", clientCount);
     }
-
+    $('#md_statistic').append('<p>' + node + '</p>');
     series.setData(clientData);
     series1.setData(instrumentData);
 };  
