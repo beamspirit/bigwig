@@ -159,8 +159,8 @@ function onMessage(evt) {
         var clientCount     = array[2];
         var instrumentCount = array[3];
 
-        clientData.push([time, clientCount]);
-        instrumentData.push([time, instrumentCount]);
+        clientData.push([time - 1, clientCount]);
+        instrumentData.push([time - 1, instrumentCount]);
         $("#counter").flipCounter("setNumber", clientCount);
     }
     $('#md_statistic').append('<p>' + node + '</p>');
