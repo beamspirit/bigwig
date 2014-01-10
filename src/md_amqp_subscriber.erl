@@ -186,7 +186,10 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
                     end,
                 NodeClientInstrumentCount1
         end,
-    Msg={market_dispatcher, orddict:to_list(NodeClientInstrumentCount0)},
+    BigwigMsg = lists:map(fun(A) -> {NodeKey, NodeValue}=A,erlang:tuple_to_list(NodeKey) ++ 
+        erlang:tuple_to_list(NodeValue) end, 
+        orddict:to_list(NodeClientInstrumentCount0)),
+    Msg={market_dispatcher, BigwigMsg},
     bigwig_pubsubhub:notify(Msg),
     {noreply, State#state{node_client_instrument_count = NodeClientInstrumentCount0}};
 

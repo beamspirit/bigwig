@@ -58,7 +58,7 @@ $(document).ready(function(){
             }
         },
         series: [{
-            name: 'market_dispatch1@dispatch.lk.com',
+            name: 'market_dispatch@dispatch.lk.com',
             data: []
         }, {
             name: 'market_dispatch2@dispatch.lk.com',
