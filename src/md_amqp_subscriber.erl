@@ -186,7 +186,7 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
                     end,
                 NodeClientInstrumentCount1
         end,
-    Msg={market_dispatcher, {orddict:to_list(NodeClientInstrumentCount0)}},
+    Msg={market_dispatcher, orddict:to_list(NodeClientInstrumentCount0)},
     bigwig_pubsubhub:notify(Msg),
     {noreply, State#state{node_client_instrument_count = NodeClientInstrumentCount0}};
 
