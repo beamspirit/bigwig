@@ -22,8 +22,8 @@ websocket_init(_TransportName, Req, _Opts) ->
 
 %% TODO handle stuff like {bigwig, {appmon, ... }} and send that too
 
-websocket_info({bigwig, {market_dispatcher, {NodeSubCount, NodeSubDetail}}}, Req, State) ->
-    Reply = jsx:term_to_json(NodeSubCount),
+websocket_info({bigwig, {market_dispatcher, NodeClientInstrumentCount}}, Req, State) ->
+    Reply = jsx:term_to_json(NodeClientInstrumentCount),
     {reply, {text, Reply}, Req, State};
 
 

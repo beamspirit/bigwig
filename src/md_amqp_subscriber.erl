@@ -26,7 +26,8 @@
 
 
 -record(state, {node_sub_count, %orddict {key:Node, value:Count}
-                node_sub_detail}). %orddict {key:InvestorId, value:{Node, Time}}
+                node_sub_detail, %orddict {key:InvestorId, value:{Node, Time}}
+                node_client_instrument_count}). %orddict {key:{Node, Time}, value:{ClientCount, InstrumentCount}
 
 %%%===================================================================
 %%% API
@@ -81,8 +82,7 @@ init([Params]) ->
     Consumer = self(),
     #'basic.consume_ok'{} = amqp_channel:subscribe(Channel, Sub, Consumer),
 
-    {ok, #state{node_sub_count  = orddict:new(), %orddict {key:Node, value:Count}
-                node_sub_detail = orddict:new()}}. %orddict{key:Uid, value:{Node, Time}}
+    {ok, #state{node_client_instrument_count = orddict:new()}}. %orddict {key:{Node, Time}, value:{ClientCount, InstrumentCount}}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -133,52 +133,62 @@ handle_info(#'basic.cancel_ok'{}, State) ->
 
 handle_info({#'basic.deliver'{delivery_tag = _Tag}, 
     {_, _, Message} = _Content}, #state{} = State) ->
-    #state{node_sub_count  = NodeSubCount,
-           node_sub_detail = NodeSubDetail} = State,
-    [Conn0, Login0, Node0, Time0] = binary:split(Message, <<" ">>, [global]),
+    #state{node_client_instrument_count  = NodeClientInstrumentCount} = State,
+    [Conn0, Node0, Time0] = binary:split(Message, <<" ">>, [global]),
     Conn  = binary_to_atom(Conn0, utf8),
-    Login = list_to_integer(binary_to_list(Login0)),
     Node  = binary_to_atom(Node0, utf8),
-    Time = binary_to_atom(Time0, utf8),
-    {NodeSubCount0, NodeSubDetail0} = 
+    Time = list_to_integer(binary_to_list(Time0)),
+    {LastHourClientCount, LastHourInstrumentCount} = 
+        case orddict:find({Node, Time - 1}, NodeClientInstrumentCount) of
+            error -> {0, 0};
+            {ok, Value} -> Value
+        end,
+    NodeClientInstrumentCount0 = 
         case Conn of
             connected ->
-                NodeSubCount1 = 
-                    case orddict:find(Node, NodeSubCount) of
+                NodeClientInstrumentCount1 =          
+                    case orddict:find({Node, Time}, NodeClientInstrumentCount) of
                         error -> 
-                            orddict:store(Node, 1, NodeSubCount);
-                        {ok, Value}  -> 
-                            orddict:store(Node, Value + 1, NodeSubCount)
+                            orddict:store({Node, Time}, {LastHourClientCount + 1, LastHourInstrumentCount}, 
+                                NodeClientInstrumentCount);
+                        {ok, {CValue, IValue}}  -> 
+                            orddict:store({Node, Time}, {CValue + 1, IValue}, NodeClientInstrumentCount)
                     end,
-                NodeSubDetail1 = 
-                    case orddict:find(Login, NodeSubDetail) of
-                        error ->
-                            orddict:store(Login, {Node, Time}, NodeSubDetail);
-                        {ok, _Value1}  ->
-                            orddict:store(Login, {Node, Time}, NodeSubDetail)
-                    end,
-                {NodeSubCount1, NodeSubDetail1};
+                NodeClientInstrumentCount1;
             disconnected ->
-                NodeSubCount1 =
-                    case orddict:find(Node, NodeSubCount) of
+                NodeClientInstrumentCount1 =          
+                    case orddict:find({Node, Time}, NodeClientInstrumentCount) of
                         error -> 
-                            orddict:store(Node, 0, NodeSubCount);
-                        {ok, Value}  -> 
-                            orddict:store(Node, Value - 1, NodeSubCount)
+                            orddict:store({Node, Time}, {LastHourClientCount, LastHourInstrumentCount}, 
+                                NodeClientInstrumentCount);
+                        {ok, {CValue, IValue}}  -> 
+                            orddict:store({Node, Time}, {CValue - 1, IValue}, NodeClientInstrumentCount)
                     end,
-                NodeSubDetail1 =
-                    case orddict:find(Login, NodeSubDetail) of
-                        error ->
-                            NodeSubDetail;
-                        {ok, _Value1}  ->
-                            orddict:erase(Login, NodeSubDetail)
+                NodeClientInstrumentCount1;
+            subscribe ->
+                NodeClientInstrumentCount1 =          
+                    case orddict:find({Node, Time}, NodeClientInstrumentCount) of
+                        error -> 
+                            orddict:store({Node, Time}, {LastHourClientCount, LastHourInstrumentCount + 1}, 
+                                NodeClientInstrumentCount);
+                        {ok, {CValue, IValue}}  -> 
+                            orddict:store({Node, Time}, {CValue, IValue + 1}, NodeClientInstrumentCount)
                     end,
-                {NodeSubCount1, NodeSubDetail1}
+                NodeClientInstrumentCount1;
+            unsubscribe ->
+                NodeClientInstrumentCount1 =          
+                    case orddict:find({Node, Time}, NodeClientInstrumentCount) of
+                        error -> 
+                            orddict:store({Node, Time}, {LastHourClientCount, LastHourInstrumentCount}, 
+                                NodeClientInstrumentCount);
+                        {ok, {CValue, IValue}}  -> 
+                            orddict:store({Node, Time}, {CValue, IValue - 1}, NodeClientInstrumentCount)
+                    end,
+                NodeClientInstrumentCount1
         end,
-    Msg={market_dispatcher, {orddict:to_list(NodeSubCount0), orddict:to_list(NodeSubDetail0)}},
+    Msg={market_dispatcher, {orddict:to_list(NodeClientInstrumentCount0)}},
     bigwig_pubsubhub:notify(Msg),
-    {noreply, State#state{node_sub_count  = NodeSubCount0,
-                          node_sub_detail = NodeSubDetail0}};
+    {noreply, State#state{node_client_instrument_count = NodeClientInstrumentCount0}};
 
 handle_info(_Info, State) ->
     lager:warning("Can't handle info: ~p~n", [_Info]),

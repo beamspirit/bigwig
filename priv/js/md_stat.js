@@ -20,7 +20,7 @@ $(document).ready(function(){
     });
     bandwidth = new Highcharts.Chart({
         chart: {
-            renderTo: 'bandwidth'
+            renderTo: 'bandwidth',
             type: 'area'
         },
         title: {
@@ -40,7 +40,7 @@ $(document).ready(function(){
             }
         },
         tooltip: {
-            pointFormat: '{series.name} produced <b>{point.y:,.0f}</b><br/>warheads in {point.x}'
+            pointFormat: '{series.name} consumed <b>{point.y:,.0f} k</b><br/>bandwidth in {point.x}'
         },
         plotOptions: {
             area: {
@@ -59,14 +59,10 @@ $(document).ready(function(){
         },
         series: [{
             name: 'market_dispatch1@dispatch.lk.com',
-            data: [6 , 11, 32, 11, 23, 36, 64,
-                10, 14, 20, 30, 46, 64, 98, 15, 20, 24,
-                27, 29, 31, 31, 32, 31, 29]
+            data: []
         }, {
             name: 'market_dispatch2@dispatch.lk.com',
-            data: [5, 25, 50, 12, 15, 20, 42, 66, 86, 10, 16, 24, 33,
-            42, 52, 61, 70, 39, 93, 38, 43, 13, 78,
-            15]
+            data: []
         }]
     });
     chart = new Highcharts.Chart({
@@ -122,10 +118,10 @@ $(document).ready(function(){
             },
             series: [{
                 name: 'market_dispatch1@dispatch.lk.com',
-                data: [5, 3, 4, 6, 7, 8, 10, 15, 6, 11, 13, 16, 21, 14, 12, 7, 50, 24, 23, 20, 17, 22, 17, 15]
+                data: []
             }, {
                 name: 'market_dispatch2@dispatch.lk.com',
-                data: [3, 4, 4, 5, 3, 4, 6, 7, 8, 10, 15, 6, 11, 13, 16, 21, 14, 12, 7, 50, 24, 23, 20, 17]
+                data: []
             }]
         });
     connect("/md/stream");
@@ -149,6 +145,7 @@ function onClose(evt) {
 function onMessage(evt) {
     document.getElementById("md_statistic").innerHTML="";
     var msg = JSON.parse(evt.data);
+    console.log(msg);
     for(var node in msg)
 	  {
     	$('#md_statistic').append('<p>' + node + '</p>');
@@ -157,6 +154,7 @@ function onMessage(evt) {
         var series1 = bandwidth.series[0];
         var data = [];
         var data1 = [];
+        data.push([0, 12]);
         data.push([1, 7]);
         data.push([2, 8]);
         data.push([3, 9]);
@@ -179,7 +177,8 @@ function onMessage(evt) {
         data.push([20, 24]);
         data.push([21, 23]);
         data.push([22, 13]);
-        data.push([23, 12]);
+        data.push([23, msg[node]]);
+        data1.push([0, 12*20]);
         data1.push([1, 7*20]);
         data1.push([2, 8*20]);
         data1.push([3, 9*20]);
@@ -202,8 +201,7 @@ function onMessage(evt) {
         data1.push([20, 24*20]);
         data1.push([21, 23*20]);
         data1.push([22, 13*20]);
-        data1.push([23, 12*20]);
-        data1.push([24, msg[node]*20]);
+        data1.push([23, msg[node]*20]);
         series.setData(data);
         series1.setData(data1);
 	  }
