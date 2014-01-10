@@ -117,7 +117,7 @@ $(document).ready(function(){
                 }
             },
             series: [{
-                name: 'market_dispatch1@dispatch.lk.com',
+                name: 'market_dispatch@dispatch.lk.com',
                 data: []
             }, {
                 name: 'market_dispatch2@dispatch.lk.com',
@@ -146,66 +146,25 @@ function onMessage(evt) {
     document.getElementById("md_statistic").innerHTML="";
     var msg = JSON.parse(evt.data);
     console.log(msg);
-    for(var node in msg)
-	  {
-    	$('#md_statistic').append('<p>' + node + '</p>');
-    	$("#counter").flipCounter("setNumber", msg[node]);
-        var series  = chart.series[0];
-        var series1 = bandwidth.series[0];
-        var data = [];
-        var data1 = [];
-        data.push([0, 12]);
-        data.push([1, 7]);
-        data.push([2, 8]);
-        data.push([3, 9]);
-        data.push([4, 10]);
-        data.push([5, 13]);
-        data.push([6, 14]);
-        data.push([7, 9]);
-        data.push([8, 8]);
-        data.push([9, 16]);
-        data.push([10, 22]);
-        data.push([11, 24]);
-        data.push([12, 18]);  
-        data.push([13, 29]);
-        data.push([14, 16]);
-        data.push([15, 22]);
-        data.push([16, 11]);
-        data.push([17, 44]);
-        data.push([18, 33]);
-        data.push([19, 19]);
-        data.push([20, 24]);
-        data.push([21, 23]);
-        data.push([22, 13]);
-        data.push([23, msg[node]]);
-        data1.push([0, 12*20]);
-        data1.push([1, 7*20]);
-        data1.push([2, 8*20]);
-        data1.push([3, 9*20]);
-        data1.push([4, 10*20]);
-        data1.push([5, 13*20]);
-        data1.push([6, 14*20]);
-        data1.push([7, 9*20]);
-        data1.push([8, 8*20]);
-        data1.push([9, 16*20]);
-        data1.push([10, 22*20]);
-        data1.push([11, 24*20]);
-        data1.push([12, 18*20]);  
-        data1.push([13, 29*20]);
-        data1.push([14, 16*20]);
-        data1.push([15, 22*20]);
-        data1.push([16, 11*20]);
-        data1.push([17, 44*20]);
-        data1.push([18, 33*20]);
-        data1.push([19, 19*20]);
-        data1.push([20, 24*20]);
-        data1.push([21, 23*20]);
-        data1.push([22, 13*20]);
-        data1.push([23, msg[node]*20]);
-        series.setData(data);
-        series1.setData(data1);
-	  }
-    
+    var clientData = [];
+    var instrumentData = [];
+    var series  = chart.series[0];
+    var series1 = bandwidth.series[0];
+    for(var i = 0; i < msg.length; i++)
+    {
+        var array = msg[i];
+        var node  = array[0];
+        var time  = array[1];
+        var clientCount     = array[2];
+        var instrumentCount = array[3];
 
+        clientData.push([time, clientCount]);
+        instrumentCount.push([time, instrumentCount]);
+        $('#md_statistic').append('<p>' + node + '</p>');
+        $("#counter").flipCounter("setNumber", clientCount);
+    }
+
+    series.setData(clientData);
+    series1.setData(instrumentData);
 };  
 
