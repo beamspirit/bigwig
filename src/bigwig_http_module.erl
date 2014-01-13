@@ -3,27 +3,27 @@
 %%
 -module(bigwig_http_module).
 -behaviour(cowboy_http_handler).
--export([init/3, handle/2, terminate/2]).
+-export([init/3, handle/2, terminate/3]).
 
 init({tcp, http}, Req, _Opts) ->
     {ok, Req, undefined_state}.
 
 handle(Req0, State) ->
-    {Path, Req} = cowboy_http_req:path(Req0),
-    {Method, Req1} = cowboy_http_req:method(Req),
+    {Path, Req} = cowboy_req:path_info(Req0),
+    {Method, Req1} = cowboy_req:method(Req),
     handle_path(Method, Path, Req1, State).
 
-handle_path('POST', [<<"module">>, Module], Req, State) ->
-    {Props, Req2} = cowboy_http_req:body_qs(Req),
+handle_path(<<"POST">>, [Module], Req, State) ->
+    {Props, Req2} = cowboy_req:body_qs(Req),
     case proplists:get_value(<<"reload">>, Props) of
         undefined -> 
             not_found(Req2, State);
         <<"yes">> -> 
             c:l(list_to_existing_atom(binary_to_list(Module))),
-            {ok, Req3} = cowboy_http_req:reply(200, [], <<"ok">>, Req2),
+            {ok, Req3} = cowboy_req:reply(200, [], <<"ok">>, Req2),
             {ok, Req3, State}
     end;
-handle_path('GET', [<<"module">>, Module], Req, State) ->
+handle_path(<<"GET">>, [Module], Req, State) ->
     case to_module_info(Module) of
         [_|_] = Info -> json_response(Info, Req, State);
         _ -> not_found(Req, State)
@@ -32,10 +32,10 @@ handle_path(_, _, Req, State) ->
     not_found(Req, State).
 
 not_found(Req, State) ->
-    {ok, Req2} = cowboy_http_req:reply(404, [], <<"<h1>404</h1>">>, Req),
+    {ok, Req2} = cowboy_req:reply(404, [], <<"<h1>404</h1>">>, Req),
     {ok, Req2, State}.
 
-terminate(_Req, _State) ->
+terminate(_Reason, _Req, _State) ->
     ok.
 
 %% Reads and modifies module_info a bit to be more json friendly
@@ -69,5 +69,5 @@ to_module_info(Bin) ->
 json_response(Info, Req, State) ->
     Body = jsx:term_to_json(Info),
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
-    {ok, Req2} = cowboy_http_req:reply(200, Headers, Body, Req),
+    {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),
     {ok, Req2, State}.
