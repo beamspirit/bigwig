@@ -146,10 +146,16 @@ function onMessage(evt) {
     document.getElementById("md_statistic").innerHTML="";
     var msg = JSON.parse(evt.data);
     console.log(msg);
-    var clientData = [];
-    var instrumentData = [];
-    var series  = chart.series[0];
-    var series1 = bandwidth.series[0];
+    var clientData1 = [];
+    var clientData2 = [];
+    var instrumentData1 = [];
+    var instrumentData2 = [];
+
+    var chartSeriesNode1  = chart.series[0];
+    var chartseriesNode2  = chart.series[1];
+    var bandseriesNode1 = bandwidth.series[0];
+    var bandseriesNode2 = bandwidth.series[1];
+
     var node;
     for(var i = 0; i < msg.length; i++)
     {
@@ -159,12 +165,25 @@ function onMessage(evt) {
         var clientCount     = array[2];
         var instrumentCount = array[3];
 
-        clientData.push([time - 1, clientCount]);
-        instrumentData.push([time - 1, instrumentCount]);
+        switch(node)
+        {
+            case (chart.series[0].name):
+                clientData1.push([time - 1, clientCount]);
+                instrumentData1.push([time - 1, instrumentCount]);
+                break;
+            case (chart.series[1]).name):
+                clientData2.push([time - 1, clientCount]);
+                instrumentData2.push([time - 1, instrumentCount]);
+                break;
+            default:
+                console.log(node);
+        }
         $("#counter").flipCounter("setNumber", clientCount);
     }
     $('#md_statistic').append('<p>' + node + '</p>');
-    series.setData(clientData);
-    series1.setData(instrumentData);
+    chartSeriesNode1.setData(clientData1);
+    chartSeriesNode2.setData(clientData2);
+    bandseriesNode1.setData(instrumentData1);
+    bandseriesNode2.setData(instrumentData2);
 };  
 

@@ -27,6 +27,7 @@
 
 -record(state, {node_sub_count, %orddict {key:Node, value:Count}
                 node_sub_detail, %orddict {key:InvestorId, value:{Node, Time}}
+                timer,
                 node_client_instrument_count}). %orddict {key:{Node, Time}, value:{ClientCount, InstrumentCount}
 
 %%%===================================================================
@@ -72,7 +73,6 @@ init([Params]) ->
 
     #'exchange.declare_ok'{} = amqp_channel:call(Channel, #'exchange.declare'{ exchange = Exchange, 
                                                                                type = <<"topic">>, durable = true }),
-
     %% Declare a queue
     #'queue.declare_ok'{queue = Q} = amqp_channel:call(Channel, #'queue.declare'{queue = <<"md_stat">>, durable = true}),
     Binding = #'queue.bind'{queue = Q, exchange = Exchange, routing_key = <<"md_stat">>},
@@ -82,7 +82,13 @@ init([Params]) ->
     Consumer = self(),
     #'basic.consume_ok'{} = amqp_channel:subscribe(Channel, Sub, Consumer),
 
-    {ok, #state{node_client_instrument_count = orddict:new()}}. %orddict {key:{Node, Time}, value:{ClientCount, InstrumentCount}}.
+    {Date, _} = erlang:localtime(),
+    EndTime = (calendar:datetime_to_gregorian_seconds({Date, {24, 0, 0}}) - 
+               calendar:datetime_to_gregorian_seconds(erlang:localtime())) * 1000,
+    {ok, Timer} = timer:send_after(EndTime, clear_charts),
+
+    {ok, #state{node_client_instrument_count = orddict:new(), %orddict {key:{Node, Time}, value:{ClientCount, InstrumentCount}}.
+                timer = Timer}}. 
 
 %%--------------------------------------------------------------------
 %% @private
@@ -134,10 +140,12 @@ handle_info(#'basic.cancel_ok'{}, State) ->
 handle_info({#'basic.deliver'{delivery_tag = _Tag}, 
     {_, _, Message} = _Content}, #state{} = State) ->
     #state{node_client_instrument_count  = NodeClientInstrumentCount} = State,
-    [Conn0, Node0, Time0] = binary:split(Message, <<" ">>, [global]),
+    [Conn0, Node0, Time0, Count0] = binary:split(Message, <<" ">>, [global]),
     Conn  = binary_to_atom(Conn0, utf8),
     Node  = binary_to_atom(Node0, utf8),
-    Time = list_to_integer(binary_to_list(Time0)),
+    Time  = list_to_integer(binary_to_list(Time0)),
+    Count = list_to_integer(binary_to_list(Count0)),
+
     {LastHourClientCount, LastHourInstrumentCount} = 
         case orddict:find({Node, Time - 1}, NodeClientInstrumentCount) of
             error -> {0, 0};
@@ -149,40 +157,40 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
                 NodeClientInstrumentCount1 =          
                     case orddict:find({Node, Time}, NodeClientInstrumentCount) of
                         error -> 
-                            orddict:store({Node, Time}, {LastHourClientCount + 1, LastHourInstrumentCount}, 
+                            orddict:store({Node, Time}, {LastHourClientCount + Count, LastHourInstrumentCount}, 
                                 NodeClientInstrumentCount);
                         {ok, {CValue, IValue}}  -> 
-                            orddict:store({Node, Time}, {CValue + 1, IValue}, NodeClientInstrumentCount)
+                            orddict:store({Node, Time}, {CValue + Count, IValue}, NodeClientInstrumentCount)
                     end,
                 NodeClientInstrumentCount1;
             disconnected ->
                 NodeClientInstrumentCount1 =          
                     case orddict:find({Node, Time}, NodeClientInstrumentCount) of
                         error -> 
-                            orddict:store({Node, Time}, {LastHourClientCount, LastHourInstrumentCount}, 
+                            orddict:store({Node, Time}, {LastHourClientCount - Count, LastHourInstrumentCount}, 
                                 NodeClientInstrumentCount);
                         {ok, {CValue, IValue}}  -> 
-                            orddict:store({Node, Time}, {CValue - 1, IValue}, NodeClientInstrumentCount)
+                            orddict:store({Node, Time}, {CValue - Count, IValue}, NodeClientInstrumentCount)
                     end,
                 NodeClientInstrumentCount1;
             subscribe ->
                 NodeClientInstrumentCount1 =          
                     case orddict:find({Node, Time}, NodeClientInstrumentCount) of
                         error -> 
-                            orddict:store({Node, Time}, {LastHourClientCount, LastHourInstrumentCount + 1}, 
+                            orddict:store({Node, Time}, {LastHourClientCount, LastHourInstrumentCount + Count}, 
                                 NodeClientInstrumentCount);
                         {ok, {CValue, IValue}}  -> 
-                            orddict:store({Node, Time}, {CValue, IValue + 1}, NodeClientInstrumentCount)
+                            orddict:store({Node, Time}, {CValue, IValue + Count}, NodeClientInstrumentCount)
                     end,
                 NodeClientInstrumentCount1;
             unsubscribe ->
                 NodeClientInstrumentCount1 =          
                     case orddict:find({Node, Time}, NodeClientInstrumentCount) of
                         error -> 
-                            orddict:store({Node, Time}, {LastHourClientCount, LastHourInstrumentCount}, 
+                            orddict:store({Node, Time}, {LastHourClientCount, LastHourInstrumentCount - Count}, 
                                 NodeClientInstrumentCount);
                         {ok, {CValue, IValue}}  -> 
-                            orddict:store({Node, Time}, {CValue, IValue - 1}, NodeClientInstrumentCount)
+                            orddict:store({Node, Time}, {CValue, IValue - Count}, NodeClientInstrumentCount)
                     end,
                 NodeClientInstrumentCount1
         end,
@@ -192,6 +200,19 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
     Msg={market_dispatcher, BigwigMsg},
     bigwig_pubsubhub:notify(Msg),
     {noreply, State#state{node_client_instrument_count = NodeClientInstrumentCount0}};
+
+handle_info(clear_charts, #state{} = State) ->
+    #state{node_client_instrument_count = NodeClientInstrumentCount,
+           timer =Timer} = State,
+    {ok, cancel} = timer:cancel(Timer),
+    {Date, _} = erlang:localtime(),
+    EndTime = ( calendar:datetime_to_gregorian_seconds({Date, {24, 0, 0}}) - 
+                calendar:datetime_to_gregorian_seconds(erlang:localtime())) * 1000,
+    {ok, Timer2}=timer:send_after(EndTime, clear_charts),
+
+    {noreply, State#state{timer = Timer2,
+                          node_client_instrument_count      = orddict:new()}};
+
 
 handle_info(_Info, State) ->
     lager:warning("Can't handle info: ~p~n", [_Info]),
