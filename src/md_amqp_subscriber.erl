@@ -105,7 +105,7 @@ init([Params]) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call(_Request, _From, State) ->
-    lager:warning("Can't handle request: ~p~n", [_Request]),
+    lager:warning("Can't handle request: ~p", [_Request]),
     {reply, {error, invalid_req}, State}.
 
 %%--------------------------------------------------------------------
@@ -119,7 +119,7 @@ handle_call(_Request, _From, State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_cast(_Msg, State) ->
-    lager:warning("Can't handle msg: ~p~n", [_Msg]),
+    lager:warning("Can't handle msg: ~p", [_Msg]),
     {noreply, State}.
 
 %%--------------------------------------------------------------------
@@ -215,7 +215,7 @@ handle_info(clear_charts, #state{} = State) ->
 
 
 handle_info(_Info, State) ->
-    lager:warning("Can't handle info: ~p~n", [_Info]),
+    lager:warning("Can't handle info: ~p", [_Info]),
     {noreply, State}.
 
 %%--------------------------------------------------------------------

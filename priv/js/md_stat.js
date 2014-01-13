@@ -40,11 +40,11 @@ $(document).ready(function(){
             }
         },
         tooltip: {
-            pointFormat: '{series.name} consumed <b>{point.y:,.0f} k</b><br/>bandwidth in {point.x}'
+            pointFormat: '{series.name} consumed <b>{point.y:,.0f} k</b><br/>bandwidth'
         },
         plotOptions: {
             area: {
-                pointStart: 0,
+                pointStart: 1,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
@@ -152,9 +152,9 @@ function onMessage(evt) {
     var instrumentData2 = [];
 
     var chartSeriesNode1  = chart.series[0];
-    var chartseriesNode2  = chart.series[1];
-    var bandseriesNode1 = bandwidth.series[0];
-    var bandseriesNode2 = bandwidth.series[1];
+    var chartSeriesNode2  = chart.series[1];
+    var bandSeriesNode1 = bandwidth.series[0];
+    var bandSeriesNode2 = bandwidth.series[1];
 
     var node;
     for(var i = 0; i < msg.length; i++)
@@ -169,11 +169,11 @@ function onMessage(evt) {
         {
             case (chart.series[0].name):
                 clientData1.push([time - 1, clientCount]);
-                instrumentData1.push([time - 1, instrumentCount]);
+                instrumentData1.push([time - 1, instrumentCount * 20]);
                 break;
-            case (chart.series[1]).name):
+            case (chart.series[1].name):
                 clientData2.push([time - 1, clientCount]);
-                instrumentData2.push([time - 1, instrumentCount]);
+                instrumentData2.push([time - 1, instrumentCount * 20]);
                 break;
             default:
                 console.log(node);
@@ -183,7 +183,7 @@ function onMessage(evt) {
     $('#md_statistic').append('<p>' + node + '</p>');
     chartSeriesNode1.setData(clientData1);
     chartSeriesNode2.setData(clientData2);
-    bandseriesNode1.setData(instrumentData1);
-    bandseriesNode2.setData(instrumentData2);
+    bandSeriesNode1.setData(instrumentData1);
+    bandSeriesNode2.setData(instrumentData2);
 };  
 
