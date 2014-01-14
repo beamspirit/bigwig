@@ -27,7 +27,9 @@ $(document).ready(function(){
             text: 'BandWidth Consumption Of Every MD Node'
         },
         xAxis: {
-            categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+            min: 0,
+            max: 23,
+            categories: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
         },
         yAxis: {
             title: {
@@ -44,7 +46,7 @@ $(document).ready(function(){
         },
         plotOptions: {
             area: {
-                pointStart: 1,
+                pointStart: 0,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
@@ -74,7 +76,9 @@ $(document).ready(function(){
                 text: 'MD Statistic'
             },
             xAxis: {
-                categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+                min: 0,
+                max: 23,
+                categories: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
             },
             yAxis: {
                 min: 0,
@@ -146,17 +150,17 @@ function onMessage(evt) {
     document.getElementById("md_statistic").innerHTML="";
     var msg = JSON.parse(evt.data);
     console.log(msg);
-    var clientData1 = [];
-    var clientData2 = [];
-    var instrumentData1 = [];
-    var instrumentData2 = [];
-
-    var chartSeriesNode1  = chart.series[0];
-    var chartSeriesNode2  = chart.series[1];
-    var bandSeriesNode1 = bandwidth.series[0];
-    var bandSeriesNode2 = bandwidth.series[1];
-
+    var nowHour = msg[msg.length-1][1];
+    var chartData = [];
     var node;
+
+    for(var j = 0; j <= nowHour; j++)
+    {
+        chartData.push([j, 0]);
+    }
+    chart.series[0].setData(chartData);
+    bandwidth.series[0].setData(chartData);
+
     for(var i = 0; i < msg.length; i++)
     {
         var array = msg[i];
@@ -168,12 +172,12 @@ function onMessage(evt) {
         switch(node)
         {
             case (chart.series[0].name):
-                clientData1.push([time - 1, clientCount]);
-                instrumentData1.push([time - 1, instrumentCount * 20]);
+                chart.series[0].data[time].update(clientCount);
+                bandwidth.series[0].data[time].update(instrumentCount * 20);
                 break;
             case (chart.series[1].name):
-                clientData2.push([time - 1, clientCount]);
-                instrumentData2.push([time - 1, instrumentCount * 20]);
+                chart.series[1].data[time].update(clientCount);
+                bandwidth.series[1].data[time].update(instrumentCount * 20);
                 break;
             default:
                 console.log(node);
@@ -181,9 +185,5 @@ function onMessage(evt) {
         $("#counter").flipCounter("setNumber", clientCount);
     }
     $('#md_statistic').append('<p>' + node + '</p>');
-    chartSeriesNode1.setData(clientData1);
-    chartSeriesNode2.setData(clientData2);
-    bandSeriesNode1.setData(instrumentData1);
-    bandSeriesNode2.setData(instrumentData2);
 };  
 
