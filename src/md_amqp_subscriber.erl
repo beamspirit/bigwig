@@ -25,8 +25,7 @@
 -include_lib("amqp_client/include/amqp_client.hrl").
 
 
--record(state, {node_sub_count, %orddict {key:Node, value:Count}
-                node_sub_detail, %orddict {key:InvestorId, value:{Node, Time}}
+-record(state, {channel,
                 timer,
                 node_client_instrument_count}). %orddict {key:{Node, Time}, value:{ClientCount, InstrumentCount}
 
@@ -87,8 +86,10 @@ init([Params]) ->
                calendar:datetime_to_gregorian_seconds(erlang:localtime())) * 1000,
     {ok, Timer} = timer:send_after(EndTime, clear_charts),
 
-    {ok, #state{node_client_instrument_count = orddict:new(), %orddict {key:{Node, Time}, value:{ClientCount, InstrumentCount}}.
-                timer = Timer}}. 
+    {ok, #state{channel = Channel,
+                timer   = Timer,
+                node_client_instrument_count = orddict:new() %orddict {key:{Node, Time}, value:{ClientCount, InstrumentCount}}.
+                }}. 
 
 %%--------------------------------------------------------------------
 %% @private
@@ -137,9 +138,10 @@ handle_info(#'basic.consume_ok'{}, State) ->
 handle_info(#'basic.cancel_ok'{}, State) ->
     {noreply, State};
 
-handle_info({#'basic.deliver'{delivery_tag = _Tag}, 
+handle_info({#'basic.deliver'{delivery_tag = Tag}, 
     {_, _, Message} = _Content}, #state{} = State) ->
-    #state{node_client_instrument_count  = NodeClientInstrumentCount} = State,
+    #state{channel = Channel,
+           node_client_instrument_count  = NodeClientInstrumentCount} = State,
     [Conn0, Node0, Time0, Count0] = binary:split(Message, <<" ">>, [global]),
     Conn  = binary_to_atom(Conn0, utf8),
     Node  = binary_to_atom(Node0, utf8),
@@ -199,6 +201,8 @@ handle_info({#'basic.deliver'{delivery_tag = _Tag},
         orddict:to_list(NodeClientInstrumentCount0)),
     Msg={market_dispatcher, BigwigMsg},
     bigwig_pubsubhub:notify(Msg),
+
+    amqp_channel:cast(Channel, #'basic.ack'{delivery_tag = Tag}),
     {noreply, State#state{node_client_instrument_count = NodeClientInstrumentCount0}};
 
 handle_info(clear_charts, #state{} = State) ->
