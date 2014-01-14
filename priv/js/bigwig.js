@@ -151,8 +151,8 @@ function sendTxt(txt) {
       title: 'routingkey(' + txt + ') &nbsp; ',
       close: function(event, ui) {
         closeSubscribe();
-        $(this).remove();
-        window.location.reload();
+        //$(this).remove();
+        //window.location.reload();
        // window.location.href="lager";
       },
       buttons: {
