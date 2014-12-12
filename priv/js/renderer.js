@@ -1,6 +1,6 @@
 var RENDERER = (function() {
     var show_pid_dialog = function(Pid) {
-        var url = '/pid/' + Pid;
+        var url = '/pid/'+ Pid;
         $.ajax({
                     url: url,
                     dataType: 'json',
@@ -43,7 +43,8 @@ var RENDERER = (function() {
                                     } 
                                 }
                         });
-                    }
+                    },
+
                 });
     }
 
@@ -79,7 +80,6 @@ var RENDERER = (function() {
                             })
                     }});
     }
-
 
     var gen_pid_html = function( json ) {
         var t = $('<table></table>');
@@ -210,7 +210,7 @@ var RENDERER = (function() {
 })();
 
 $("body").delegate("a._pid", "click", function(e){
-    var pid = $(this).text().replace(/[<>]/g,'');
+   var pid = $(this).text().replace(/[<>]/g,'');
     RENDERER.show_pid_dialog(pid);
     e.preventDefault();
 });
@@ -220,4 +220,6 @@ $("body").delegate("a.mfa", "click", function(e){
     RENDERER.show_mfa_dialog(x1[0],x2[0],parseInt(x2[1]));
     e.preventDefault();
 });
+//    RENDERER.show_log_dialog(tracer);
+//    e.preventDefault();
 

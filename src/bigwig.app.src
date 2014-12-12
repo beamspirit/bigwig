@@ -6,6 +6,8 @@
   {applications, [
                   kernel,
                   stdlib,
+                  crypto,
+                  ranch,
                   cowboy,
                   jsx
                  ]},

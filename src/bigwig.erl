@@ -10,9 +10,14 @@ ensure_started(App) ->
     end.
 
 start() ->
+    ensure_started(ranch),
+    ensure_started(jsx),
+    
     ensure_started(crypto),
     ensure_started(sasl),
+    ensure_started(cowlib),
     ensure_started(cowboy),
+    %ensure_started(lager),
     application:start(bigwig).
 
 stop() ->
